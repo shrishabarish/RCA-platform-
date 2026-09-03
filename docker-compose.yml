@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  rca-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cloudlens_rca_platform
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=info
+      - CORRELATION_WINDOW_SECONDS=60
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

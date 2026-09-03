@@ -1,0 +1,50 @@
+[
+  {
+    "event_id": "evt_101",
+    "timestamp": "2026-09-01T15:10:00Z",
+    "source": "cloudwatch",
+    "event_type": "read_throttled_requests",
+    "service": "DynamoDB",
+    "resource_id": "orders-table-prod",
+    "metric": "ThrottledRequests",
+    "value": 1420.0,
+    "severity": "CRITICAL",
+    "metadata": {"region": "us-east-1", "table": "Orders", "capacity_mode": "provisioned"}
+  },
+  {
+    "event_id": "evt_102",
+    "timestamp": "2026-09-01T15:10:12Z",
+    "source": "synthetic",
+    "event_type": "db_connection_pool_timeout",
+    "service": "API",
+    "resource_id": "order-api-gateway",
+    "metric": "ConnectionPoolWaitTimeMs",
+    "value": 5000.0,
+    "severity": "HIGH",
+    "metadata": {"endpoint": "/v2/orders"}
+  },
+  {
+    "event_id": "evt_103",
+    "timestamp": "2026-09-01T15:10:25Z",
+    "source": "application",
+    "event_type": "http_504_gateway_timeout",
+    "service": "Application",
+    "resource_id": "frontend-web",
+    "metric": "504ErrorCount",
+    "value": 310.0,
+    "severity": "HIGH",
+    "metadata": {"service": "CheckoutUI"}
+  },
+  {
+    "event_id": "evt_104",
+    "timestamp": "2026-09-01T15:10:40Z",
+    "source": "application",
+    "event_type": "order_submission_failure",
+    "service": "Application",
+    "resource_id": "frontend-web",
+    "metric": "OrderDropRatePercent",
+    "value": 85.0,
+    "severity": "CRITICAL",
+    "metadata": {"impact": "revenue_loss"}
+  }
+]

@@ -1,0 +1,23 @@
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest & Testing Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment Variables & Secrets (NEVER SHARE SECRETS)
+.env
+*.pem
+*.key
+
+# IDEs & System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,57 @@
+[
+  {
+    "event_id": "EVT001",
+    "timestamp": "2026-09-01T10:00:01",
+    "source": "cloudwatch",
+    "event_type": "metric_alarm",
+    "service": "EC2",
+    "resource_id": "server-01",
+    "metric": "CPUUtilization",
+    "value": 95,
+    "severity": "HIGH"
+  },
+  {
+    "event_id": "EVT002",
+    "timestamp": "2026-09-01T10:00:04",
+    "source": "cloudwatch",
+    "event_type": "metric_alarm",
+    "service": "EC2",
+    "resource_id": "server-01",
+    "metric": "CPUUtilization",
+    "value": 98,
+    "severity": "HIGH"
+  },
+  {
+    "event_id": "EVT003",
+    "timestamp": "2026-09-01T10:00:08",
+    "source": "application",
+    "event_type": "latency",
+    "service": "API",
+    "resource_id": "api-01",
+    "metric": "Latency",
+    "value": 920,
+    "severity": "HIGH"
+  },
+  {
+    "event_id": "EVT004",
+    "timestamp": "2026-09-01T10:00:10",
+    "source": "application",
+    "event_type": "http_error",
+    "service": "API",
+    "resource_id": "api-01",
+    "metric": "ErrorRate",
+    "value": 45,
+    "severity": "HIGH"
+  },
+  {
+    "event_id": "EVT005",
+    "timestamp": "2026-09-01T10:00:13",
+    "source": "application",
+    "event_type": "timeout",
+    "service": "API",
+    "resource_id": "api-01",
+    "metric": null,
+    "value": null,
+    "severity": "MEDIUM"
+  }
+]

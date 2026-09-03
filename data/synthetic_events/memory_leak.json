@@ -1,0 +1,38 @@
+[
+  {
+    "event_id": "evt_301",
+    "timestamp": "2026-09-01T17:45:00Z",
+    "source": "kubernetes",
+    "event_type": "container_oom_killed",
+    "service": "Worker",
+    "resource_id": "analytics-worker-pod-7db98f",
+    "metric": "MemoryWorkingSetBytes",
+    "value": 4294967296.0,
+    "severity": "CRITICAL",
+    "metadata": {"namespace": "data-pipeline", "exit_code": 137}
+  },
+  {
+    "event_id": "evt_302",
+    "timestamp": "2026-09-01T17:45:15Z",
+    "source": "cloudwatch",
+    "event_type": "sqs_message_queue_backlog",
+    "service": "Worker",
+    "resource_id": "ingest-queue-prod",
+    "metric": "ApproximateNumberOfMessagesVisible",
+    "value": 85000.0,
+    "severity": "HIGH",
+    "metadata": {"queue_name": "data-processing-deadletter-near"}
+  },
+  {
+    "event_id": "evt_303",
+    "timestamp": "2026-09-01T17:45:30Z",
+    "source": "application",
+    "event_type": "async_job_timeout",
+    "service": "Application",
+    "resource_id": "customer-reporting-svc",
+    "metric": "JobStallDurationMinutes",
+    "value": 45.0,
+    "severity": "HIGH",
+    "metadata": {"customer_tier": "enterprise"}
+  }
+]

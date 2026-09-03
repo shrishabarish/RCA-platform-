@@ -1,0 +1,38 @@
+[
+  {
+    "event_id": "evt_201",
+    "timestamp": "2026-09-01T16:20:00Z",
+    "source": "cloudwatch",
+    "event_type": "jwks_certificate_expired",
+    "service": "Auth",
+    "resource_id": "auth0-idp-connector",
+    "metric": "CertExpiryWarning",
+    "value": 0.0,
+    "severity": "CRITICAL",
+    "metadata": {"realm": "production-oauth2", "issuer": "https://auth.internal.corp"}
+  },
+  {
+    "event_id": "evt_202",
+    "timestamp": "2026-09-01T16:20:08Z",
+    "source": "application",
+    "event_type": "token_validation_failure",
+    "service": "API",
+    "resource_id": "edge-gateway",
+    "metric": "Unauthorized401Rate",
+    "value": 98.2,
+    "severity": "HIGH",
+    "metadata": {"error": "InvalidSignatureException"}
+  },
+  {
+    "event_id": "evt_203",
+    "timestamp": "2026-09-01T16:20:20Z",
+    "source": "application",
+    "event_type": "user_session_revoked",
+    "service": "Application",
+    "resource_id": "web-dashboard",
+    "metric": "ForcedLogoutCount",
+    "value": 4500.0,
+    "severity": "HIGH",
+    "metadata": {"affected_users": 12000}
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "event_id": "evt_001",
+    "timestamp": "2026-09-01T15:00:00Z",
+    "source": "synthetic",
+    "event_type": "cpu_utilization_high",
+    "service": "EC2",
+    "resource_id": "i-0abcdef1234567890",
+    "metric": "CPUUtilization",
+    "value": 98.5,
+    "severity": "HIGH",
+    "metadata": {"region": "us-east-1", "instance_type": "t3.medium"}
+  },
+  {
+    "event_id": "evt_002",
+    "timestamp": "2026-09-01T15:00:10Z",
+    "source": "synthetic",
+    "event_type": "api_latency_high",
+    "service": "API",
+    "resource_id": "api-gateway-01",
+    "metric": "Latency",
+    "value": 2500.0,
+    "severity": "MEDIUM",
+    "metadata": {"endpoint": "/v1/users"}
+  },
+  {
+    "event_id": "evt_003",
+    "timestamp": "2026-09-01T15:00:15Z",
+    "source": "synthetic",
+    "event_type": "db_connection_timeout",
+    "service": "API",
+    "resource_id": "api-gateway-01",
+    "severity": "HIGH",
+    "metadata": {"error_code": "ETIMEDOUT"}
+  },
+  {
+    "event_id": "evt_004",
+    "timestamp": "2026-09-01T15:00:20Z",
+    "source": "synthetic",
+    "event_type": "http_500_errors",
+    "service": "Application",
+    "resource_id": "web-app-01",
+    "metric": "5xxErrorRate",
+    "value": 15.0,
+    "severity": "CRITICAL",
+    "metadata": {"path": "/dashboard"}
+  },
+  {
+    "event_id": "evt_005",
+    "timestamp": "2026-09-01T15:00:35Z",
+    "source": "synthetic",
+    "event_type": "user_checkout_failed",
+    "service": "Application",
+    "resource_id": "checkout-service",
+    "severity": "HIGH",
+    "metadata": {"impact": "revenue"}
+  }
+]
