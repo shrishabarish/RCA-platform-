@@ -87,8 +87,11 @@ class IncidentService:
             "incidents": [inc.model_dump() for inc in self.incidents.values()]
         }
 
-    def ingest_event(self, raw_event: Dict[str, Any]) -> CloudEvent:
-        event = normalize_event(raw_event)
+    def ingest_event(self, raw_event) -> CloudEvent:
+        if isinstance(raw_event, CloudEvent):
+            event = raw_event
+        else:
+            event = normalize_event(raw_event)
         self.events.append(event)
         self._recompute_incidents()
         return event

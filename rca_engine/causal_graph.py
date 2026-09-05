@@ -2,6 +2,24 @@ import networkx as nx
 from typing import List, Dict, Any, Optional, Set, Tuple
 
 
+SERVICE_ALIASES = {
+    "codereview-backend": "API",
+    "backend": "API",
+    "backend-service": "API",
+    "postgresql": "DynamoDB",
+    "postgres": "DynamoDB",
+    "database": "DynamoDB",
+    "db-primary": "DynamoDB",
+    "rds": "DynamoDB",
+    "frontend": "Application",
+    "frontend-service": "Application",
+    "ui": "Application",
+    "client": "Application",
+    "ec2-instance": "EC2",
+    "compute": "EC2"
+}
+
+
 class CausalGraphEngine:
     """
     Advanced Graph-Theoretic & Causal Inference Engine for Cloud Topologies.
@@ -12,6 +30,17 @@ class CausalGraphEngine:
     def __init__(self):
         self.graph = self._build_cloud_topology()
 
+    def resolve_service_name(self, service: str) -> str:
+        """Resolves alias service names to canonical topology node IDs."""
+        if service in self.graph:
+            return service
+        clean = service.lower().strip()
+        if clean in SERVICE_ALIASES:
+            canonical = SERVICE_ALIASES[clean]
+            if canonical in self.graph:
+                return canonical
+        return service
+
     def _build_cloud_topology(self) -> nx.DiGraph:
         """
         Constructs the cloud microservice dependency graph.
@@ -21,12 +50,12 @@ class CausalGraphEngine:
 
         # Service Nodes with rich cloud metadata
         nodes = [
-            ("EC2", {"type": "compute", "label": "EC2 Instances / Cluster", "criticality": 0.9}),
-            ("DynamoDB", {"type": "database", "label": "DynamoDB NoSQL Table", "criticality": 0.95}),
+            ("EC2", {"type": "compute", "label": "EC2 Instances / Host", "criticality": 0.9}),
+            ("DynamoDB", {"type": "database", "label": "Database / PostgreSQL / DynamoDB", "criticality": 0.95}),
             ("Auth", {"type": "auth", "label": "Authentication & OAuth2 IdP", "criticality": 0.85}),
             ("Worker", {"type": "compute", "label": "Background Worker Pods", "criticality": 0.7}),
-            ("API", {"type": "service", "label": "API Gateway / Core Service", "criticality": 0.85}),
-            ("Application", {"type": "frontend", "label": "Customer Web App & UI", "criticality": 0.6}),
+            ("API", {"type": "service", "label": "API Gateway / Backend Service", "criticality": 0.85}),
+            ("Application", {"type": "frontend", "label": "Customer Web App & Frontend UI", "criticality": 0.6}),
         ]
 
         for node_id, attrs in nodes:
@@ -34,12 +63,12 @@ class CausalGraphEngine:
 
         # Microservice Dependency Edges: [Source] depends on [Target]
         edges = [
-            ("API", "EC2"),           # API Gateway runs on EC2
-            ("API", "DynamoDB"),      # API operations query DynamoDB
+            ("API", "EC2"),           # API Backend runs on EC2
+            ("API", "DynamoDB"),      # API operations query Database (PostgreSQL / DynamoDB)
             ("API", "Auth"),          # API routes validate tokens via Auth
-            ("Worker", "DynamoDB"),   # Worker reads/writes batch jobs in DynamoDB
-            ("Worker", "EC2"),        # Worker runs on compute cluster
-            ("Application", "API"),   # Web UI communicates with API Gateway
+            ("Worker", "DynamoDB"),   # Worker reads/writes batch jobs in Database
+            ("Worker", "EC2"),        # Worker runs on compute host
+            ("Application", "API"),   # Web Frontend communicates with Backend API
             ("Application", "Worker"),# Web UI relies on async background reporting
         ]
 
@@ -53,10 +82,11 @@ class CausalGraphEngine:
         Returns all direct and indirect downstream services that depend on `service`.
         Uses reversed graph reachability (since edges point dependent -> dependency).
         """
-        if service not in self.graph:
+        svc = self.resolve_service_name(service)
+        if svc not in self.graph:
             return []
         reversed_g = self.graph.reverse()
-        descendants = nx.descendants(reversed_g, service)
+        descendants = nx.descendants(reversed_g, svc)
         return list(descendants)
 
     def get_direct_dependents(self, service: str) -> List[str]:
@@ -64,9 +94,10 @@ class CausalGraphEngine:
         Returns services that directly depend on `service`.
         In NetworkX, predecessors of `service` are nodes that point TO `service`.
         """
-        if service not in self.graph:
+        svc = self.resolve_service_name(service)
+        if svc not in self.graph:
             return []
-        return list(self.graph.predecessors(service))
+        return list(self.graph.predecessors(svc))
 
     def find_causal_paths(self, root_candidate: str, affected_service: str) -> List[List[str]]:
         """

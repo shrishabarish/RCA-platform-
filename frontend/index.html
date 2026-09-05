@@ -3,355 +3,1149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudLens | Find out why something broke, in seconds</title>
+    <title>Incident Analysis | RCA Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ============================================================
+           Lovable-Exact Light Theme for RCA Platform
+           ============================================================ */
+        :root {
+            --bg-page: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --bg-subtle: #F1F5F9;
+            --border: #E2E8F0;
+            --border-strong: #CBD5E1;
+            
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-light: #94A3B8;
+
+            --indigo: #4F46E5;
+            --indigo-hover: #4338CA;
+            --indigo-tint: #EEF2FF;
+            
+            --emerald: #059669;
+            --emerald-tint: #ECFDF5;
+            --emerald-border: #A7F3D0;
+
+            --red: #DC2626;
+            --red-bright: #EF4444;
+            --red-tint: #FEF2F2;
+            --red-border: #FECACA;
+
+            --amber: #D97706;
+            --amber-tint: #FFFBEB;
+            --amber-border: #FDE68A;
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Header */
+        .app-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--indigo-tint);
+            border: 1px solid #C7D2FE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-divider {
+            color: var(--border-strong);
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .brand-console {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: var(--emerald-tint);
+            border: 1px solid var(--emerald-border);
+            color: var(--emerald);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--emerald);
+        }
+
+        .on-call-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-md);
+        }
+
+        .on-call-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            background: #E2E8F0;
+            color: #475569;
+            padding: 0.12rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .on-call-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .on-call-info strong {
+            font-size: 0.78rem;
+            color: var(--text-heading);
+        }
+
+        .on-call-info small {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.95rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: var(--indigo);
+            color: #FFFFFF;
+        }
+        .btn-primary:hover {
+            background: var(--indigo-hover);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border-color: var(--border);
+        }
+        .btn-ghost:hover {
+            background: var(--bg-subtle);
+            color: var(--text-heading);
+        }
+
+        .btn-success {
+            background: var(--emerald);
+            color: #FFFFFF;
+            font-weight: 700;
+        }
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        /* Main Container */
+        .page-container {
+            max-width: 1320px;
+            margin: 1.5rem auto 3.5rem;
+            padding: 0 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Headline & Stepper */
+        .page-heading-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .heading-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .incident-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .incident-type-tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: var(--indigo);
+            text-transform: uppercase;
+        }
+
+        .status-tag-open {
+            font-size: 0.68rem;
+            font-weight: 700;
+            background: var(--red-tint);
+            color: var(--red);
+            border: 1px solid var(--red-border);
+            padding: 0.12rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        .incident-main-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.025em;
+        }
+
+        .incident-sub-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .incident-sub-title code {
+            font-family: var(--font-mono);
+            background: var(--bg-subtle);
+            padding: 0.12rem 0.4rem;
+            border-radius: 4px;
+            color: var(--text-heading);
+            font-size: 0.8rem;
+        }
+
+        .lifecycle-stepper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        }
+
+        .stepper-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .stepper-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-strong);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stepper-labels {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .stepper-labels strong {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .stepper-labels span {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .stepper-item.is-active .stepper-circle {
+            background: var(--indigo);
+            border-color: var(--indigo);
+            color: #FFFFFF;
+        }
+
+        .stepper-item.is-active .stepper-labels strong {
+            color: var(--text-heading);
+        }
+
+        .stepper-item.is-done .stepper-circle {
+            background: var(--emerald);
+            border-color: var(--emerald);
+            color: #FFFFFF;
+        }
+
+        .stepper-divider {
+            width: 20px;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.15rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+
+        .kpi-card-highlight {
+            border-color: var(--red-border);
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--red-tint) 100%);
+        }
+
+        .kpi-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .kpi-number-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .kpi-big-num {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-badge-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .kpi-badge-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #FEE2E2;
+            color: var(--red);
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        .text-danger { color: var(--red); }
+        .text-success { color: var(--emerald); }
+
+        /* Main Workspace */
+        .main-workspace-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 1.35rem;
+            align-items: start;
+        }
+
+        .card-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.35rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .panel-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .panel-heading {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
+        }
+
+        .panel-subtext {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+            display: block;
+        }
+
+        .graph-legend-pills {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .dot-red { background: var(--red-bright); box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+        .dot-amber { background: var(--amber); }
+        .dot-green { background: var(--emerald); }
+
+        .graph-canvas-wrap {
+            background: #FAFAFA;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 0.65rem;
+        }
+
+        .topology-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .node-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .node-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .node-bg {
+            fill: #FFFFFF;
+            stroke: var(--border-strong);
+            stroke-width: 1.5;
+            rx: 8;
+            ry: 8;
+            filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.05));
+            transition: all 0.2s ease;
+        }
+
+        .node-root-cause .node-bg {
+            stroke: var(--red-bright) !important;
+            stroke-width: 2.2 !important;
+            fill: var(--red-tint) !important;
+            filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.55)) !important;
+        }
+
+        .node-degraded .node-bg {
+            stroke: var(--amber) !important;
+            stroke-width: 1.8 !important;
+            fill: var(--amber-tint) !important;
+        }
+
+        .node-healthy .node-bg {
+            stroke: var(--emerald);
+            stroke-width: 1.4;
+            fill: #FFFFFF;
+        }
+
+        .node-text-title {
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 700;
+            fill: var(--text-heading);
+        }
+
+        .node-text-desc {
+            font-family: var(--font-sans);
+            font-size: 10px;
+            font-weight: 500;
+            fill: var(--text-muted);
+        }
+
+        .node-text-tag {
+            font-family: var(--font-sans);
+            font-size: 8.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .edge-path {
+            stroke: var(--border-strong);
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        .edge-path-animated {
+            stroke: #94A3B8;
+            stroke-dasharray: 5, 5;
+            animation: dashLoop 20s linear infinite;
+        }
+
+        @keyframes dashLoop {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        .edge-path-root {
+            stroke: var(--red-bright) !important;
+            stroke-width: 2.5 !important;
+            stroke-dasharray: 6, 4 !important;
+            animation: dashLoop 8s linear infinite !important;
+        }
+
+        .selected-service-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 0.95rem 1.15rem;
+            font-size: 0.8rem;
+        }
+
+        .selected-service-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+
+        .inspector-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .risk-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: var(--amber-tint);
+            color: var(--amber);
+            border: 1px solid var(--amber-border);
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .inspector-body {
+            color: var(--text-body);
+            line-height: 1.45;
+        }
+
+        /* Right Column Stack */
+        .right-column-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.35rem;
+        }
+
+        .diagnosis-hero-box {
+            background: linear-gradient(135deg, var(--red-tint) 0%, #FFFFFF 100%);
+            border: 1.5px solid var(--red-border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .diagnosis-top-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .eyebrow-tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: var(--red);
+        }
+
+        .confidence-tag {
+            font-size: 0.74rem;
+            font-weight: 800;
+            background: #FEE2E2;
+            color: var(--red);
+            padding: 0.15rem 0.55rem;
+            border-radius: 9999px;
+        }
+
+        .badge-severity {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            background: var(--red-tint);
+            color: var(--red);
+            border: 1px solid var(--red-border);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .diagnosis-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .diagnosis-resource-tag {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .diagnosis-desc {
+            font-size: 0.82rem;
+            color: var(--text-body);
+            line-height: 1.5;
+        }
+
+        .evidence-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .evidence-heading {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .evidence-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .evidence-bar-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .evidence-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-body);
+        }
+
+        .evidence-track {
+            width: 100%;
+            height: 7px;
+            background: var(--bg-subtle);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .evidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--indigo) 0%, #6366F1 100%);
+            border-radius: 9999px;
+        }
+
+        .reasoning-list {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1.05rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            color: var(--text-body);
+        }
+
+        .reasoning-item {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .reasoning-num {
+            font-weight: 700;
+            color: var(--indigo);
+        }
+
+        .time-estimate-pill {
+            font-size: 0.74rem;
+            font-weight: 600;
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+        }
+
+        .code-terminal-box {
+            background: #0F172A;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+        }
+
+        .code-terminal-header {
+            background: #1E293B;
+            padding: 0.4rem 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid #334155;
+            color: var(--text-light);
+            border-radius: 4px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: var(--font-mono);
+        }
+        .btn-copy:hover {
+            background: #334155;
+            color: #FFFFFF;
+        }
+
+        .code-terminal-box pre {
+            padding: 0.85rem 1.05rem;
+            margin: 0;
+            overflow-x: auto;
+        }
+
+        .code-terminal-box code {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            color: #38BDF8;
+            line-height: 1.5;
+        }
+
+        .fix-action-row {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .fix-status-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--emerald);
+        }
+
+        /* Timeline */
+        .badge-count {
+            font-size: 0.74rem;
+            font-weight: 700;
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .timeline-item-row {
+            background: #FAFAFA;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--indigo);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .timeline-item-row.is-critical {
+            border-left-color: var(--red-bright);
+            background: var(--red-tint);
+        }
+
+        .timeline-item-row.is-high {
+            border-left-color: var(--amber);
+            background: var(--amber-tint);
+        }
+
+        .timeline-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .timeline-source-pill {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .timeline-time-str {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .timeline-empty-msg {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 1100px) {
+            .main-workspace-grid {
+                grid-template-columns: 1fr;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Top Navigation -->
+    <!-- Top Global Header -->
     <header class="app-header">
-        <div class="brand-container">
-            <div class="brand-logo">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="9" stroke="#4338CA" stroke-width="2.5" />
-                    <path d="M12 3v9l6 3" stroke="#4338CA" stroke-width="2" stroke-linecap="round" />
-                    <circle cx="12" cy="12" r="2.5" fill="#DC2626" />
+        <div class="header-left">
+            <div class="logo-mark">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="9" stroke="#4F46E5" />
+                    <path d="M12 7v5l3 3" stroke="#4F46E5" stroke-linecap="round" />
+                    <circle cx="12" cy="12" r="2.5" fill="#EF4444" />
                 </svg>
             </div>
-            <div>
-                <h1 class="brand-title">CloudLens</h1>
-                <p class="brand-subtitle">Point at what broke — get the cause, the evidence, and a fix.</p>
+            <div class="brand-text">
+                <span class="brand-name">RCA Platform</span>
+                <span class="brand-divider">/</span>
+                <span class="brand-console">RCA console</span>
             </div>
         </div>
 
-        <!-- Simulation Selector & Actions -->
-        <div class="header-controls">
-            <span id="awsStatusBadge" class="badge badge-subtle">Checking AWS...</span>
-
-            <button id="btnPollAws" class="btn btn-outline" title="Pull the latest CloudWatch/CloudTrail signal">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-                Check live AWS
-            </button>
-
-            <div class="scenario-picker">
-                <label for="scenarioSelect">Try a scenario:</label>
-                <select id="scenarioSelect" class="styled-select">
-                    <option value="cascade">Server overload takes the site down</option>
-                    <option value="db_exhaustion">Database runs out of connections</option>
-                    <option value="auth_outage">Login stops working (certificate expired)</option>
-                    <option value="memory_leak">Background worker keeps crashing</option>
-                </select>
+        <div class="header-right">
+            <div id="awsStatusPill" class="status-pill">
+                <span class="status-dot"></span>
+                <span>AWS Connected (eu-north-1)</span>
             </div>
 
-            <button id="btnSimulate" class="btn btn-primary" title="Run the selected scenario">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Run scenario
+            <div class="on-call-badge">
+                <span class="on-call-tag">ON CALL</span>
+                <div class="on-call-info">
+                    <strong>SRE Team</strong>
+                    <small>Active monitoring</small>
+                </div>
+            </div>
+
+            <button id="btnPollAws" class="btn btn-primary" title="Poll latest CloudWatch alarms">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+                Sync AWS
             </button>
 
-            <button id="btnCustomEvent" class="btn btn-outline">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                Send my own event
+            <button id="btnReset" class="btn btn-ghost" title="Reset incident data">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset
             </button>
-
-            <button id="btnReset" class="btn btn-secondary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                Start over
-            </button>
-
-            <a href="/docs" target="_blank" class="btn btn-docs" title="Open the API reference">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                API docs
-            </a>
         </div>
     </header>
 
-    <!-- Guided workflow -->
-    <nav class="workflow-strip" aria-label="Workflow steps">
-        <div class="workflow-step is-active" id="workflowStep1">
-            <span class="step-num">1</span>
-            <span class="step-copy"><strong>Cause something to break</strong><span>Run a scenario or send an event</span></span>
-        </div>
-        <div class="workflow-step" id="workflowStep2">
-            <span class="step-num">2</span>
-            <span class="step-copy"><strong>See what happened</strong><span>Cause, evidence, and what it affected</span></span>
-        </div>
-        <div class="workflow-step" id="workflowStep3">
-            <span class="step-num">3</span>
-            <span class="step-copy"><strong>Apply the fix</strong><span>Review the suggested remediation and run it</span></span>
-        </div>
-    </nav>
-
-    <!-- KPI & Telemetry Bar -->
-    <section class="telemetry-bar">
-        <div class="kpi-card">
-            <div class="kpi-icon icon-cyan">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-label">Events seen</span>
-                <span id="kpiEventCount" class="kpi-val">0</span>
-            </div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-icon icon-rose">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-label">Incidents found</span>
-                <span id="kpiIncidentCount" class="kpi-val">0</span>
-            </div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-icon icon-amber">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-label">Most likely cause</span>
-                <span id="kpiRootCause" class="kpi-val">-</span>
-            </div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-icon icon-emerald">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="kpi-content">
-                <span class="kpi-label">Time saved vs. manual digging</span>
-                <span class="kpi-val text-emerald">78% <small>faster</small></span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Dashboard Workspace -->
-    <main class="dashboard-grid">
-        <!-- Panel 1: Topology & Dependency Graph -->
-        <section class="panel panel-topology">
-            <div class="panel-header">
-                <div class="panel-title-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="2" width="6" height="6" rx="1"/><rect x="9" y="16" width="6" height="6" rx="1"/><path d="M5 8v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><line x1="12" y1="13" x2="12" y2="16"/></svg>
-                    <h2>How your services connect</h2>
+    <!-- Main Container -->
+    <div class="page-container">
+        
+        <!-- Incident Headline & Lifecycle Stepper -->
+        <section class="page-heading-section">
+            <div class="heading-left">
+                <div class="incident-badge-row">
+                    <span class="incident-type-tag">INCIDENT ANALYSIS</span>
+                    <span id="incidentStatusTag" class="status-tag-open">OPEN ANOMALY</span>
                 </div>
-                <div class="topology-legend">
-                    <span class="legend-item"><span class="dot dot-root"></span> Root cause</span>
-                    <span class="legend-item"><span class="dot dot-degraded"></span> Degraded</span>
-                    <span class="legend-item"><span class="dot dot-healthy"></span> Healthy</span>
+                <h1 id="incidentTitle" class="incident-main-title">EC2 Overload & Cascading 500 Failure</h1>
+                <p id="incidentSubtitle" class="incident-sub-title">Live AWS telemetry anomaly detected on instance <code id="incidentResourceId">i-0d790207a3f0070fd</code> in region <code id="incidentRegion">eu-north-1</code>.</p>
+            </div>
+
+            <div class="lifecycle-stepper">
+                <div class="stepper-item is-done" id="step1">
+                    <div class="stepper-circle">✓</div>
+                    <div class="stepper-labels">
+                        <strong>Collect</strong>
+                        <span>Events normalized</span>
+                    </div>
+                </div>
+                <div class="stepper-divider"></div>
+                <div class="stepper-item is-active" id="step2">
+                    <div class="stepper-circle">2</div>
+                    <div class="stepper-labels">
+                        <strong>Analyze</strong>
+                        <span>Cause & impact</span>
+                    </div>
+                </div>
+                <div class="stepper-divider"></div>
+                <div class="stepper-item" id="step3">
+                    <div class="stepper-circle">3</div>
+                    <div class="stepper-labels">
+                        <strong>Remediate</strong>
+                        <span>Review suggested fix</span>
+                    </div>
                 </div>
             </div>
-            <div class="panel-body topology-body">
-                <div id="topologyCanvasContainer" class="topology-canvas-container">
-                    <svg id="topologySvg" class="topology-svg" viewBox="0 0 700 480">
-                        <!-- SVG elements injected dynamically by JS -->
+        </section>
+
+        <!-- KPI Metrics Grid (4 Cards) -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Events seen</span>
+                <div class="kpi-number-row">
+                    <span id="kpiEventCount" class="kpi-big-num">0</span>
+                    <span class="kpi-badge-sub">within 60s</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-title">Incidents</span>
+                <div class="kpi-number-row">
+                    <span id="kpiIncidentCount" class="kpi-big-num">0</span>
+                    <span class="kpi-badge-sub">correlated</span>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-card-highlight">
+                <span class="kpi-title">Likely cause</span>
+                <div class="kpi-number-row">
+                    <span id="kpiRootCause" class="kpi-big-num text-danger">Healthy</span>
+                    <span id="kpiConfidenceBadge" class="kpi-badge-pill">0% confidence</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-title">Blast radius</span>
+                <div class="kpi-number-row">
+                    <span id="kpiBlastCount" class="kpi-big-num">1</span>
+                    <span class="kpi-badge-sub">of 6 services</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace (2-Column Grid) -->
+        <main class="main-workspace-grid">
+            
+            <!-- Left Panel: Dependency Graph -->
+            <section class="card-panel graph-panel">
+                <div class="panel-header-row">
+                    <div>
+                        <h2 class="panel-heading">Dependency graph</h2>
+                        <span class="panel-subtext">Arrow direction: service depends on target</span>
+                    </div>
+                    <div class="graph-legend-pills">
+                        <span class="legend-pill"><span class="dot dot-red"></span> Root cause</span>
+                        <span class="legend-pill"><span class="dot dot-amber"></span> Degraded</span>
+                        <span class="legend-pill"><span class="dot dot-green"></span> Healthy</span>
+                    </div>
+                </div>
+
+                <div class="graph-canvas-wrap">
+                    <svg id="topologySvg" class="topology-svg" viewBox="0 0 620 380">
+                        <!-- Rendered by app.js -->
                     </svg>
                 </div>
 
-                <!-- What-If Predictive Failure Simulator Box -->
-                <div class="what-if-box">
-                    <div class="what-if-header">
-                        <span class="what-if-title">What happens if this fails? Click a service to find out.</span>
-                        <span id="whatIfRiskBadge" class="badge badge-high">Risk: 96/100</span>
+                <!-- Selected Service Inspector -->
+                <div class="selected-service-card" id="selectedServiceCard">
+                    <div class="selected-service-header">
+                        <span class="inspector-label">SELECTED SERVICE</span>
+                        <span id="inspectorRiskTag" class="risk-tag">Risk Score: 78/100</span>
                     </div>
-                    <div class="what-if-content" id="whatIfContent">
-                        Select a service above to see what else would be affected.
+                    <div id="inspectorContent" class="inspector-body">
+                        Click any service node above to inspect its upstream dependencies and downstream blast impact.
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Panel 2: RCA Analysis & Explanatory Breakdown Cockpit -->
-        <section class="panel panel-rca">
-            <div class="panel-header">
-                <div class="panel-title-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    <h2>What's causing this?</h2>
+            <!-- Right Panel: Diagnosis & Suggested Fix -->
+            <section class="right-column-stack">
+                
+                <!-- What's Causing This? Card -->
+                <div class="card-panel diagnosis-panel">
+                    <div class="panel-header-row">
+                        <h2 class="panel-heading">What’s causing this?</h2>
+                        <span id="diagnosisSeverityTag" class="badge-severity">HIGH SEVERITY</span>
+                    </div>
+
+                    <div class="diagnosis-hero-box">
+                        <div class="diagnosis-top-line">
+                            <span class="eyebrow-tag">MOST LIKELY CAUSE</span>
+                            <span id="diagnosisConfidenceTag" class="confidence-tag">78% CONFIDENCE</span>
+                        </div>
+                        <h3 id="diagnosisCauseTitle" class="diagnosis-title">EC2 Overload</h3>
+                        <div id="diagnosisResourceId" class="diagnosis-resource-tag">i-0d790207a3f0070fd</div>
+                        <p id="diagnosisExplanation" class="diagnosis-desc">
+                            The compute host crossed its CPU threshold first, then degraded the API, worker, and application chain.
+                        </p>
+                    </div>
+
+                    <!-- Evidence Breakdown Section -->
+                    <div class="evidence-section">
+                        <h4 class="evidence-heading">Evidence & Scoring Breakdown</h4>
+                        <div class="evidence-bars" id="scoringBars">
+                            <!-- Injected by app.js -->
+                        </div>
+                    </div>
+
+                    <!-- Step-by-Step Reasoning -->
+                    <div class="reasoning-list" id="reasoningList">
+                        <!-- Injected by app.js -->
+                    </div>
                 </div>
-                <span id="incidentSeverityBadge" class="badge badge-critical">CRITICAL</span>
-            </div>
-            <div class="panel-body rca-body">
-                <!-- Root Cause Highlight Card -->
-                <div class="root-cause-hero-card">
-                    <div class="root-cause-header">
+
+                <!-- Suggested Fix Card -->
+                <div class="card-panel fix-panel">
+                    <div class="panel-header-row">
                         <div>
-                            <span class="subtext">MOST LIKELY CAUSE</span>
-                            <h3 id="rcaServiceName" class="rca-target-service">Analyzing...</h3>
-                            <span id="compoundIncidentBadge" class="badge badge-medium" style="display:none; margin-top:0.4rem;">Multiple causes involved</span>
+                            <h2 class="panel-heading">Suggested fix</h2>
+                            <span class="panel-subtext">Scale worker capacity & reboot overloaded instance</span>
                         </div>
-                        <div class="confidence-dial">
-                            <svg viewBox="0 0 36 36" class="circular-chart">
-                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path id="confidenceCirclePath" class="circle" stroke-dasharray="98, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <text id="confidenceText" x="18" y="20.35" class="percentage">98%</text>
-                            </svg>
-                            <span class="confidence-caption">How sure we are</span>
+                        <span class="time-estimate-pill">~3 min to resolve</span>
+                    </div>
+
+                    <div class="code-terminal-box">
+                        <div class="code-terminal-header">
+                            <span class="terminal-label">AWS CLI Runbook</span>
+                            <button id="btnCopyCommand" class="btn-copy">Copy</button>
                         </div>
+                        <pre><code id="remediationCommand">aws autoscaling set-desired-capacity --auto-scaling-group-name prod-web-asg --desired-capacity 6
+aws ec2 reboot-instances --instance-ids i-0d790207a3f0070fd
+aws cloudwatch set-alarm-state --alarm-name Cpu-Utilizations-RCA --state-value OK</code></pre>
                     </div>
 
-                    <div id="contributingCausesRow" class="affected-services-row" style="display:none;"></div>
-
-                    <div class="affected-services-row">
-                        <span class="subtext">Also affected:</span>
-                        <div id="affectedServicesBadges" class="badges-row">
-                            <span class="badge badge-subtle">API</span>
-                            <span class="badge badge-subtle">Application</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Causal Propagation Paths -->
-                <div class="causal-paths-section">
-                    <h4 class="section-title">How the failure spread</h4>
-                    <div id="causalPathsContainer" class="causal-paths-container">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Multi-factor Explainable Score Breakdown -->
-                <div class="rca-breakdown-section">
-                    <h4 class="section-title">Why we think this is the cause</h4>
-                    <div class="scoring-bars-container" id="scoringBars">
-                        <!-- Bars injected dynamically -->
-                    </div>
-                </div>
-
-                <!-- Mathematical Reasoning Chain & Audit Trail -->
-                <div class="reasoning-chain-section">
-                    <h4 class="section-title">Step-by-step reasoning</h4>
-                    <div id="reasoningChainBox" class="reasoning-chain-box">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Candidate Ranking Table -->
-                <div class="candidate-ranking-section">
-                    <h4 class="section-title">Other causes we considered</h4>
-                    <div class="table-responsive">
-                        <table class="candidate-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Service</th>
-                                    <th>Timing</th>
-                                    <th>Connections</th>
-                                    <th>Impact</th>
-                                    <th>Score</th>
-                                </tr>
-                            </thead>
-                            <tbody id="candidateTableBody">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Automated Cloud Runbook & Remediation -->
-                <div class="remediation-card" id="remediationCard">
-                    <div class="remediation-header">
-                        <div class="remediation-title-group">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                            <h4>Suggested fix</h4>
-                        </div>
-                        <span id="remediationTypeBadge" class="badge badge-heal">AUTO_HEAL</span>
-                    </div>
-                    <p id="remediationDesc" class="remediation-text">Working out the best fix to recommend...</p>
-                    <span id="remediationMttrChip" class="badge badge-subtle" style="display:none; margin-bottom:0.75rem;"></span>
-                    <div id="remediationSafetyChecks" class="safety-checks-box" style="display:none;"></div>
-
-                    <div class="terminal-box">
-                        <div class="terminal-bar-top">
-                            <span class="term-dot dot-r"></span>
-                            <span class="term-dot dot-y"></span>
-                            <span class="term-dot dot-g"></span>
-                            <span class="term-title">Command this will run</span>
-                        </div>
-                        <pre><code id="remediationCommand">aws autoscaling set-desired-capacity --auto-scaling-group-name prod-web-asg --desired-capacity 6</code></pre>
-                    </div>
-
-                    <div class="remediation-actions">
-                        <button id="btnExecuteMitigation" class="btn btn-heal">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <div class="fix-action-row">
+                        <button id="btnApplyFix" class="btn btn-success">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                             Apply this fix
                         </button>
-                        <span id="mitigationStatus" class="mitigation-status-msg"></span>
+                        <span id="fixStatusMsg" class="fix-status-text"></span>
                     </div>
                 </div>
+            </section>
+        </main>
+
+        <!-- Bottom Panel: Incident Timeline -->
+        <section class="card-panel timeline-panel">
+            <div class="panel-header-row">
+                <div>
+                    <h2 class="panel-heading">Incident timeline</h2>
+                    <span class="panel-subtext">Correlated in a 60-second window</span>
+                </div>
+                <span id="timelineEventCount" class="badge-count">0 events recorded</span>
+            </div>
+
+            <div class="timeline-list" id="timelineList">
+                <div class="timeline-empty-msg">No active anomaly events recorded yet. Trigger a fault in AWS to see live telemetry.</div>
             </div>
         </section>
-
-        <!-- Panel 3: Chronological Event Cascade Stream -->
-        <section class="panel panel-events">
-            <div class="panel-header">
-                <div class="panel-title-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    <h2>Timeline of what happened</h2>
-                </div>
-                <span id="eventCountBadge" class="badge badge-count">5 events</span>
-            </div>
-            <div class="panel-body events-timeline-body">
-                <div id="timelineContainer" class="timeline-container">
-                    <!-- Events rendered dynamically -->
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Custom Event Injection Modal -->
-    <div id="customEventModal" class="modal-backdrop hidden">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3>Send a custom event</h3>
-                <button id="btnCloseModal" class="btn-close" aria-label="Close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="customEventForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="inpService">Service:</label>
-                            <select id="inpService" class="styled-input">
-                                <option value="EC2">EC2 (Compute)</option>
-                                <option value="DynamoDB">DynamoDB (Database)</option>
-                                <option value="Auth">Auth (Security)</option>
-                                <option value="Worker">Worker (Background queue)</option>
-                                <option value="API">API (Gateway)</option>
-                                <option value="Application">Application (Frontend)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="inpSeverity">Severity:</label>
-                            <select id="inpSeverity" class="styled-input">
-                                <option value="CRITICAL">Critical</option>
-                                <option value="HIGH" selected>High</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="LOW">Low</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="inpEventType">Event type:</label>
-                            <input type="text" id="inpEventType" class="styled-input" value="custom_metric_anomaly" maxlength="80" required />
-                        </div>
-                        <div class="form-group">
-                            <label for="inpResourceId">Resource ID:</label>
-                            <input type="text" id="inpResourceId" class="styled-input" value="res-node-09" maxlength="80" required />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="inpMetric">Metric name:</label>
-                            <input type="text" id="inpMetric" class="styled-input" value="ErrorRate" maxlength="60" />
-                        </div>
-                        <div class="form-group">
-                            <label for="inpValue">Metric value:</label>
-                            <input type="number" id="inpValue" class="styled-input" value="89.5" step="0.1" />
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">Send event</button>
-                </form>
-            </div>
-        </div>
     </div>
 
     <!-- Scripts -->

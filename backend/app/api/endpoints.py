@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 from typing import List, Dict, Any, Optional
 from backend.app.models.event import (
     CloudEvent,
@@ -8,9 +8,14 @@ from backend.app.models.event import (
 )
 from backend.app.services.incident_service import incident_service
 from rca_engine.causal_graph import causal_graph_engine
+from rca_engine.analyzer import analyze_incident as run_rca_analysis
 from event_processor.aws_collector import aws_collector
+from event_processor.normalizer import normalize_external_webhook
 
 router = APIRouter()
+
+# In-memory log of external webhook events for debugging
+_webhook_event_log: List[Dict[str, Any]] = []
 
 
 @router.get("/health", tags=["System"])
@@ -62,7 +67,92 @@ def poll_live_aws_alarms() -> Dict[str, Any]:
 
 
 # ==========================================
-# 2. SCENARIO SIMULATION & TOPOLOGY
+# 2. EXTERNAL APP WEBHOOK (Live Telemetry)
+# ==========================================
+
+@router.post("/events/webhook", tags=["External Webhook"])
+async def receive_external_webhook(request: Request) -> Dict[str, Any]:
+    """
+    Receives structured JSON error logs from external applications
+    (e.g. AWS failure code-review-backend's structuredLogger).
+    Normalizes them into CloudEvents and feeds into the RCA pipeline.
+    """
+    try:
+        raw_log = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    # Skip non-error logs (INFO level HTTP requests, etc.)
+    level = raw_log.get("level", "INFO").upper()
+    event_name = raw_log.get("event", "")
+    details = raw_log.get("details", {})
+    status_code = details.get("statusCode", 200) if isinstance(details, dict) else 200
+
+    # Only process ERROR/CRITICAL/WARN events, or HTTP 500+ responses
+    is_actionable = level in ("ERROR", "CRITICAL", "WARN") or status_code >= 500
+    if not is_actionable:
+        return {
+            "status": "skipped",
+            "reason": f"Non-error log (level={level}, statusCode={status_code})",
+            "message": "Only ERROR/CRITICAL/WARN events are processed by the RCA engine."
+        }
+
+    # Normalize external log -> CloudEvent
+    try:
+        cloud_event = normalize_external_webhook(raw_log)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Failed to normalize webhook payload: {e}")
+
+    # Ingest into incident pipeline
+    incident_service.ingest_event(cloud_event)
+
+    # Log for debugging
+    _webhook_event_log.append({
+        "received_at": cloud_event.timestamp.isoformat(),
+        "source_app": raw_log.get("service", "unknown"),
+        "event": event_name,
+        "mapped_service": cloud_event.service,
+        "severity": cloud_event.severity,
+        "correlation_id": raw_log.get("correlation_id", "")
+    })
+
+    # Return current RCA state
+    incidents = incident_service.get_all_incidents()
+    latest_analysis = None
+    if incidents:
+        latest = incidents[-1]
+        try:
+            latest_analysis = run_rca_analysis(latest)
+        except Exception:
+            latest_analysis = None
+
+    return {
+        "status": "ingested",
+        "event_id": cloud_event.event_id,
+        "mapped_service": cloud_event.service,
+        "mapped_event_type": cloud_event.event_type,
+        "severity": cloud_event.severity,
+        "total_events": len(incident_service.get_all_events()),
+        "active_incidents": len(incidents),
+        "latest_rca": {
+            "root_cause": latest_analysis.get("probable_root_cause") if latest_analysis else None,
+            "confidence": latest_analysis.get("confidence") if latest_analysis else None,
+            "affected_services": latest_analysis.get("affected_services") if latest_analysis else [],
+        } if latest_analysis else None
+    }
+
+
+@router.get("/events/webhook/log", tags=["External Webhook"])
+def get_webhook_event_log() -> Dict[str, Any]:
+    """Returns the log of all external webhook events received (for debugging)."""
+    return {
+        "total_received": len(_webhook_event_log),
+        "events": _webhook_event_log[-50:]  # Last 50 events
+    }
+
+
+# ==========================================
+# 3. SCENARIO SIMULATION & TOPOLOGY
 # ==========================================
 
 @router.get("/scenarios", tags=["Simulation"])
