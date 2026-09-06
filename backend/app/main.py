@@ -4,6 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from backend.app.api.endpoints import router as api_router
+from backend.app.db.database import engine, Base
+import backend.app.db.models  # Import models to register them
+
+# Create tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Autonomous Cloud RCA & Incident Correlation Platform",
@@ -29,14 +34,7 @@ app.include_router(api_router, prefix="/api")
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 if frontend_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
-
-    @app.get("/", include_in_schema=False)
-    async def serve_index():
-        index_file = frontend_dir / "index.html"
-        if index_file.exists():
-            return FileResponse(str(index_file))
-        return {"message": "Frontend static file index.html not found"}
+    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
 if __name__ == "__main__":

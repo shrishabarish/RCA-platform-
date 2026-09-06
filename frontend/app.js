@@ -1,12 +1,37 @@
-// RCA Platform — Controller matching https://root-cause-light.lovable.app/
+// CloudLens RCA Platform — Advanced Autonomous Controller
+// Supports Light/Dark Mode, Visual Blast Radius, Hover Diagnostics, SRE Voice Briefing,
+// Custom Fault Injection, Zero-Event Clean State, Timeline Filtering & Auto-Refresh.
 
-const API_BASE = "/api";
+const API_BASE = (window.location.port === "5173" || window.location.protocol === "file:") 
+    ? "http://127.0.0.1:8000/api" 
+    : "/api";
 
-// State
+// Application State
 let currentIncident = null;
 let currentIncidentDetail = null;
 let currentTopology = null;
 let allEvents = [];
+let availableScenarios = [];
+let activeScenarioId = "cascade";
+let selectedNodeId = null;
+
+// Real-Time Auto Sync
+let autoSyncTimer = null;
+let isAutoSyncEnabled = false;
+
+window.showApiError = function(msg = "Cannot connect to backend server. Make sure it's running!") {
+    const toast = document.getElementById("apiErrorToast");
+    const toastText = document.getElementById("apiErrorText");
+    if (toast && toastText) {
+        toastText.textContent = msg;
+        toast.style.display = "flex";
+        setTimeout(() => { toast.style.display = "none"; }, 5000);
+    }
+    console.error("API Error:", msg);
+};
+
+// Speech Synthesis State
+let isSpeaking = false;
 
 // Node Positions for Clean Topology Rendering
 const NODE_POSITIONS = {
@@ -16,6 +41,13 @@ const NODE_POSITIONS = {
     "Worker": { x: 310, y: 290, icon: "⚙️", title: "Worker Pods", desc: "Background Queue" },
     "API": { x: 310, y: 140, icon: "🌐", title: "API Gateway", desc: "Core Backend" },
     "Application": { x: 510, y: 200, icon: "💻", title: "Web App UI", desc: "Frontend Client" }
+};
+
+const SCENARIO_ICONS = {
+    "cascade": "🖥️",
+    "db_exhaustion": "🗄️",
+    "auth_outage": "🔐",
+    "memory_leak": "⚙️"
 };
 
 function escapeHtml(value) {
@@ -31,11 +63,22 @@ const btnReset = document.getElementById("btnReset");
 const btnCopyCommand = document.getElementById("btnCopyCommand");
 const btnApplyFix = document.getElementById("btnApplyFix");
 const fixStatusMsg = document.getElementById("fixStatusMsg");
+const fixActionTypeBadge = document.getElementById("fixActionTypeBadge");
+const fixActionSubtitle = document.getElementById("fixActionSubtitle");
+const fixEstimatedTime = document.getElementById("fixEstimatedTime");
+const safetyChecksBox = document.getElementById("safetyChecksBox");
+const safetyChecksList = document.getElementById("safetyChecksList");
+
+const scenarioSelector = document.getElementById("scenarioSelector");
+const btnOpenFaultModal = document.getElementById("btnOpenFaultModal");
+const btnCleanState = document.getElementById("btnCleanState");
 
 const incidentTitle = document.getElementById("incidentTitle");
 const incidentSubtitle = document.getElementById("incidentSubtitle");
 const incidentResourceId = document.getElementById("incidentResourceId");
+const incidentRegion = document.getElementById("incidentRegion");
 const incidentStatusTag = document.getElementById("incidentStatusTag");
+const incidentCompoundBadge = document.getElementById("incidentCompoundBadge");
 
 const kpiEventCount = document.getElementById("kpiEventCount");
 const kpiIncidentCount = document.getElementById("kpiIncidentCount");
@@ -47,31 +90,87 @@ const topologySvg = document.getElementById("topologySvg");
 const selectedServiceCard = document.getElementById("selectedServiceCard");
 const inspectorRiskTag = document.getElementById("inspectorRiskTag");
 const inspectorContent = document.getElementById("inspectorContent");
+const graphNodeTooltip = document.getElementById("graphNodeTooltip");
 
 const diagnosisCauseTitle = document.getElementById("diagnosisCauseTitle");
 const diagnosisResourceId = document.getElementById("diagnosisResourceId");
 const diagnosisConfidenceTag = document.getElementById("diagnosisConfidenceTag");
 const diagnosisExplanation = document.getElementById("diagnosisExplanation");
 const diagnosisSeverityTag = document.getElementById("diagnosisSeverityTag");
+const causalPathsSection = document.getElementById("causalPathsSection");
+const causalPathsList = document.getElementById("causalPathsList");
 const scoringBars = document.getElementById("scoringBars");
+const candidateRankingSection = document.getElementById("candidateRankingSection");
+const candidateRankingBody = document.getElementById("candidateRankingBody");
 const reasoningList = document.getElementById("reasoningList");
 
 const remediationCommand = document.getElementById("remediationCommand");
+
 const timelineList = document.getElementById("timelineList");
 const timelineEventCount = document.getElementById("timelineEventCount");
+const timelineSearchInput = document.getElementById("timelineSearchInput");
+const timelineSeverityFilter = document.getElementById("timelineSeverityFilter");
+const timelineServiceFilter = document.getElementById("timelineServiceFilter");
+const btnToggleAutoSync = document.getElementById("btnToggleAutoSync");
+const syncDot = document.getElementById("syncDot");
+const autoSyncLabel = document.getElementById("autoSyncLabel");
 
-// Initialize
-document.addEventListener("DOMContentLoaded", () => {
+const step1 = document.getElementById("step1");
+const step2 = document.getElementById("step2");
+const step3 = document.getElementById("step3");
+
+const btnThemeToggle = document.getElementById("btnThemeToggle");
+const themeIcon = document.getElementById("themeIcon");
+const themeLabel = document.getElementById("themeLabel");
+
+const onCallBadge = document.getElementById("onCallBadge");
+const onCallTeamName = document.getElementById("onCallTeamName");
+
+const faultInjectorModal = document.getElementById("faultInjectorModal");
+const btnCloseFaultModal = document.getElementById("btnCloseFaultModal");
+const btnCancelFaultModal = document.getElementById("btnCancelFaultModal");
+
+// ---------------------------------------------------------------------------
+// 1. Initialization
+// ---------------------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+    initTheme();
+    initOnCall();
     setupEventListeners();
-    fetchAwsStatus();
-    fetchDashboardData();
+    // Auto-sync is off by default now based on user request.
+    initAutoSync();
+
+    // Check AWS status and fetch live database telemetry on load
+    await fetchAwsStatus().catch(() => showApiError());
+    await fetchScenarios().catch(() => showApiError());
+    await fetchDashboardData().catch(() => {});
 });
 
 function setupEventListeners() {
+    // Top Actions
     btnPollAws.addEventListener("click", () => pollLiveAws(true));
     btnReset.addEventListener("click", resetSystem);
     btnApplyFix.addEventListener("click", applyRemediationFix);
-    
+
+    // Theme Toggle
+    if (btnThemeToggle) btnThemeToggle.addEventListener("click", toggleTheme);
+
+    // On-Call Customizer
+    if (onCallBadge) onCallBadge.addEventListener("click", customizeOnCall);
+
+    // Scenario & Fault Ingestion
+    if (btnOpenFaultModal) btnOpenFaultModal.addEventListener("click", openFaultModal);
+    if (btnCloseFaultModal) btnCloseFaultModal.addEventListener("click", closeFaultModal);
+    if (btnCancelFaultModal) btnCancelFaultModal.addEventListener("click", closeFaultModal);
+    if (btnCleanState) btnCleanState.addEventListener("click", setCleanZeroState);
+
+    if (faultInjectorModal) {
+        faultInjectorModal.addEventListener("click", (e) => {
+            if (e.target === faultInjectorModal) closeFaultModal();
+        });
+    }
+
+    // Copy Runbook
     if (btnCopyCommand) {
         btnCopyCommand.addEventListener("click", () => {
             navigator.clipboard.writeText(remediationCommand.innerText).then(() => {
@@ -80,16 +179,85 @@ function setupEventListeners() {
             });
         });
     }
+
+    // Timeline Filtering
+    if (timelineSearchInput) timelineSearchInput.addEventListener("input", filterAndRenderTimeline);
+    if (timelineSeverityFilter) timelineSeverityFilter.addEventListener("change", filterAndRenderTimeline);
+    if (timelineServiceFilter) timelineServiceFilter.addEventListener("change", filterAndRenderTimeline);
+    if (btnToggleAutoSync) btnToggleAutoSync.addEventListener("click", toggleAutoSync);
+
+    // Click canvas background to deselect node highlight
+    if (topologySvg) {
+        topologySvg.addEventListener("click", (e) => {
+            if (e.target.tagName === "svg" || e.target.classList.contains("topology-svg")) {
+                clearGraphBlastHighlight();
+            }
+        });
+    }
 }
 
-// Check AWS Connection
+// ---------------------------------------------------------------------------
+// 2. Theme Engine (Light / Dark Mode)
+// ---------------------------------------------------------------------------
+function initTheme() {
+    const savedTheme = localStorage.getItem("cloudlens_theme");
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else {
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "dark" : "light");
+    }
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("cloudlens_theme", theme);
+
+    if (themeIcon && themeLabel) {
+        if (theme === "dark") {
+            themeIcon.textContent = "☀️";
+            themeLabel.textContent = "Light";
+        } else {
+            themeIcon.textContent = "🌙";
+            themeLabel.textContent = "Dark";
+        }
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme") || "light";
+    setTheme(current === "dark" ? "light" : "dark");
+}
+
+// ---------------------------------------------------------------------------
+// 3. On-Call Customizer
+// ---------------------------------------------------------------------------
+function initOnCall() {
+    const saved = localStorage.getItem("cloudlens_oncall");
+    if (saved && onCallTeamName) {
+        onCallTeamName.textContent = saved;
+    }
+}
+
+function customizeOnCall() {
+    const current = onCallTeamName.textContent || "SRE Team";
+    const updated = prompt("Enter SRE On-Call Responder / Team Name:", current);
+    if (updated && updated.trim()) {
+        onCallTeamName.textContent = updated.trim();
+        localStorage.setItem("cloudlens_oncall", updated.trim());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 5. AWS Connection Status
+// ---------------------------------------------------------------------------
 async function fetchAwsStatus() {
     try {
         const res = await fetch(`${API_BASE}/aws/status`);
         const data = await res.json();
         if (data.connected) {
             awsStatusPill.className = "status-pill status-pill-success";
-            awsStatusPill.innerHTML = `<span class="status-dot"></span><span>AWS Connected (${escapeHtml(data.region || "eu-north-1")})</span>`;
+            awsStatusPill.innerHTML = `<span class="status-dot"></span><span>AWS Connected (${escapeHtml(data.region || "us-east-1")})</span>`;
         } else {
             awsStatusPill.className = "status-pill";
             awsStatusPill.style.background = "#FEF2F2";
@@ -101,7 +269,129 @@ async function fetchAwsStatus() {
     }
 }
 
-// Poll AWS Alarms
+// ---------------------------------------------------------------------------
+// 6. Scenario Management & Custom Fault Injection
+// ---------------------------------------------------------------------------
+async function fetchScenarios() {
+    try {
+        const res = await fetch(`${API_BASE}/scenarios`);
+        if (!res.ok) return;
+        availableScenarios = await res.json();
+        renderScenarioButtons();
+    } catch (err) {
+        console.error("Failed to load scenarios:", err);
+    }
+}
+
+function renderScenarioButtons() {
+    if (!scenarioSelector || !availableScenarios.length) return;
+
+    scenarioSelector.innerHTML = availableScenarios.map(s => {
+        const isActive = s.id === activeScenarioId;
+        const icon = SCENARIO_ICONS[s.id] || "⚡";
+        const shortTitle = s.name.includes("&") ? s.name.split("&")[0].trim() : s.name;
+
+        return `
+            <button class="scenario-btn ${isActive ? 'is-active' : ''}" onclick="switchScenario('${escapeHtml(s.id)}')">
+                <div class="scenario-btn-top">
+                    <div class="scenario-icon-title">
+                        <span>${icon}</span>
+                        <span>${escapeHtml(shortTitle)}</span>
+                    </div>
+                    <span class="scenario-category-pill">${escapeHtml(s.category || 'Outage')}</span>
+                </div>
+                <div class="scenario-desc-text" title="${escapeHtml(s.description)}">${escapeHtml(s.description)}</div>
+            </button>
+        `;
+    }).join("");
+}
+
+window.switchScenario = async function(scenarioId) {
+    activeScenarioId = scenarioId;
+    renderScenarioButtons();
+
+    if (fixStatusMsg) fixStatusMsg.textContent = "";
+    clearGraphBlastHighlight();
+
+    try {
+        const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/simulate`, { method: "POST" });
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        await fetchDashboardData();
+    } catch (e) {
+        console.error("Scenario switch error:", e);
+        showApiError("Failed to trigger scenario: " + e.message);
+    }
+};
+
+// Zero-Event Clean State (Traces back & clears fabricated events)
+async function setCleanZeroState() {
+    activeScenarioId = null;
+    renderScenarioButtons();
+    clearGraphBlastHighlight();
+    if (fixStatusMsg) fixStatusMsg.textContent = "";
+
+    try {
+        await fetch(`${API_BASE}/reset`, { method: "POST" });
+        await fetchDashboardData();
+    } catch (e) {
+        console.error("Clean state error:", e);
+        showApiError("Failed to reset state: " + e.message);
+    }
+}
+
+// Modal: Custom Fault Injector
+function openFaultModal() {
+    if (faultInjectorModal) faultInjectorModal.style.display = "flex";
+}
+
+function closeFaultModal() {
+    if (faultInjectorModal) faultInjectorModal.style.display = "none";
+}
+
+window.submitCustomFault = async function() {
+    const service = document.getElementById("faultTargetService").value;
+    const severity = document.getElementById("faultSeverity").value;
+    const eventType = document.getElementById("faultEventType").value;
+    const source = document.getElementById("faultSource").value;
+    const metricName = document.getElementById("faultMetricName").value;
+    const metricVal = parseFloat(document.getElementById("faultMetricValue").value) || 99.0;
+    const resourceId = document.getElementById("faultResourceId").value;
+    const region = document.getElementById("faultRegion").value;
+
+    const customEvent = {
+        event_id: "evt_" + Math.random().toString(36).substring(2, 9),
+        timestamp: new Date().toISOString(),
+        source: source,
+        event_type: eventType,
+        service: service,
+        resource_id: resourceId,
+        metric: metricName,
+        value: metricVal,
+        severity: severity,
+        metadata: { region: region, injected: "custom_fault" }
+    };
+
+    try {
+        const res = await fetch(`${API_BASE}/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(customEvent)
+        });
+        if (!res.ok) throw new Error("Fault ingestion failed");
+
+        closeFaultModal();
+        activeScenarioId = null;
+        renderScenarioButtons();
+        clearGraphBlastHighlight();
+        await fetchDashboardData();
+    } catch (err) {
+        alert(`Failed to fire telemetry: ${err.message}`);
+    }
+};
+
+// ---------------------------------------------------------------------------
+// 7. Poll AWS Alarms
+// ---------------------------------------------------------------------------
 async function pollLiveAws(isManual = false) {
     if (isManual) {
         btnPollAws.disabled = true;
@@ -114,16 +404,57 @@ async function pollLiveAws(isManual = false) {
         await fetchDashboardData();
     } catch (e) {
         console.error("Poll error:", e);
+        if (isManual) showApiError("Failed to connect to backend for sync.");
     } finally {
         if (isManual) {
             btnPollAws.disabled = false;
-            btnPollAws.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Sync AWS`;
+            btnPollAws.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Connect / Sync Data`;
         }
     }
 }
 
-// Fetch Dashboard Data
-async function fetchDashboardData() {
+// ---------------------------------------------------------------------------
+// 8. Real-Time Auto-Refresh
+// ---------------------------------------------------------------------------
+function initAutoSync() {
+    if (isAutoSyncEnabled) {
+        startAutoSync();
+    }
+}
+
+function startAutoSync() {
+    if (autoSyncTimer) clearInterval(autoSyncTimer);
+    autoSyncTimer = setInterval(() => {
+        fetchDashboardData(true);
+    }, 5000);
+}
+
+function stopAutoSync() {
+    if (autoSyncTimer) {
+        clearInterval(autoSyncTimer);
+        autoSyncTimer = null;
+    }
+}
+
+function toggleAutoSync() {
+    isAutoSyncEnabled = !isAutoSyncEnabled;
+    if (isAutoSyncEnabled) {
+        startAutoSync();
+        btnToggleAutoSync.classList.add("is-active");
+        syncDot.className = "sync-dot live";
+        autoSyncLabel.textContent = "Auto-Sync: ON (5s)";
+    } else {
+        stopAutoSync();
+        btnToggleAutoSync.classList.remove("is-active");
+        syncDot.className = "sync-dot";
+        autoSyncLabel.textContent = "Auto-Sync: OFF";
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 9. Fetch Dashboard Data
+// ---------------------------------------------------------------------------
+async function fetchDashboardData(isBackground = false) {
     try {
         const [topRes, incRes, evtRes] = await Promise.all([
             fetch(`${API_BASE}/topology`),
@@ -137,7 +468,6 @@ async function fetchDashboardData() {
 
         kpiEventCount.textContent = allEvents.length;
         kpiIncidentCount.textContent = incidents.length;
-        timelineEventCount.textContent = `${allEvents.length} events recorded`;
 
         if (incidents.length > 0) {
             currentIncident = incidents[incidents.length - 1];
@@ -149,16 +479,20 @@ async function fetchDashboardData() {
         }
 
         renderTopology(currentTopology, currentIncidentDetail);
-        renderTimeline(allEvents);
+        filterAndRenderTimeline();
 
     } catch (err) {
         console.error("Dashboard fetch error:", err);
     }
 }
 
+// ---------------------------------------------------------------------------
+// 10. Fetch Incident RCA Details (GET /api/incidents/{id})
+// ---------------------------------------------------------------------------
 async function fetchIncidentDetails(incidentId) {
     try {
-        const res = await fetch(`${API_BASE}/incidents/${incidentId}/analyze`);
+        const res = await fetch(`${API_BASE}/incidents/${incidentId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         currentIncidentDetail = await res.json();
         renderDiagnosis(currentIncidentDetail);
     } catch (err) {
@@ -166,7 +500,9 @@ async function fetchIncidentDetails(incidentId) {
     }
 }
 
-// Render SVG Topology
+// ---------------------------------------------------------------------------
+// 11. Render SVG Topology with Visual Blast Radius & Hover Tooltip
+// ---------------------------------------------------------------------------
 function renderTopology(topology, incidentDetail) {
     if (!topology || !topology.nodes) return;
 
@@ -180,6 +516,9 @@ function renderTopology(topology, incidentDetail) {
             </marker>
             <marker id="arrow-root" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 1 L 9 5 L 0 9 z" fill="#EF4444" />
+            </marker>
+            <marker id="arrow-blast" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#F59E0B" />
             </marker>
         </defs>
     `;
@@ -201,7 +540,7 @@ function renderTopology(topology, incidentDetail) {
         const cx2 = src.x + dx * 0.6;
         const cy2 = tgt.y;
 
-        svgHtml += `<path d="M ${src.x} ${src.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tgt.x} ${tgt.y}" class="${edgeClass}" marker-end="${marker}" />`;
+        svgHtml += `<path id="edge_${escapeHtml(edge.source)}_${escapeHtml(edge.target)}" d="M ${src.x} ${src.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tgt.x} ${tgt.y}" class="${edgeClass}" marker-end="${marker}" />`;
     });
 
     // 2. Draw Nodes
@@ -233,7 +572,10 @@ function renderTopology(topology, incidentDetail) {
         const ry = pos.y - height / 2;
 
         svgHtml += `
-            <g class="${nodeClass}" onclick="inspectServiceNode('${escapeHtml(node.id)}')">
+            <g id="nodeGroup_${escapeHtml(node.id)}" class="${nodeClass}" 
+               onclick="inspectServiceNode('${escapeHtml(node.id)}')"
+               onmouseenter="handleNodeHover(event, '${escapeHtml(node.id)}')"
+               onmouseleave="handleNodeLeave()">
                 <rect x="${rx}" y="${ry}" width="${width}" height="${height}" class="node-bg" />
                 <text x="${rx + 14}" y="${ry + 28}" font-size="16">${pos.icon}</text>
                 <text x="${rx + 36}" y="${ry + 22}" class="node-text-title">${escapeHtml(pos.title)}</text>
@@ -247,34 +589,211 @@ function renderTopology(topology, incidentDetail) {
     topologySvg.innerHTML = svgHtml;
 }
 
-// Service Node Inspector
+// ---------------------------------------------------------------------------
+// 12. Visual Blast Radius Highlighting on Node Click
+// ---------------------------------------------------------------------------
 window.inspectServiceNode = async function(serviceId) {
+    if (selectedNodeId === serviceId) {
+        clearGraphBlastHighlight();
+        return;
+    }
+
+    selectedNodeId = serviceId;
+
     try {
-        const res = await fetch(`${API_BASE}/topology/what-if?failed_service=${serviceId}`);
+        const res = await fetch(`${API_BASE}/what-if/${encodeURIComponent(serviceId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        const callers = (data.dependent_services || []).join(", ") || "None (Top Level)";
-        const impacts = (data.propagated_failures || []).join(" ➔ ") || "Isolated to this node";
-        const risk = Math.round(data.risk_score || 78);
+        const direct = data.direct_downstream_services || [];
+        const transitive = data.all_impacted_services || [];
+        const risk = Math.round(data.estimated_architecture_risk_score ?? 0);
+        const crit = data.criticality_level || "MEDIUM";
+        const rec = data.remediation_recommendation || "";
+
+        // Highlight directly on SVG topology
+        applyVisualBlastHighlight(serviceId, direct, transitive);
+
+        // Update Inspector Card
+        let riskColor = "#059669";
+        let riskBg = "#ECFDF5";
+        let riskBorder = "#A7F3D0";
+        if (risk >= 70) {
+            riskColor = "#DC2626";
+            riskBg = "#FEE2E2";
+            riskBorder = "#FECACA";
+        } else if (risk >= 40) {
+            riskColor = "#D97706";
+            riskBg = "#FEF3C7";
+            riskBorder = "#FDE68A";
+        }
 
         inspectorRiskTag.textContent = `Risk Score: ${risk}/100`;
+        inspectorRiskTag.style.color = riskColor;
+        inspectorRiskTag.style.background = riskBg;
+        inspectorRiskTag.style.borderColor = riskBorder;
+
         inspectorContent.innerHTML = `
-            <strong>Component: ${escapeHtml(serviceId)}</strong><br>
-            • <strong>Upstream Callers:</strong> ${escapeHtml(callers)}<br>
-            • <strong>Cascading Impact Chain:</strong> <span style="color:#DC2626; font-weight:600;">${escapeHtml(impacts)}</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+                <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-heading);">Inspected: ${escapeHtml(serviceId)}</span>
+                <span style="font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; background: ${crit === 'HIGH' ? '#FEE2E2' : '#FEF3C7'}; color: ${crit === 'HIGH' ? '#DC2626' : '#D97706'};">
+                    CRITICALITY: ${escapeHtml(crit)}
+                </span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.78rem; line-height: 1.45;">
+                <div>• <strong>Direct Callers (${direct.length}):</strong> ${direct.length ? escapeHtml(direct.join(", ")) : '<span style="color:var(--text-muted); font-style:italic;">None (Edge Service)</span>'}</div>
+                <div>• <strong>Blast Radius (${transitive.length}):</strong> <span style="color:#DC2626; font-weight:600;">${transitive.length ? escapeHtml(transitive.join(" ➔ ")) : '<span style="color:var(--emerald); font-style:italic;">Isolated to this node</span>'}</span></div>
+                ${rec ? `<div style="margin-top:0.25rem; padding-top:0.35rem; border-top: 1px dashed var(--border); color: var(--text-muted);">• <strong>Architectural Guidance:</strong> ${escapeHtml(rec)}</div>` : ''}
+            </div>
+            <div style="margin-top: 0.5rem; text-align: right;">
+                <button class="btn btn-ghost btn-sm" onclick="clearGraphBlastHighlight()" style="font-size:0.7rem; padding:0.15rem 0.5rem;">Clear Highlight</button>
+            </div>
         `;
     } catch (e) {
         console.error("Inspector error:", e);
     }
 };
 
-// Render Diagnosis
+function applyVisualBlastHighlight(targetId, directNodes, transitiveNodes) {
+    const allImpacted = new Set(transitiveNodes);
+
+    Object.keys(NODE_POSITIONS).forEach(nodeId => {
+        const el = document.getElementById(`nodeGroup_${nodeId}`);
+        if (!el) return;
+
+        // Reset blast classes
+        el.classList.remove("node-selected", "node-blast-direct", "node-blast-transitive", "node-dimmed");
+
+        if (nodeId === targetId) {
+            el.classList.add("node-selected");
+        } else if (directNodes.includes(nodeId)) {
+            el.classList.add("node-blast-direct");
+        } else if (allImpacted.has(nodeId)) {
+            el.classList.add("node-blast-transitive");
+        } else {
+            el.classList.add("node-dimmed");
+        }
+    });
+
+    // Highlight connecting blast edges
+    if (currentTopology?.edges) {
+        currentTopology.edges.forEach(edge => {
+            const edgeEl = document.getElementById(`edge_${edge.source}_${edge.target}`);
+            if (!edgeEl) return;
+
+            const isBlastEdge = (edge.source === targetId) || 
+                                (directNodes.includes(edge.source) && allImpacted.has(edge.target));
+
+            if (isBlastEdge) {
+                edgeEl.classList.add("edge-path-blast");
+                edgeEl.setAttribute("marker-end", "url(#arrow-blast)");
+            } else {
+                edgeEl.classList.remove("edge-path-blast");
+            }
+        });
+    }
+}
+
+window.clearGraphBlastHighlight = function() {
+    selectedNodeId = null;
+
+    Object.keys(NODE_POSITIONS).forEach(nodeId => {
+        const el = document.getElementById(`nodeGroup_${nodeId}`);
+        if (el) {
+            el.classList.remove("node-selected", "node-blast-direct", "node-blast-transitive", "node-dimmed");
+        }
+    });
+
+    if (currentTopology?.edges) {
+        currentTopology.edges.forEach(edge => {
+            const edgeEl = document.getElementById(`edge_${edge.source}_${edge.target}`);
+            if (edgeEl) {
+                edgeEl.classList.remove("edge-path-blast");
+            }
+        });
+    }
+
+    if (inspectorRiskTag) inspectorRiskTag.textContent = "Click a node to inspect";
+    if (inspectorContent) {
+        inspectorContent.innerHTML = "Click any service node in the topology above to simulate hypothetical outages, evaluate transitive blast radius, and view upstream callers.";
+    }
+};
+
+// ---------------------------------------------------------------------------
+// 13. Component Hover Diagnostics Tooltip Popover
+// ---------------------------------------------------------------------------
+window.handleNodeHover = function(e, nodeId) {
+    if (!graphNodeTooltip) return;
+
+    const pos = NODE_POSITIONS[nodeId] || { icon: "📦", title: nodeId };
+    const rootCause = currentIncidentDetail?.probable_root_cause;
+    const affected = currentIncidentDetail?.affected_services || [];
+
+    const isRoot = rootCause === nodeId;
+    const isAff = affected.includes(nodeId);
+
+    let tagText = "HEALTHY";
+    let tagClass = "candidate-badge-pill candidate-badge-symptom";
+    let reasonText = "Operating within nominal performance thresholds.";
+
+    if (isRoot) {
+        tagText = "PRIMARY ROOT";
+        tagClass = "candidate-badge-pill candidate-badge-root";
+        reasonText = currentIncidentDetail?.reasoning_chain?.[0] || 
+                     `Triggered earliest threshold breach, starves downstream dependents.`;
+    } else if (isAff) {
+        tagText = "DEGRADED";
+        tagClass = "candidate-badge-pill candidate-badge-secondary";
+        reasonText = `Cascading degradation propagated from primary root cause '${rootCause}'.`;
+    }
+
+    // Telemetry metric info
+    const relatedEvent = (allEvents || []).find(ev => ev.service === nodeId);
+    const metricText = relatedEvent ? `${relatedEvent.metric || relatedEvent.event_type}: ${relatedEvent.value ?? 'anomalous'}` : "Nominal";
+
+    document.getElementById("ttIcon").textContent = pos.icon;
+    document.getElementById("ttTitle").textContent = pos.title;
+    const ttTag = document.getElementById("ttTag");
+    ttTag.textContent = tagText;
+    ttTag.className = `tooltip-tag ${tagClass}`;
+
+    document.getElementById("ttReason").textContent = reasonText;
+    document.getElementById("ttMetric").textContent = metricText;
+    document.getElementById("ttDependents").textContent = `${(currentIncidentDetail?.affected_services?.length || 0)} affected`;
+
+    // Position tooltip
+    const svgWrap = document.querySelector(".graph-canvas-wrap");
+    if (svgWrap) {
+        const wrapRect = svgWrap.getBoundingClientRect();
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+
+        let left = clientX - wrapRect.left + 15;
+        let top = clientY - wrapRect.top + 10;
+
+        if (left + 280 > wrapRect.width) left = wrapRect.width - 285;
+        if (top + 140 > wrapRect.height) top = wrapRect.height - 145;
+
+        graphNodeTooltip.style.left = `${Math.max(10, left)}px`;
+        graphNodeTooltip.style.top = `${Math.max(10, top)}px`;
+        graphNodeTooltip.style.display = "block";
+    }
+};
+
+window.handleNodeLeave = function() {
+    if (graphNodeTooltip) graphNodeTooltip.style.display = "none";
+};
+
+// ---------------------------------------------------------------------------
+// 14. Render Diagnosis Details
+// ---------------------------------------------------------------------------
 function renderDiagnosis(detail) {
     if (!detail) return;
 
     const cause = detail.probable_root_cause || "EC2";
-    const confidence = Math.round(detail.confidence || 78);
-    const resource = currentIncident?.events?.[0]?.resource_id || "i-0d790207a3f0070fd";
+    const confidence = Math.round(detail.confidence ?? 0);
+    const resource = detail.resource_id || currentIncident?.events?.[0]?.resource_id || "target-resource";
+    const region = currentIncident?.events?.[0]?.metadata?.region || "us-east-1";
 
     // KPIs
     kpiRootCause.textContent = cause;
@@ -282,38 +801,57 @@ function renderDiagnosis(detail) {
     kpiConfidenceBadge.textContent = `${confidence}% confidence`;
     kpiBlastCount.textContent = (detail.affected_services?.length || 0) + 1;
 
-    // Headline
-    incidentTitle.textContent = `${cause} Overload & Cascading 500 Failure`;
-    incidentResourceId.textContent = resource;
-    incidentStatusTag.textContent = "OPEN ANOMALY";
-    incidentStatusTag.className = "status-tag status-tag-open";
+    // Headline & Region
+    const activeScenario = availableScenarios.find(s => s.id === activeScenarioId);
+    if (activeScenario) {
+        incidentTitle.textContent = activeScenario.name;
+    } else {
+        incidentTitle.textContent = `${cause} Outage & Cascading Failure`;
+    }
 
-    // Diagnosis Card
-    diagnosisCauseTitle.textContent = `${cause} Overload`;
+    incidentResourceId.textContent = resource;
+    if (incidentRegion) incidentRegion.textContent = region;
+
+    // Status & Stepper
+    const isResolved = currentIncident?.status === "RESOLVED";
+    if (isResolved) {
+        incidentStatusTag.textContent = "RESOLVED";
+        incidentStatusTag.className = "status-tag status-tag-resolved";
+        updateLifecycleStepper("RESOLVED");
+    } else {
+        incidentStatusTag.textContent = "OPEN ANOMALY";
+        incidentStatusTag.className = "status-tag status-tag-open";
+        updateLifecycleStepper("OPEN");
+    }
+
+    // Compound Incident Indicator
+    if (detail.is_compound_incident) {
+        incidentCompoundBadge.style.display = "inline-flex";
+        const secondary = (detail.contributing_causes || []).join(", ") || "Secondary Root";
+        incidentCompoundBadge.textContent = `⚠️ COMPOUND INCIDENT (${secondary})`;
+    } else {
+        incidentCompoundBadge.style.display = "none";
+    }
+
+    // Diagnosis Hero Card
+    diagnosisCauseTitle.textContent = `${cause} Outage Detected`;
     diagnosisResourceId.textContent = resource;
     diagnosisConfidenceTag.textContent = `${confidence}% CONFIDENCE`;
-    diagnosisExplanation.textContent = detail.explanation || `The compute host crossed its CPU threshold first, then degraded the API, worker, and application chain.`;
+    diagnosisSeverityTag.textContent = `${detail.severity || 'HIGH'} SEVERITY`;
+    diagnosisExplanation.textContent = detail.explanation || detail.remediation_suggestion || (detail.reasoning_chain?.[0] ?? "Anomaly detected in telemetry stream.");
 
-    // Scoring Bars
-    const bd = detail.score_breakdown || {};
-    scoringBars.innerHTML = `
-        <div class="evidence-bar-row">
-            <div class="evidence-label-row"><span>Temporal Origin (Failed First)</span><strong>${bd.temporal_correlation || 25} / 25 pts</strong></div>
-            <div class="evidence-track"><div class="evidence-fill" style="width: ${((bd.temporal_correlation || 25) / 25) * 100}%"></div></div>
-        </div>
-        <div class="evidence-bar-row">
-            <div class="evidence-label-row"><span>Causal Topology Depth</span><strong>${bd.dependency_relationship || 30} / 30 pts</strong></div>
-            <div class="evidence-track"><div class="evidence-fill" style="width: ${((bd.dependency_relationship || 30) / 30) * 100}%"></div></div>
-        </div>
-        <div class="evidence-bar-row">
-            <div class="evidence-label-row"><span>Symptom & Blast Correlation</span><strong>${bd.downstream_symptoms || 5} / 20 pts</strong></div>
-            <div class="evidence-track"><div class="evidence-fill" style="width: ${((bd.downstream_symptoms || 5) / 20) * 100}%"></div></div>
-        </div>
-    `;
+    // Causal Paths
+    renderCausalPaths(detail.causal_paths, cause);
 
-    // Reasoning
+    // 5 Scoring Dimensions
+    renderScoringBars(detail.score_breakdown);
+
+    // Candidate Ranking
+    renderCandidateRanking(detail.all_candidate_scores, cause, detail.contributing_causes);
+
+    // Reasoning Chain
     const reasoning = detail.reasoning_chain || [
-        `Service '${cause}' registered the earliest anomaly in the incident timeline (25 pts).`,
+        `Service '${cause}' registered the earliest anomaly in the incident timeline.`,
         `'${cause}' occupies a structural dependency position affecting downstream services.`,
         `Calibrated Result: '${cause}' determined as Primary Root Cause with ${confidence}% confidence.`
     ];
@@ -325,41 +863,271 @@ function renderDiagnosis(detail) {
         </div>
     `).join("");
 
-    // Remediation Command
-    remediationCommand.textContent = detail.remediation_command || `aws autoscaling set-desired-capacity --auto-scaling-group-name prod-web-asg --desired-capacity 6\naws ec2 reboot-instances --instance-ids ${resource}\naws cloudwatch set-alarm-state --alarm-name Cpu-Utilizations-RCA --state-value OK`;
+    // Suggested Fix Card
+    renderRemediationPlan(detail.remediation_plan, detail.remediation_suggestion, resource);
 }
 
+function renderCausalPaths(paths, rootCause) {
+    if (!causalPathsSection || !causalPathsList) return;
+
+    if (!paths || paths.length === 0) {
+        causalPathsList.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Single-node anomaly with no cascading propagation.</div>`;
+        return;
+    }
+
+    causalPathsList.innerHTML = paths.map(pathStr => {
+        const steps = pathStr.split("->").map(s => s.trim());
+        const renderedSteps = steps.map((s, idx) => {
+            let pillClass = "causal-step-pill is-intermediate";
+            if (idx === 0) pillClass = "causal-step-pill is-root";
+            else if (idx === steps.length - 1) pillClass = "causal-step-pill is-leaf";
+            return `<span class="${pillClass}">${escapeHtml(s)}</span>`;
+        }).join(` <span class="causal-arrow-symbol">➔</span> `);
+
+        return `<div class="causal-path-item">${renderedSteps}</div>`;
+    }).join("");
+}
+
+function renderScoringBars(breakdown) {
+    if (!scoringBars) return;
+    const bd = breakdown || {};
+
+    const dimensions = [
+        { key: "temporal_correlation", name: "Temporal Origin (Failed First)", max: 25 },
+        { key: "dependency_relationship", name: "Graph Topological Influence", max: 30 },
+        { key: "downstream_symptoms", name: "Downstream Symptom Correlation", max: 20 },
+        { key: "metric_anomaly_magnitude", name: "Metric Telemetry Anomaly", max: 15 },
+        { key: "severity", name: "Alarm Severity Weight", max: 10 }
+    ];
+
+    scoringBars.innerHTML = dimensions.map(dim => {
+        const score = Math.round(bd[dim.key] ?? 0);
+        const pct = Math.min(100, Math.round((score / dim.max) * 100));
+
+        return `
+            <div class="evidence-bar-row">
+                <div class="evidence-label-row">
+                    <span>${dim.name}</span>
+                    <strong>${score} / ${dim.max} pts</strong>
+                </div>
+                <div class="evidence-track">
+                    <div class="evidence-fill" style="width: ${pct}%"></div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
+    if (!candidateRankingBody) return;
+
+    if (!allCandidates || allCandidates.length === 0) {
+        candidateRankingBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1rem;">No candidate scores available.</td></tr>`;
+        return;
+    }
+
+    const secondaryList = contributingCauses || [];
+
+    candidateRankingBody.innerHTML = allCandidates.map((cand, idx) => {
+        const isRoot = cand.service === rootCause;
+        const isSecondary = secondaryList.includes(cand.service);
+        const scoreVal = Math.round(cand.total ?? 0);
+
+        let badgeClass = "candidate-badge-pill candidate-badge-symptom";
+        let badgeText = "SYMPTOM";
+
+        if (isRoot) {
+            badgeClass = "candidate-badge-pill candidate-badge-root";
+            badgeText = "PRIMARY ROOT";
+        } else if (isSecondary) {
+            badgeClass = "candidate-badge-pill candidate-badge-secondary";
+            badgeText = "SECONDARY ROOT";
+        }
+
+        const barColor = isRoot ? "#DC2626" : isSecondary ? "#D97706" : "var(--indigo)";
+
+        return `
+            <tr>
+                <td><strong style="color: ${isRoot ? 'var(--red)' : 'var(--text-muted)'};">#${idx + 1}</strong></td>
+                <td><strong>${escapeHtml(cand.service)}</strong></td>
+                <td>
+                    <div class="candidate-score-bar-wrap">
+                        <span style="font-weight:700; width:28px;">${scoreVal}%</span>
+                        <div class="candidate-mini-track">
+                            <div class="candidate-mini-fill" style="width: ${scoreVal}%; background: ${barColor};"></div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="${badgeClass}">${badgeText}</span></td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function renderRemediationPlan(plan, fallbackAction, resource) {
+    const p = plan || {};
+    const action = p.recommended_action || fallbackAction || "Trigger automated runbook";
+    const mttr = p.estimated_mttr_minutes || 3;
+    const actionType = p.action_type || "AUTO_HEAL";
+    const commands = (p.commands && p.commands.length > 0) 
+        ? p.commands.join("\n") 
+        : `# Automated remediation runbook nominal\naws ec2 reboot-instances --instance-ids ${resource}`;
+
+    if (fixActionSubtitle) fixActionSubtitle.textContent = action;
+    if (fixEstimatedTime) fixEstimatedTime.textContent = `~${mttr} min to resolve`;
+
+    if (fixActionTypeBadge) {
+        fixActionTypeBadge.textContent = actionType;
+        fixActionTypeBadge.style.display = "inline-block";
+    }
+
+    if (remediationCommand) remediationCommand.textContent = commands;
+
+    // Safety Checks
+    if (safetyChecksList && safetyChecksBox) {
+        const checks = p.safety_checks || [
+            "Verify target capacity is within cloud account limit quotas",
+            "Ensure traffic is properly drained before restart or failover",
+            "Validate telemetry alarm state transitions"
+        ];
+
+        safetyChecksList.innerHTML = checks.map(c => `
+            <li>
+                <span class="safety-check-icon">✓</span>
+                <span>${escapeHtml(c)}</span>
+            </li>
+        `).join("");
+        safetyChecksBox.style.display = "flex";
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 15. Lifecycle Stepper
+// ---------------------------------------------------------------------------
+function updateLifecycleStepper(status) {
+    if (!step1 || !step2 || !step3) return;
+    const isResolved = status === "RESOLVED";
+    const hasIncident = !!currentIncident;
+
+    if (!hasIncident) {
+        step1.className = "stepper-item is-active";
+        step1.querySelector(".stepper-circle").textContent = "1";
+        step2.className = "stepper-item";
+        step2.querySelector(".stepper-circle").textContent = "2";
+        step3.className = "stepper-item";
+        step3.querySelector(".stepper-circle").textContent = "3";
+    } else if (isResolved) {
+        step1.className = "stepper-item is-done";
+        step1.querySelector(".stepper-circle").textContent = "✓";
+        step2.className = "stepper-item is-done";
+        step2.querySelector(".stepper-circle").textContent = "✓";
+        step3.className = "stepper-item is-done";
+        step3.querySelector(".stepper-circle").textContent = "✓";
+        step3.querySelector(".stepper-labels strong").style.color = "var(--emerald)";
+        step3.querySelector(".stepper-labels span").textContent = "Fix verified in cloud";
+    } else {
+        step1.className = "stepper-item is-done";
+        step1.querySelector(".stepper-circle").textContent = "✓";
+        step2.className = "stepper-item is-done";
+        step2.querySelector(".stepper-circle").textContent = "✓";
+        step3.className = "stepper-item is-active";
+        step3.querySelector(".stepper-circle").textContent = "3";
+        step3.querySelector(".stepper-labels strong").style.color = "";
+        step3.querySelector(".stepper-labels span").textContent = "Review suggested fix";
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 16. Empty State (Zero Clean State)
+// ---------------------------------------------------------------------------
 function renderEmptyState() {
     kpiRootCause.textContent = "Healthy";
     kpiRootCause.className = "kpi-big-num text-success";
     kpiConfidenceBadge.textContent = "0% confidence";
     kpiBlastCount.textContent = "0";
 
-    incidentTitle.textContent = "All Systems Healthy";
+    incidentTitle.textContent = "All Cloud Services Healthy";
+    incidentResourceId.textContent = "All Nominals";
+    if (incidentRegion) incidentRegion.textContent = "us-east-1";
+
     incidentStatusTag.textContent = "NO ANOMALIES";
     incidentStatusTag.className = "status-tag";
     incidentStatusTag.style.background = "#ECFDF5";
     incidentStatusTag.style.color = "#059669";
     incidentStatusTag.style.borderColor = "#A7F3D0";
 
-    diagnosisCauseTitle.textContent = "No Failures Detected";
-    diagnosisResourceId.textContent = "All AWS services nominal";
-    diagnosisConfidenceTag.textContent = "0% CONFIDENCE";
-    diagnosisExplanation.textContent = "System is operating within healthy performance thresholds.";
+    if (incidentCompoundBadge) incidentCompoundBadge.style.display = "none";
 
-    scoringBars.innerHTML = `<div style="font-size:0.75rem; color:#94A3B8;">No telemetry anomalies present in AWS.</div>`;
-    reasoningList.innerHTML = `<div style="font-size:0.75rem; color:#94A3B8;">Awaiting live incident telemetry from CloudWatch...</div>`;
-    remediationCommand.textContent = "# System running normally";
+    diagnosisCauseTitle.textContent = "No Failures Detected";
+    diagnosisResourceId.textContent = "All cloud services nominal";
+    diagnosisConfidenceTag.textContent = "0% CONFIDENCE";
+    diagnosisExplanation.textContent = "Architecture is operating within healthy performance and error budget thresholds.";
+
+    if (causalPathsList) causalPathsList.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted);">No active anomaly propagation.</div>`;
+    if (scoringBars) scoringBars.innerHTML = `<div style="font-size:0.75rem; color:#94A3B8;">No telemetry anomalies present in cloud.</div>`;
+    if (candidateRankingBody) candidateRankingBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1rem;">All candidate services healthy.</td></tr>`;
+    if (reasoningList) reasoningList.innerHTML = `<div style="font-size:0.75rem; color:#94A3B8;">Awaiting live incident telemetry from CloudWatch or injected custom faults...</div>`;
+
+    if (fixActionSubtitle) fixActionSubtitle.textContent = "System nominal";
+    if (fixEstimatedTime) fixEstimatedTime.textContent = "0 min";
+    if (fixActionTypeBadge) fixActionTypeBadge.style.display = "none";
+    if (remediationCommand) remediationCommand.textContent = "# System running normally - no remediation required";
+    if (safetyChecksBox) safetyChecksBox.style.display = "none";
+
+    updateLifecycleStepper("HEALTHY");
 }
 
-// Render Timeline
-function renderTimeline(events) {
-    if (!events || events.length === 0) {
-        timelineList.innerHTML = `<div class="timeline-empty-msg">No active anomaly events recorded yet. Trigger a fault in AWS to see live telemetry.</div>`;
+// ---------------------------------------------------------------------------
+// 17. Timeline Filtering & Search
+// ---------------------------------------------------------------------------
+function filterAndRenderTimeline() {
+    if (!timelineList) return;
+
+    if (!allEvents || allEvents.length === 0) {
+        timelineList.innerHTML = `<div class="timeline-empty-msg">No active anomaly events recorded yet. Inject a custom fault or select a scenario above to stream live telemetry.</div>`;
+        if (timelineEventCount) timelineEventCount.textContent = "0 events recorded";
         return;
     }
 
-    timelineList.innerHTML = events.slice().reverse().map(e => {
+    const query = (timelineSearchInput?.value || "").toLowerCase().trim();
+    const selectedSev = timelineSeverityFilter?.value || "ALL";
+    const selectedSvc = timelineServiceFilter?.value || "ALL";
+
+    const filtered = allEvents.filter(e => {
+        // Severity match
+        if (selectedSev !== "ALL") {
+            const sev = (e.severity || "").toUpperCase();
+            if (selectedSev === "CRITICAL" && sev !== "CRITICAL") return false;
+            if (selectedSev === "HIGH" && sev !== "HIGH" && sev !== "CRITICAL") return false;
+            if (selectedSev === "MEDIUM" && sev === "LOW") return false;
+        }
+
+        // Service match
+        if (selectedSvc !== "ALL" && e.service !== selectedSvc) {
+            return false;
+        }
+
+        // Search query match
+        if (query) {
+            const matchStr = `${e.service} ${e.event_type} ${e.metric} ${e.resource_id} ${JSON.stringify(e.metadata || {})}`.toLowerCase();
+            if (!matchStr.includes(query)) return false;
+        }
+
+        return true;
+    });
+
+    if (timelineEventCount) {
+        timelineEventCount.textContent = filtered.length === allEvents.length 
+            ? `${allEvents.length} events recorded` 
+            : `${filtered.length} of ${allEvents.length} events`;
+    }
+
+    if (filtered.length === 0) {
+        timelineList.innerHTML = `<div class="timeline-empty-msg">No events match the current filter criteria.</div>`;
+        return;
+    }
+
+    timelineList.innerHTML = filtered.slice().reverse().map(e => {
         const isCrit = (e.severity || "").toUpperCase() === "CRITICAL";
         const isHigh = (e.severity || "").toUpperCase() === "HIGH";
         const rowClass = isCrit ? "timeline-item-row is-critical" : isHigh ? "timeline-item-row is-high" : "timeline-item-row";
@@ -379,22 +1147,46 @@ function renderTimeline(events) {
     }).join("");
 }
 
-// Apply Remediation Fix
-function applyRemediationFix() {
+// ---------------------------------------------------------------------------
+// 18. Apply Automated Remediation (POST /api/incidents/{id}/mitigate)
+// ---------------------------------------------------------------------------
+async function applyRemediationFix() {
+    if (!currentIncident) return;
+
     btnApplyFix.disabled = true;
-    fixStatusMsg.textContent = "Applying AWS runbook...";
+    fixStatusMsg.textContent = "Executing automated remediation runbook...";
     fixStatusMsg.style.color = "#D97706";
 
-    setTimeout(() => {
-        fixStatusMsg.textContent = "✓ Fix applied successfully to AWS!";
+    try {
+        const res = await fetch(`${API_BASE}/incidents/${currentIncident.incident_id}/mitigate`, {
+            method: "POST"
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Remediation failed");
+
+        currentIncident.status = "RESOLVED";
+        incidentStatusTag.textContent = "RESOLVED";
+        incidentStatusTag.className = "status-tag status-tag-resolved";
+        updateLifecycleStepper("RESOLVED");
+
+        fixStatusMsg.textContent = `✓ ${data.message || "Remediation applied! Incident marked resolved in cloud."}`;
         fixStatusMsg.style.color = "#059669";
+    } catch (err) {
+        console.error("Mitigate error:", err);
+        fixStatusMsg.textContent = `Error: ${err.message}`;
+        fixStatusMsg.style.color = "#DC2626";
+    } finally {
         btnApplyFix.disabled = false;
-    }, 1200);
+    }
 }
 
-// Reset System
+// ---------------------------------------------------------------------------
+// 19. Reset System (POST /api/reset)
+// ---------------------------------------------------------------------------
 async function resetSystem() {
     try {
+        if (fixStatusMsg) fixStatusMsg.textContent = "";
+        clearGraphBlastHighlight();
         await fetch(`${API_BASE}/reset`, { method: "POST" });
         await fetchDashboardData();
     } catch (e) {

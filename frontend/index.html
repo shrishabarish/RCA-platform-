@@ -50,6 +50,36 @@
             --font-mono: 'JetBrains Mono', monospace;
         }
 
+        :root[data-theme="dark"] {
+            --bg-page: #0B0F19;
+            --bg-card: #111827;
+            --bg-subtle: #1F2937;
+            --border: #374151;
+            --border-strong: #4B5563;
+            
+            --text-heading: #F9FAFB;
+            --text-body: #E5E7EB;
+            --text-muted: #9CA3AF;
+            --text-light: #6B7280;
+
+            --indigo: #6366F1;
+            --indigo-hover: #818CF8;
+            --indigo-tint: rgba(99, 102, 241, 0.18);
+            
+            --emerald: #10B981;
+            --emerald-tint: rgba(16, 185, 129, 0.18);
+            --emerald-border: rgba(16, 185, 129, 0.35);
+
+            --red: #F87171;
+            --red-bright: #EF4444;
+            --red-tint: rgba(239, 68, 68, 0.18);
+            --red-border: rgba(239, 68, 68, 0.4);
+
+            --amber: #FBBF24;
+            --amber-tint: rgba(251, 191, 36, 0.18);
+            --amber-border: rgba(251, 191, 36, 0.35);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -900,13 +930,941 @@
             font-size: 0.85rem;
         }
 
-        @media (max-width: 1100px) {
-            .main-workspace-grid {
-                grid-template-columns: 1fr;
-            }
-            .kpi-grid {
+        /* ============================================================
+           New Interactive Sections & Components
+           ============================================================ */
+
+        /* Scenario Selector Bar */
+        .scenario-selector-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .scenario-selector-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .scenario-badge-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--indigo);
+            background: var(--indigo-tint);
+            border: 1px solid #C7D2FE;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+        }
+
+        .scenario-hint {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .scenario-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 960px) {
+            .scenario-buttons-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+        }
+
+        @media (max-width: 560px) {
+            .scenario-buttons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scenario-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            background: #FFFFFF;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.7rem 0.9rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .scenario-btn:hover {
+            border-color: var(--indigo);
+            background: #F8FAFC;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.08);
+        }
+
+        .scenario-btn.is-active {
+            border-color: var(--indigo);
+            background: #EEF2FF;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+        }
+
+        .scenario-btn-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .scenario-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--text-heading);
+        }
+
+        .scenario-category-pill {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.12rem 0.4rem;
+            border-radius: 4px;
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .scenario-btn.is-active .scenario-category-pill {
+            background: #E0E7FF;
+            color: var(--indigo);
+        }
+
+        .scenario-desc-text {
+            font-size: 0.71rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Compound Incident Badge */
+        .status-tag-compound {
+            background: #FEF3C7;
+            color: #B45309;
+            border: 1px solid #FDE68A;
+            font-weight: 700;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .status-tag-resolved {
+            background: #ECFDF5;
+            color: #059669;
+            border: 1px solid #A7F3D0;
+            font-weight: 700;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+        }
+
+        /* Causal Paths Section */
+        .causal-paths-section {
+            margin-top: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .causal-paths-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .causal-path-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.45rem 0.75rem;
+            font-size: 0.76rem;
+        }
+
+        .causal-step-pill {
+            padding: 0.18rem 0.55rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .causal-step-pill.is-root {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+        }
+
+        .causal-step-pill.is-intermediate {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+        }
+
+        .causal-step-pill.is-leaf {
+            background: #EEF2FF;
+            color: #4F46E5;
+            border: 1px solid #C7D2FE;
+        }
+
+        .causal-arrow-symbol {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* Candidate Ranking Table */
+        .candidate-ranking-section {
+            margin-top: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .candidate-table-wrap {
+            overflow-x: auto;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .candidate-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+
+        .candidate-table th {
+            background: #E2E8F0;
+            color: var(--text-heading);
+            font-weight: 700;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .candidate-table td {
+            padding: 0.5rem 0.75rem;
+            border-top: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .candidate-score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .candidate-mini-track {
+            width: 60px;
+            height: 6px;
+            background: #CBD5E1;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .candidate-mini-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--indigo) 0%, #6366F1 100%);
+            border-radius: 9999px;
+        }
+
+        .candidate-badge-pill {
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.68rem;
+            display: inline-block;
+        }
+
+        .candidate-badge-root {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+        }
+
+        .candidate-badge-secondary {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+        }
+
+        .candidate-badge-symptom {
+            background: #EEF2FF;
+            color: #4F46E5;
+            border: 1px solid #C7D2FE;
+        }
+
+        /* Safety Checks Box */
+        .safety-checks-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 0.95rem;
+            margin: 0.85rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .safety-header {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--text-body);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .safety-header svg {
+            color: var(--emerald);
+        }
+
+        .safety-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding-left: 0;
+        }
+
+        .safety-list li {
+            font-size: 0.74rem;
+            color: var(--text-body);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+            line-height: 1.35;
+        }
+
+        .safety-check-icon {
+            color: var(--emerald);
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .action-type-pill {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #EEF2FF;
+            color: var(--indigo);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #C7D2FE;
+        }
+
+        /* ============================================================
+           Dark Mode Specific Component Overrides
+           ============================================================ */
+        [data-theme="dark"] .app-header {
+            background: #111827;
+            border-bottom-color: #1F2937;
+        }
+
+        [data-theme="dark"] .node-bg {
+            fill: #111827;
+            stroke: #374151;
+        }
+
+        [data-theme="dark"] .node-healthy .node-bg {
+            fill: #111827;
+            stroke: #059669;
+        }
+
+        [data-theme="dark"] .graph-canvas-wrap {
+            background: #0B0F19;
+            border-color: #1F2937;
+            position: relative;
+        }
+
+        [data-theme="dark"] .diagnosis-hero-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, #111827 100%);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        [data-theme="dark"] .scenario-btn {
+            background: #111827;
+            border-color: #374151;
+        }
+
+        [data-theme="dark"] .scenario-btn:hover {
+            background: #1F2937;
+            border-color: var(--indigo);
+        }
+
+        [data-theme="dark"] .scenario-btn.is-active {
+            background: rgba(99, 102, 241, 0.18);
+            border-color: var(--indigo);
+        }
+
+        [data-theme="dark"] .timeline-item-row {
+            background: #111827;
+            border-color: #1F2937;
+        }
+
+        [data-theme="dark"] .timeline-item-row.is-critical {
+            background: rgba(239, 68, 68, 0.14);
+        }
+
+        [data-theme="dark"] .timeline-item-row.is-high {
+            background: rgba(251, 191, 36, 0.14);
+        }
+
+        [data-theme="dark"] .timeline-source-pill {
+            background: #1F2937;
+            border-color: #374151;
+            color: #E5E7EB;
+        }
+
+        [data-theme="dark"] .candidate-table th {
+            background: #1F2937;
+            color: #E5E7EB;
+        }
+
+        [data-theme="dark"] .candidate-table td {
+            border-color: #374151;
+        }
+
+        [data-theme="dark"] .candidate-mini-track {
+            background: #374151;
+        }
+
+        [data-theme="dark"] .reasoning-list {
+            background: #111827;
+            border-color: #1F2937;
+        }
+
+        [data-theme="dark"] .safety-checks-box {
+            background: #111827;
+            border-color: #1F2937;
+        }
+
+        [data-theme="dark"] .stepper-circle {
+            background: #1F2937;
+            border-color: #374151;
+            color: #9CA3AF;
+        }
+
+        [data-theme="dark"] .lifecycle-stepper {
+            background: #111827;
+            border-color: #1F2937;
+        }
+
+        [data-theme="dark"] .kpi-card {
+            background: #111827;
+            border-color: #1F2937;
+        }
+
+        [data-theme="dark"] .kpi-card-highlight {
+            background: linear-gradient(135deg, #111827 0%, rgba(239, 68, 68, 0.16) 100%);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        /* ============================================================
+           Visual Blast Radius Highlighting on Graph
+           ============================================================ */
+        .node-selected .node-bg {
+            stroke: var(--indigo) !important;
+            stroke-width: 3.5px !important;
+            filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.85)) !important;
+        }
+
+        .node-blast-direct .node-bg {
+            stroke: var(--amber) !important;
+            stroke-width: 2.8px !important;
+            fill: var(--amber-tint) !important;
+            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.75)) !important;
+            animation: blastPulseAmber 2s ease-in-out infinite alternate;
+        }
+
+        .node-blast-transitive .node-bg {
+            stroke: var(--red-bright) !important;
+            stroke-width: 2.8px !important;
+            fill: var(--red-tint) !important;
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.75)) !important;
+            animation: blastPulseRed 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes blastPulseAmber {
+            from { stroke-width: 2.2px; }
+            to { stroke-width: 3.8px; filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.95)); }
+        }
+
+        @keyframes blastPulseRed {
+            from { stroke-width: 2.2px; }
+            to { stroke-width: 3.8px; filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.95)); }
+        }
+
+        .node-dimmed {
+            opacity: 0.22 !important;
+            transition: opacity 0.3s ease;
+        }
+
+        .edge-path-blast {
+            stroke: var(--red-bright) !important;
+            stroke-width: 3.2px !important;
+            stroke-dasharray: 6, 3 !important;
+            animation: dashLoop 4s linear infinite !important;
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.85)) !important;
+        }
+
+        /* ============================================================
+           Graph Component Hover Tooltip Popover
+           ============================================================ */
+        .graph-node-tooltip {
+            position: absolute;
+            z-index: 999;
+            pointer-events: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 0.95rem;
+            box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+            width: 270px;
+            font-size: 0.76rem;
+            transition: opacity 0.15s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.45rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tooltip-header strong {
+            font-size: 0.82rem;
+            color: var(--text-heading);
+        }
+
+        .tooltip-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .tooltip-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .tooltip-reason {
+            color: var(--text-body);
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .tooltip-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            padding: 0.35rem 0.55rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tooltip-meta strong {
+            color: var(--text-heading);
+        }
+
+        /* ============================================================
+           SRE Verbal Voice Briefing (Audio Speech)
+           ============================================================ */
+        .btn-voice {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--indigo-tint);
+            border: 1px solid #C7D2FE;
+            color: var(--indigo);
+            padding: 0.22rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-voice:hover {
+            background: var(--indigo);
+            color: #FFFFFF;
+            border-color: var(--indigo);
+            transform: translateY(-1px);
+        }
+
+        .btn-voice.is-speaking {
+            background: #FEE2E2;
+            border-color: #FECACA;
+            color: #DC2626;
+            animation: voicePulse 1.5s infinite;
+        }
+
+        @keyframes voicePulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .audio-wave-bars {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            height: 12px;
+        }
+
+        .audio-wave-bars span {
+            width: 2px;
+            height: 100%;
+            background: currentColor;
+            border-radius: 9999px;
+            animation: soundWave 0.8s ease-in-out infinite alternate;
+        }
+
+        .audio-wave-bars span:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+        .audio-wave-bars span:nth-child(3) { animation-delay: 0.4s; height: 80%; }
+
+        @keyframes soundWave {
+            from { height: 25%; }
+            to { height: 100%; }
+        }
+
+        /* ============================================================
+           Timeline Search, Filters & Real-Time Auto-Refresh Toolbar
+           ============================================================ */
+        .timeline-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .timeline-search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.35rem 0.75rem;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .timeline-search-wrap svg {
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+
+        .timeline-search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            color: var(--text-heading);
+            width: 100%;
+        }
+
+        .timeline-filters-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .timeline-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.35rem 0.65rem;
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            color: var(--text-body);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-sync-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 0.3rem 0.7rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sync-toggle:hover {
+            border-color: var(--indigo);
+        }
+
+        .btn-sync-toggle.is-active {
+            border-color: var(--emerald-border);
+            background: var(--emerald-tint);
+            color: var(--emerald);
+        }
+
+        .sync-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-light);
+        }
+
+        .sync-dot.live {
+            background: var(--emerald);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+            animation: syncPulse 2s infinite;
+        }
+
+        @keyframes syncPulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.25); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* ============================================================
+           Custom Fault Injection Modal Dialog
+           ============================================================ */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-dialog {
+            background: var(--bg-card);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 540px;
+            overflow: hidden;
+            animation: modalPop 0.2s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.96) translateY(8px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 1.15rem 1.4rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            line-height: 1;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .btn-close:hover { color: var(--text-heading); }
+
+        .modal-body {
+            padding: 1.25rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-hint {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-body);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .form-control {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem;
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            color: var(--text-heading);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--indigo);
+            background: var(--bg-card);
+        }
+
+        .modal-footer {
+            padding-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.75rem;
+            font-size: 0.74rem;
+        }
+
+        .btn-theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        /* Tab Navigation */
+        .app-tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .tab-btn:hover {
+            color: var(--text-heading);
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .tab-btn.active {
+            color: var(--indigo);
+            border-bottom-color: var(--indigo);
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast Error Notification */
+        .toast-error {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #DC2626;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -931,20 +1889,25 @@
         <div class="header-right">
             <div id="awsStatusPill" class="status-pill">
                 <span class="status-dot"></span>
-                <span>AWS Connected (eu-north-1)</span>
+                <span>Checking AWS status...</span>
             </div>
 
-            <div class="on-call-badge">
+            <div class="on-call-badge" id="onCallBadge" style="cursor: pointer;" title="Click to customize SRE On-Call Responder">
                 <span class="on-call-tag">ON CALL</span>
                 <div class="on-call-info">
-                    <strong>SRE Team</strong>
-                    <small>Active monitoring</small>
+                    <strong id="onCallTeamName">SRE Team</strong>
+                    <small id="onCallStatus">Active monitoring</small>
                 </div>
             </div>
 
-            <button id="btnPollAws" class="btn btn-primary" title="Poll latest CloudWatch alarms">
+            <button id="btnThemeToggle" class="btn btn-ghost btn-theme-toggle" title="Toggle Dark / Light Mode">
+                <span id="themeIcon">🌙</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+
+            <button id="btnPollAws" class="btn btn-primary" title="Connect to API and Sync Data">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-                Sync AWS
+                Connect / Sync Data
             </button>
 
             <button id="btnReset" class="btn btn-ghost" title="Reset incident data">
@@ -962,10 +1925,11 @@
             <div class="heading-left">
                 <div class="incident-badge-row">
                     <span class="incident-type-tag">INCIDENT ANALYSIS</span>
-                    <span id="incidentStatusTag" class="status-tag-open">OPEN ANOMALY</span>
+                    <span id="incidentStatusTag" class="status-tag status-tag-open">OPEN ANOMALY</span>
+                    <span id="incidentCompoundBadge" class="status-tag status-tag-compound" style="display: none;">⚠️ COMPOUND INCIDENT</span>
                 </div>
-                <h1 id="incidentTitle" class="incident-main-title">EC2 Overload & Cascading 500 Failure</h1>
-                <p id="incidentSubtitle" class="incident-sub-title">Live AWS telemetry anomaly detected on instance <code id="incidentResourceId">i-0d790207a3f0070fd</code> in region <code id="incidentRegion">eu-north-1</code>.</p>
+                <h1 id="incidentTitle" class="incident-main-title">Investigating Live Telemetry...</h1>
+                <p id="incidentSubtitle" class="incident-sub-title">Live cloud telemetry anomaly detected on target resource <code id="incidentResourceId">-</code> in region <code id="incidentRegion">-</code>.</p>
             </div>
 
             <div class="lifecycle-stepper">
@@ -994,6 +1958,17 @@
                 </div>
             </div>
         </section>
+
+        <!-- Tab Navigation -->
+        <nav class="app-tabs" id="appTabs">
+            <button class="tab-btn active" onclick="switchTab('tab-overview')">Topology & Diagnostics</button>
+            <button class="tab-btn" onclick="switchTab('tab-timeline')">Incident Timeline</button>
+            <button class="tab-btn" onclick="switchTab('tab-fault-lab')">Fault Injection Lab</button>
+        </nav>
+
+        <div class="tab-content">
+            <!-- TAB 1: Topology & Diagnostics -->
+            <div id="tab-overview" class="tab-pane active">
 
         <!-- KPI Metrics Grid (4 Cards) -->
         <section class="kpi-grid">
@@ -1024,8 +1999,8 @@
             <div class="kpi-card">
                 <span class="kpi-title">Blast radius</span>
                 <div class="kpi-number-row">
-                    <span id="kpiBlastCount" class="kpi-big-num">1</span>
-                    <span class="kpi-badge-sub">of 6 services</span>
+                    <span id="kpiBlastCount" class="kpi-big-num">0</span>
+                    <span class="kpi-badge-sub">services impacted</span>
                 </div>
             </div>
         </section>
@@ -1056,11 +2031,11 @@
                 <!-- Selected Service Inspector -->
                 <div class="selected-service-card" id="selectedServiceCard">
                     <div class="selected-service-header">
-                        <span class="inspector-label">SELECTED SERVICE</span>
-                        <span id="inspectorRiskTag" class="risk-tag">Risk Score: 78/100</span>
+                        <span class="inspector-label">SERVICE INSPECTOR & WHAT-IF BLAST SIMULATION</span>
+                        <span id="inspectorRiskTag" class="risk-tag">Click a node to inspect</span>
                     </div>
                     <div id="inspectorContent" class="inspector-body">
-                        Click any service node above to inspect its upstream dependencies and downstream blast impact.
+                        Click any service node in the topology above to simulate hypothetical outages, evaluate transitive blast radius, and view upstream callers.
                     </div>
                 </div>
             </section>
@@ -1078,20 +2053,48 @@
                     <div class="diagnosis-hero-box">
                         <div class="diagnosis-top-line">
                             <span class="eyebrow-tag">MOST LIKELY CAUSE</span>
-                            <span id="diagnosisConfidenceTag" class="confidence-tag">78% CONFIDENCE</span>
+                            <span id="diagnosisConfidenceTag" class="confidence-tag">0% CONFIDENCE</span>
                         </div>
-                        <h3 id="diagnosisCauseTitle" class="diagnosis-title">EC2 Overload</h3>
-                        <div id="diagnosisResourceId" class="diagnosis-resource-tag">i-0d790207a3f0070fd</div>
+                        <h3 id="diagnosisCauseTitle" class="diagnosis-title">Analyzing Telemetry...</h3>
+                        <div id="diagnosisResourceId" class="diagnosis-resource-tag">-</div>
                         <p id="diagnosisExplanation" class="diagnosis-desc">
-                            The compute host crossed its CPU threshold first, then degraded the API, worker, and application chain.
+                            Awaiting live incident telemetry from CloudWatch or synthetic simulations...
                         </p>
+                    </div>
+
+                    <!-- Causal Paths Section -->
+                    <div class="causal-paths-section" id="causalPathsSection">
+                        <h4 class="evidence-heading">Topological Causal Path(s)</h4>
+                        <div class="causal-paths-list" id="causalPathsList">
+                            <!-- Injected by app.js -->
+                        </div>
                     </div>
 
                     <!-- Evidence Breakdown Section -->
                     <div class="evidence-section">
-                        <h4 class="evidence-heading">Evidence & Scoring Breakdown</h4>
+                        <h4 class="evidence-heading">Evidence & Scoring Breakdown (5 Dimensions)</h4>
                         <div class="evidence-bars" id="scoringBars">
                             <!-- Injected by app.js -->
+                        </div>
+                    </div>
+
+                    <!-- Candidate Ranking Table -->
+                    <div class="candidate-ranking-section" id="candidateRankingSection">
+                        <h4 class="evidence-heading">Root Cause Candidate Ranking (Ensemble)</h4>
+                        <div class="candidate-table-wrap">
+                            <table class="candidate-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Service Candidate</th>
+                                        <th>Score</th>
+                                        <th>Role Classification</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="candidateRankingBody">
+                                    <!-- Injected by app.js -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -1105,10 +2108,13 @@
                 <div class="card-panel fix-panel">
                     <div class="panel-header-row">
                         <div>
-                            <h2 class="panel-heading">Suggested fix</h2>
-                            <span class="panel-subtext">Scale worker capacity & reboot overloaded instance</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h2 class="panel-heading">Suggested fix</h2>
+                                <span id="fixActionTypeBadge" class="action-type-pill" style="display: none;">SCALE_OUT</span>
+                            </div>
+                            <span id="fixActionSubtitle" class="panel-subtext">Automated remediation runbook</span>
                         </div>
-                        <span class="time-estimate-pill">~3 min to resolve</span>
+                        <span id="fixEstimatedTime" class="time-estimate-pill">~3 min to resolve</span>
                     </div>
 
                     <div class="code-terminal-box">
@@ -1116,9 +2122,18 @@
                             <span class="terminal-label">AWS CLI Runbook</span>
                             <button id="btnCopyCommand" class="btn-copy">Copy</button>
                         </div>
-                        <pre><code id="remediationCommand">aws autoscaling set-desired-capacity --auto-scaling-group-name prod-web-asg --desired-capacity 6
-aws ec2 reboot-instances --instance-ids i-0d790207a3f0070fd
-aws cloudwatch set-alarm-state --alarm-name Cpu-Utilizations-RCA --state-value OK</code></pre>
+                        <pre><code id="remediationCommand"># Runbook commands will load here...</code></pre>
+                    </div>
+
+                    <!-- Safety Pre-Checks -->
+                    <div class="safety-checks-box" id="safetyChecksBox">
+                        <div class="safety-header">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Automated Pre-Flight Safety Checks</span>
+                        </div>
+                        <ul class="safety-list" id="safetyChecksList">
+                            <!-- Injected by app.js -->
+                        </ul>
                     </div>
 
                     <div class="fix-action-row">
@@ -1131,6 +2146,11 @@ aws cloudwatch set-alarm-state --alarm-name Cpu-Utilizations-RCA --state-value O
                 </div>
             </section>
         </main>
+        
+            </div> <!-- End Tab 1 -->
+
+            <!-- TAB 2: Incident Timeline -->
+            <div id="tab-timeline" class="tab-pane">
 
         <!-- Bottom Panel: Incident Timeline -->
         <section class="card-panel timeline-panel">
@@ -1139,16 +2159,204 @@ aws cloudwatch set-alarm-state --alarm-name Cpu-Utilizations-RCA --state-value O
                     <h2 class="panel-heading">Incident timeline</h2>
                     <span class="panel-subtext">Correlated in a 60-second window</span>
                 </div>
-                <span id="timelineEventCount" class="badge-count">0 events recorded</span>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button id="btnToggleAutoSync" class="btn-sync-toggle is-active" title="Toggle Real-Time Background Telemetry Sync">
+                        <span class="sync-dot live" id="syncDot"></span>
+                        <span id="autoSyncLabel">Auto-Sync: ON (5s)</span>
+                    </button>
+                    <span id="timelineEventCount" class="badge-count">0 events recorded</span>
+                </div>
+            </div>
+
+            <!-- Timeline Search & Filtering Toolbar -->
+            <div class="timeline-toolbar">
+                <div class="timeline-search-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="timelineSearchInput" placeholder="Search events, services, error codes, metrics..." class="timeline-search-input">
+                </div>
+                <div class="timeline-filters-group">
+                    <select id="timelineSeverityFilter" class="timeline-select">
+                        <option value="ALL">All Severities</option>
+                        <option value="CRITICAL">Critical Only</option>
+                        <option value="HIGH">High & Critical</option>
+                        <option value="MEDIUM">Medium & Above</option>
+                    </select>
+                    <select id="timelineServiceFilter" class="timeline-select">
+                        <option value="ALL">All Services</option>
+                        <option value="EC2">EC2</option>
+                        <option value="API">API Gateway</option>
+                        <option value="DynamoDB">DynamoDB</option>
+                        <option value="Auth">Auth</option>
+                        <option value="Worker">Worker</option>
+                        <option value="Application">Application</option>
+                    </select>
+                </div>
             </div>
 
             <div class="timeline-list" id="timelineList">
-                <div class="timeline-empty-msg">No active anomaly events recorded yet. Trigger a fault in AWS to see live telemetry.</div>
+                <div class="timeline-empty-msg">No active anomaly events recorded yet. Trigger a fault in AWS or inject a custom anomaly above to see live telemetry.</div>
             </div>
         </section>
+        
+            </div> <!-- End Tab 2 -->
+
+            <!-- TAB 3: Fault Injection Lab -->
+            <div id="tab-fault-lab" class="tab-pane">
+        
+                <!-- Cloud Failure Scenario Selector Bar -->
+                <section class="scenario-selector-container" style="margin-top:0; border-radius: var(--radius-xl);">
+                    <div class="scenario-selector-header">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; flex-wrap: wrap;">
+                            <span class="scenario-badge-label">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                Cloud Scenarios
+                            </span>
+                            <span class="scenario-hint">Switch pre-packaged scenarios, or trigger custom telemetry dynamically:</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="btnOpenFaultModal" class="btn btn-primary btn-sm" title="Inject custom fault telemetry">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                Inject Custom Fault
+                            </button>
+                            <button id="btnCleanState" class="btn btn-ghost btn-sm" title="Clear all telemetry and return to zero-event clean state">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                Zero Clean State
+                            </button>
+                        </div>
+                    </div>
+                    <div class="scenario-buttons-grid" id="scenarioSelector">
+                        <!-- Dynamically populated by app.js -->
+                    </div>
+                </section>
+            
+            </div> <!-- End Tab 3 -->
+        
+        </div> <!-- End Tab Content -->
+    </div>
+
+    <!-- Floating Component Hover Tooltip Popover -->
+    <div id="graphNodeTooltip" class="graph-node-tooltip" style="display: none;">
+        <div class="tooltip-header">
+            <span id="ttIcon">📦</span>
+            <strong id="ttTitle">Service</strong>
+            <span id="ttTag" class="tooltip-tag">HEALTHY</span>
+        </div>
+        <div class="tooltip-body">
+            <div id="ttReason" class="tooltip-reason">Operating within healthy performance thresholds.</div>
+            <div class="tooltip-meta" id="ttMeta">
+                <div>• Metric: <strong id="ttMetric">Nominal</strong></div>
+                <div>• Blast Callers: <strong id="ttDependents">0 services</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Fault Injection Modal Dialog -->
+    <div id="faultInjectorModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">⚡</span>
+                    <h3 class="modal-title">Inject Real-Time Failure Telemetry</h3>
+                </div>
+                <button id="btnCloseFaultModal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-hint">Trigger an anomaly on any microservice without using pre-packaged scenarios. The RCA correlation engine will process it dynamically in real time.</p>
+                <form id="faultInjectorForm" onsubmit="event.preventDefault(); submitCustomFault();">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="faultTargetService">Target Service</label>
+                            <select id="faultTargetService" class="form-control" required>
+                                <option value="EC2">EC2 Host (Compute)</option>
+                                <option value="DynamoDB">DynamoDB (Database)</option>
+                                <option value="Auth">Auth Service (OAuth2 / Identity)</option>
+                                <option value="Worker">Worker Pods (Queue Processing)</option>
+                                <option value="API">API Gateway (Backend Edge)</option>
+                                <option value="Application">Application (Web Client)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="faultSeverity">Severity</label>
+                            <select id="faultSeverity" class="form-control" required>
+                                <option value="CRITICAL">CRITICAL</option>
+                                <option value="HIGH" selected>HIGH</option>
+                                <option value="MEDIUM">MEDIUM</option>
+                                <option value="LOW">LOW</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="faultEventType">Failure Event Type</label>
+                            <select id="faultEventType" class="form-control" required>
+                                <option value="cpu_utilization_high">cpu_utilization_high</option>
+                                <option value="read_throttled_requests">read_throttled_requests</option>
+                                <option value="jwks_certificate_expired">jwks_certificate_expired</option>
+                                <option value="container_oom_killed">container_oom_killed</option>
+                                <option value="api_latency_high">api_latency_high</option>
+                                <option value="db_connection_timeout">db_connection_timeout</option>
+                                <option value="http_500_internal_error">http_500_internal_error</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="faultSource">Source</label>
+                            <select id="faultSource" class="form-control">
+                                <option value="cloudwatch">AWS CloudWatch</option>
+                                <option value="kubernetes">Kubernetes</option>
+                                <option value="application">Application Logs</option>
+                                <option value="synthetic">Direct Anomaly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="faultMetricName">Metric Name</label>
+                            <input type="text" id="faultMetricName" class="form-control" value="CPUUtilization">
+                        </div>
+                        <div class="form-group">
+                            <label for="faultMetricValue">Metric Value</label>
+                            <input type="number" id="faultMetricValue" class="form-control" value="98.5" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="faultResourceId">Resource ID</label>
+                            <input type="text" id="faultResourceId" class="form-control" value="i-custom-instance-01">
+                        </div>
+                        <div class="form-group">
+                            <label for="faultRegion">Region</label>
+                            <input type="text" id="faultRegion" class="form-control" value="us-east-1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnCancelFaultModal" class="btn btn-ghost">Cancel</button>
+                        <button type="submit" id="btnSubmitFault" class="btn btn-primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            Fire Telemetry Anomaly
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
-    <script src="/static/app.js"></script>
+    <!-- API Error Toast -->
+    <div id="apiErrorToast" class="toast-error">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="apiErrorText">Cannot connect to backend server. Make sure the FastAPI app is running!</span>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Tab switching logic for index.html directly
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        };
+    </script>
 </body>
 </html>
