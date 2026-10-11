@@ -1,11 +1,11 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from backend.app.models.event import CloudEvent, Incident
 from rca_engine.scoring import score_candidate
 from rca_engine.causal_graph import causal_graph_engine
 from rca_engine.remediation import generate_remediation_plan
 
 
-def analyze_incident(incident: Incident) -> Dict[str, Any]:
+def analyze_incident(incident: Incident, graph_engine: Optional[Any] = None) -> Dict[str, Any]:
     """
     Advanced Root Cause Analysis Engine.
     
@@ -31,10 +31,12 @@ def analyze_incident(incident: Incident) -> Dict[str, Any]:
             "remediation_suggestion": "No events found to analyze."
         }
 
+    cg = graph_engine if graph_engine is not None else causal_graph_engine
+
     # Distinct service candidates
-    candidates = list(set(e.service for e in incident.events))
-    scored = [score_candidate(c, incident.events) for c in candidates]
-    scored.sort(key=lambda s: s["total"], reverse=True)
+    candidates = sorted(list(set(e.service for e in incident.events)))
+    scored = [score_candidate(c, incident.events, graph_engine=cg) for c in candidates]
+    scored.sort(key=lambda s: (-s["total"], s["service"]))
 
     primary_root = scored[0]
     root_service = primary_root["service"]
@@ -54,7 +56,7 @@ def analyze_incident(incident: Incident) -> Dict[str, Any]:
     # Trace Topological Causal Propagation Paths
     causal_paths = []
     for affected in affected_services:
-        paths = causal_graph_engine.find_causal_paths(root_service, affected)
+        paths = cg.find_causal_paths(root_service, affected)
         for p in paths:
             causal_paths.append(" -> ".join(p))
 
@@ -67,7 +69,7 @@ def analyze_incident(incident: Incident) -> Dict[str, Any]:
     bd = primary_root["breakdown"]
     reasoning_chain = [
         f"1. Temporal Origin: Service '{root_service}' registered the earliest anomaly in the incident timeline ({bd.get('temporal_correlation', 25)} pts awarded).",
-        f"2. Graph Blast Radius: '{root_service}' occupies a structural dependency position affecting {len(causal_graph_engine.get_blast_radius(root_service))} downstream service(s) ({bd.get('dependency_relationship', 30)} pts).",
+        f"2. Graph Blast Radius: '{root_service}' occupies a structural dependency position affecting {len(cg.get_blast_radius(root_service))} downstream service(s) ({bd.get('dependency_relationship', 30)} pts).",
         f"3. Symptom Correlation: {len(affected_services)} downstream services ({', '.join(affected_services) if affected_services else 'None'}) exhibited concurrent failure symptoms matching the topology ({bd.get('downstream_symptoms', 20)} pts).",
         f"4. Anomaly Magnitude & Severity: Threshold telemetry breach scored at {bd.get('metric_anomaly_magnitude', 15)} pts with severity weight of {bd.get('severity', 10)} pts.",
         f"5. Calibrated Result: '{root_service}' determined as Primary Root Cause with {primary_root['total']}% confidence."

@@ -1,0 +1,12 @@
+{
+  "enable_source_health": true,
+  "enable_coverage": true,
+  "enable_contradictions": true,
+  "enable_margin": true,
+  "min_score_diagnose": 55.0,
+  "min_score_confirmed": 75.0,
+  "min_coverage_confirmed": 0.4,
+  "min_margin_confirmed": 3.0,
+  "max_down_sources_allowed": 0,
+  "block_on_contradiction": true
+}

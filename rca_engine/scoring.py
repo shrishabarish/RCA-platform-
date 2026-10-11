@@ -1,5 +1,5 @@
 import math
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from backend.app.models.event import CloudEvent, Severity
 from rca_engine.causal_graph import causal_graph_engine
 from backend.app.core.config import config
@@ -16,7 +16,7 @@ SEVERITY_WEIGHTS = {
 }
 
 
-def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[str, Any]:
+def score_candidate(candidate_service: str, events: List[CloudEvent], graph_engine: Optional[Any] = None) -> Dict[str, Any]:
     """
     Advanced Multi-Factor Ensemble Scoring Algorithm for Cloud RCA.
     
@@ -39,6 +39,7 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
         }
 
     cfg = config.scoring
+    cg = graph_engine if graph_engine is not None else causal_graph_engine
 
     # 1. Temporal Lead Time Score (Max 25 pts)
     earliest_overall = min(e.timestamp for e in events)
@@ -53,8 +54,8 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
         temporal_score = max(cfg.min_decay_floor, int(round(decayed)))
 
     # 2. Topological Blast Radius & Centrality Score (Max 30 pts)
-    direct_dependents = causal_graph_engine.get_direct_dependents(candidate_service)
-    transitive_blast = causal_graph_engine.get_blast_radius(candidate_service)
+    direct_dependents = cg.get_direct_dependents(candidate_service)
+    transitive_blast = cg.get_blast_radius(candidate_service)
     all_downstream = list(set(direct_dependents + transitive_blast))
 
     # Base points from direct downstream dependents

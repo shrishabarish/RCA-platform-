@@ -1,7 +1,7 @@
 import uuid
 import hashlib
 from datetime import timedelta, datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Any
 from backend.app.models.event import CloudEvent, Incident, Severity, IncidentStatus
 from rca_engine.noise_filter import NoiseFilterEngine
 from backend.app.core.config import config
@@ -42,7 +42,7 @@ class TimeWindowCorrelator:
         self.max_events_per_incident = max_events or config.correlator.max_events_per_incident
         self.noise_filter = NoiseFilterEngine() if enable_noise_filter else None
 
-    def correlate(self, events: List[CloudEvent]) -> List[Incident]:
+    def correlate(self, events: List[CloudEvent], graph_engine: Optional[Any] = None) -> List[Incident]:
         if not events:
             return []
 
@@ -58,6 +58,7 @@ class TimeWindowCorrelator:
         # 2. Sort events chronologically by timestamp (handling late/out-of-order events)
         sorted_events = sorted(filtered_events, key=lambda e: _ensure_utc(e.timestamp))
 
+        cg = graph_engine if graph_engine is not None else causal_graph_engine
         incidents: List[Incident] = []
 
         for event in sorted_events:
@@ -79,7 +80,7 @@ class TimeWindowCorrelator:
                     # Check topological relation
                     is_related = (
                         not inc.affected_services
-                        or any(causal_graph_engine.are_services_related(event.service, s) for s in inc.affected_services)
+                        or any(cg.are_services_related(event.service, s) for s in inc.affected_services)
                     )
                     if is_related:
                         matched_inc = inc

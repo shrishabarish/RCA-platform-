@@ -26,13 +26,25 @@ class CausalGraphEngine:
     and automatic collision-free topological coordinate layout.
     """
 
-    def __init__(self):
-        self.graph = self._build_cloud_topology()
+    def __init__(self, custom_graph: Optional[nx.DiGraph] = None):
+        self.graph = custom_graph if custom_graph is not None else self._build_cloud_topology()
         self._blast_radius_cache: Dict[str, List[str]] = {}
         self._direct_dependents_cache: Dict[str, List[str]] = {}
         self._causal_paths_cache: Dict[Tuple[str, str], List[List[str]]] = {}
         self._pagerank_cache: Optional[Dict[str, float]] = None
         self._reversed_graph_cache: Optional[nx.DiGraph] = None
+
+    @classmethod
+    def from_topology(cls, topology_data) -> "CausalGraphEngine":
+        """Factory to build an isolated CausalGraphEngine from an arbitrary topology."""
+        g = nx.DiGraph()
+        for node in topology_data.nodes:
+            n_id = node.id if hasattr(node, "id") else node["id"]
+            attrs = node.model_dump() if hasattr(node, "model_dump") else dict(node)
+            g.add_node(n_id, **attrs)
+        for edge in topology_data.edges:
+            g.add_edge(edge[0], edge[1])
+        return cls(custom_graph=g)
 
     def invalidate_cache(self):
         """Clears cached topology computations when graph structure changes."""
