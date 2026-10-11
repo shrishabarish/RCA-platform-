@@ -19,7 +19,8 @@ def test_case_files_sha256_integrity():
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     files = manifest.get("files", {})
-    assert len(files) == 91, f"Expected 91 manifest files, found {len(files)}"
+    assert len(files) == manifest["total_cases"], f"Expected {manifest['total_cases']} manifest files, found {len(files)}"
+    assert len(files) == 225, f"Expected 225 manifest files for v1.1.0, found {len(files)}"
 
     for rel_path, meta in files.items():
         file_path = PROJECT_ROOT / rel_path

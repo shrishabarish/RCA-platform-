@@ -1,0 +1,209 @@
+{
+  "case_id": "case_fam_gen_007_change_topology_mid_incident",
+  "family_id": "fam_gen_007",
+  "base_case_id": "case_fam_gen_007_base",
+  "generator_version": "1.1.0",
+  "seed": 259,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      },
+      {
+        "id": "SidecarProxy_730",
+        "type": "service",
+        "label": "Dynamic Envoy Proxy",
+        "criticality": 0.7
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ],
+      [
+        "API",
+        "SidecarProxy_730"
+      ],
+      [
+        "SidecarProxy_730",
+        "DynamoDB"
+      ]
+    ],
+    "topology_version": "dyn-v2"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_007_base_001",
+      "event_time": "2026-09-03T23:43:00+00:00",
+      "observed_time": "2026-09-03T23:43:00+00:00",
+      "source": "datadog",
+      "service": "EC2",
+      "metric": "MemoryPressure",
+      "value": 91.56,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_007_base_003",
+      "event_time": "2026-09-03T23:43:05.842008+00:00",
+      "observed_time": "2026-09-03T23:43:05.842008+00:00",
+      "source": "datadog",
+      "service": "Worker",
+      "metric": "MemoryUtilization",
+      "value": 91.21,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_SidecarProxy_730",
+      "event_time": "2026-09-03T23:43:06.744899+00:00",
+      "observed_time": "2026-09-03T23:43:06.744899+00:00",
+      "source": "otel",
+      "service": "SidecarProxy_730",
+      "metric": "Latency",
+      "value": 1800.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_007_base_002",
+      "event_time": "2026-09-03T23:43:06.892288+00:00",
+      "observed_time": "2026-09-03T23:43:06.892288+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "Latency",
+      "value": 3338.54,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_007_base_004",
+      "event_time": "2026-09-03T23:43:10.962014+00:00",
+      "observed_time": "2026-09-03T23:43:10.962014+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "CheckoutFailures",
+      "value": 31.43,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_007_base_005",
+      "event_time": "2026-09-03T23:43:13.154254+00:00",
+      "observed_time": "2026-09-03T23:43:13.154254+00:00",
+      "source": "syslog",
+      "service": "DynamoDB",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T23:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T23:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T23:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T23:43:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "EC2"
+    ],
+    "onset_times": {
+      "EC2": "2026-09-03T23:43:00+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "EC2",
+      "Worker": "EC2",
+      "Application": "EC2"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "evt_case_fam_gen_007_base_001",
+        "evt_case_fam_gen_007_base_003",
+        "evt_case_fam_gen_007_base_002",
+        "evt_case_fam_gen_007_base_004",
+        "evt_case_fam_gen_007_base_005"
+      ]
+    ]
+  },
+  "perturbations": [
+    "change_topology_mid_incident"
+  ],
+  "tags": [
+    "generated",
+    "6-node",
+    "single-root",
+    "topology_change"
+  ],
+  "is_hard": false
+}

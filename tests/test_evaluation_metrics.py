@@ -125,3 +125,45 @@ def test_confident_wrong_rate_hand_computed():
     res = compute_confident_wrong_rate(pairs, confidence_threshold=80.0)
     assert res.value == 25.0
     assert res.sample_size == 4
+
+
+def test_metrics_recomputed_from_per_case_file():
+    """
+    Verifies that all metrics reported by the harness can be recomputed directly
+    from the saved per-case results CSV file (evaluation/results/latest_dev.csv).
+    """
+    import csv
+    from pathlib import Path
+    from evaluation.harness import load_cases, run_evaluation
+    from evaluation.baselines.current_scorer import CurrentScorerBaseline
+
+    csv_path = Path("evaluation/results/latest_dev.csv")
+    assert csv_path.exists(), "Per-case results CSV file missing"
+
+    with open(csv_path, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    assert len(rows) > 0, "Per-case results CSV is empty"
+
+    # Recompute Top-1 accuracy from CSV
+    single_root_diagnose = [r for r in rows if r["expected_verdict"] == "DIAGNOSE" and r["num_true_roots"] == "1"]
+    n_single = len(single_root_diagnose)
+    assert n_single > 0
+    k_correct = sum(1 for r in single_root_diagnose if r["Current_5Factor_Ensemble_top1_correct"] == "True")
+    csv_top1_pct = round((k_correct / n_single) * 100.0, 2)
+
+    # In-memory computation
+    dev_cases = load_cases("dev")
+    cs = CurrentScorerBaseline()
+    pairs = [(c, cs.predict(c)) for c in dev_cases]
+    mem_top1 = compute_top_k_accuracy(pairs, k=1)
+
+    assert csv_top1_pct == mem_top1.value, f"CSV Top-1 ({csv_top1_pct}) does not match in-memory Top-1 ({mem_top1.value})"
+
+    # Recompute Confident-Wrong rate from CSV
+    cw_count = sum(1 for r in rows if r["Current_5Factor_Ensemble_confident_wrong"] == "True")
+    csv_cw_pct = round((cw_count / len(rows)) * 100.0, 2)
+    mem_cw = compute_confident_wrong_rate(pairs, confidence_threshold=75.0)
+
+    assert csv_cw_pct == mem_cw.value, f"CSV Confident-Wrong ({csv_cw_pct}) does not match in-memory Confident-Wrong ({mem_cw.value})"
+

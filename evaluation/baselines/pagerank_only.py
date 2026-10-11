@@ -57,12 +57,23 @@ class PageRankBaseline(RCABaselineAdapter):
             norm_score = round((pr.get(s, 0.0) / max(max_pr, 1e-6)) * 100.0, 1)
             scores[s] = norm_score
 
+        # Calibrated confidence: based on relative separation between top and second PageRank
+        if len(ranked) > 1:
+            top_pr = pr.get(ranked[0], 0.0)
+            second_pr = pr.get(ranked[1], 0.0)
+            rel_gap = (top_pr - second_pr) / max(top_pr, 1e-6)
+            top_confidence = min(100.0, round(50.0 + 50.0 * rel_gap, 1))
+        elif len(ranked) == 1:
+            top_confidence = 75.0
+        else:
+            top_confidence = 0.0
+
         return BaselineResult(
             baseline_name=self.name,
             case_id=case.case_id,
             verdict="DIAGNOSE",
             predicted_root_causes=ranked,
             candidate_scores=scores,
-            confidence=scores[ranked[0]] if ranked else 0.0,
+            confidence=top_confidence,
             metadata={"raw_pagerank": {s: round(pr.get(s, 0.0), 4) for s in ranked}}
         )

@@ -7,6 +7,8 @@ from evaluation.schema import EvaluationCase, EventData, SourceHealthRecord, Top
 def apply_drop_one_signal(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Drops exactly one event from the event sequence."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     if len(c.events) > 1:
         idx_to_drop = rng.randint(0, len(c.events) - 1)
         dropped = c.events.pop(idx_to_drop)
@@ -18,16 +20,26 @@ def apply_drop_one_signal(case: EvaluationCase, rng: random.Random) -> Evaluatio
 def apply_drop_all_signals_one_source(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Drops all events originating from a chosen telemetry source and marks it DOWN."""
     c = copy.deepcopy(case)
-    sources = list(set(e.source for e in c.events))
-    if not sources:
-        return c
-    target_source = rng.choice(sources)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
+    # Target the source of the primary root if available, otherwise any source
+    root_service = c.ground_truth.true_root_causes[0] if c.ground_truth.true_root_causes else None
+    root_sources = [e.source for e in c.events if e.service == root_service]
+    if root_sources:
+        target_source = rng.choice(root_sources)
+    else:
+        sources = list(set(e.source for e in c.events))
+        if not sources:
+            return c
+        target_source = rng.choice(sources)
+
     c.events = [e for e in c.events if e.source != target_source]
     
     # Mark in source health
+    onset = c.ground_truth.onset_times.get(root_service, "2026-09-01T12:00:00Z") if root_service else "2026-09-01T12:00:00Z"
     c.source_health.append(SourceHealthRecord(
         source=target_source,
-        timestamp=c.ground_truth.onset_times.get(c.ground_truth.true_root_causes[0], "2026-09-01T12:00:00Z"),
+        timestamp=onset,
         status="DOWN"
     ))
     c.perturbations.append("drop_all_signals_one_source")
@@ -44,6 +56,8 @@ def apply_drop_all_signals_one_source(case: EvaluationCase, rng: random.Random) 
 def apply_delay_and_reorder(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Artificially delays observed_time and shuffles arrival order."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     for e in c.events:
         delay_sec = rng.uniform(5.0, 30.0)
         dt = datetime.fromisoformat(e.observed_time)
@@ -58,6 +72,8 @@ def apply_delay_and_reorder(case: EvaluationCase, rng: random.Random) -> Evaluat
 def apply_duplicate(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Injects a sudden burst of duplicates for symptom events."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     if not c.events:
         return c
     # Pick a symptom event (prefer non-root)
@@ -84,6 +100,8 @@ def apply_duplicate(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
 def apply_clock_skew(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Applies unsynchronized clock skew (shifts event_time ahead or behind by 20-45s)."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     if not c.events:
         return c
     services = list(set(e.service for e in c.events))
@@ -104,6 +122,8 @@ def apply_clock_skew(case: EvaluationCase, rng: random.Random) -> EvaluationCase
 def apply_second_independent_failure(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Adds an independent second root failure occurring within the same time window."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     # Pick a node in topology that is not currently a root cause
     all_nodes = [n.id for n in c.topology.nodes]
     available = [n for n in all_nodes if n not in c.ground_truth.true_root_causes]
@@ -136,6 +156,8 @@ def apply_second_independent_failure(case: EvaluationCase, rng: random.Random) -
 def apply_severe_decoy(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Injects a severe unrelated decoy event later in timeline on a non-root service."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     all_nodes = [n.id for n in c.topology.nodes]
     non_roots = [n for n in all_nodes if n not in c.ground_truth.true_root_causes]
     if not non_roots:
@@ -163,6 +185,8 @@ def apply_severe_decoy(case: EvaluationCase, rng: random.Random) -> EvaluationCa
 def apply_change_topology_mid_incident(case: EvaluationCase, rng: random.Random) -> EvaluationCase:
     """Simulates dynamic topology expansion mid-incident by introducing a dynamic node & edge."""
     c = copy.deepcopy(case)
+    c.base_case_id = case.case_id
+    c.generator_version = "1.1.0"
     new_node_id = f"SidecarProxy_{rng.randint(100, 999)}"
     c.topology.nodes.append(TopologyNode(id=new_node_id, type="service", label="Dynamic Envoy Proxy", criticality=0.7))
     

@@ -37,12 +37,14 @@ class GroundTruth(BaseModel):
     onset_times: Dict[str, str] = Field(default_factory=dict)
     symptom_to_cause: Dict[str, str] = Field(default_factory=dict)
     expected_verdict: str = "DIAGNOSE"  # DIAGNOSE or ABSTAIN
+    incident_groups: List[List[str]] = Field(default_factory=list)  # Groups of event IDs or services representing distinct true incidents
 
 
 class EvaluationCase(BaseModel):
     case_id: str
     family_id: str
-    generator_version: str = "1.0"
+    base_case_id: Optional[str] = None  # If perturbed, points to the unperturbed base case in the family
+    generator_version: str = "1.1.0"
     seed: int
     topology: TopologyData
     events: List[EventData]
@@ -50,3 +52,5 @@ class EvaluationCase(BaseModel):
     ground_truth: GroundTruth
     perturbations: List[str] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list)
+    is_hard: bool = False
+

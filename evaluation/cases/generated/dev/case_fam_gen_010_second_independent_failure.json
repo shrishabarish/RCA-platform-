@@ -1,0 +1,174 @@
+{
+  "case_id": "case_fam_gen_010_second_independent_failure",
+  "family_id": "fam_gen_010",
+  "base_case_id": "case_fam_gen_010_base",
+  "generator_version": "1.1.0",
+  "seed": 352,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "6-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_010_base_001",
+      "event_time": "2026-09-03T12:26:00+00:00",
+      "observed_time": "2026-09-03T12:26:00+00:00",
+      "source": "syslog",
+      "service": "Auth",
+      "metric": "JWTSignatureFailures",
+      "value": 54.87,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_010_base_002",
+      "event_time": "2026-09-03T12:26:03.353015+00:00",
+      "observed_time": "2026-09-03T12:26:03.353015+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "HTTP500Errors",
+      "value": 36.5,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_sec_root_Worker",
+      "event_time": "2026-09-03T12:26:06.699922+00:00",
+      "observed_time": "2026-09-03T12:26:06.699922+00:00",
+      "source": "datadog",
+      "service": "Worker",
+      "metric": "ErrorRate",
+      "value": 95.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_010_base_003",
+      "event_time": "2026-09-03T12:26:07.662356+00:00",
+      "observed_time": "2026-09-03T12:26:07.662356+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 45.26,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T12:26:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T12:26:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T12:26:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T12:26:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "Auth",
+      "Worker"
+    ],
+    "onset_times": {
+      "Auth": "2026-09-03T12:26:00+00:00",
+      "Worker": "2026-09-03T12:26:06.699922+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "Auth",
+      "Application": "Auth"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "evt_case_fam_gen_010_base_001",
+        "evt_case_fam_gen_010_base_002",
+        "evt_case_fam_gen_010_base_003"
+      ]
+    ]
+  },
+  "perturbations": [
+    "second_independent_failure"
+  ],
+  "tags": [
+    "generated",
+    "6-node",
+    "single-root",
+    "multi-root"
+  ],
+  "is_hard": false
+}

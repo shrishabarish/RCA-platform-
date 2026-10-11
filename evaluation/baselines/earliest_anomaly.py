@@ -39,9 +39,19 @@ class EarliestAnomalyBaseline(RCABaselineAdapter):
         scores: Dict[str, float] = {}
         for s in ranked:
             delta_sec = max(0.0, (earliest_per_service[s] - t0).total_seconds())
-            # Linearly or exponentially scaled confidence: 100 at t0, decays with gap
-            score = max(10.0, round(100.0 / (1.0 + 0.05 * delta_sec), 1))
-            scores[s] = score
+            scores[s] = max(10.0, round(100.0 / (1.0 + 0.05 * delta_sec), 1))
+
+        # Calibrated confidence: based on separation between top candidate and 2nd candidate
+        if len(ranked) > 1:
+            t_first = earliest_per_service[ranked[0]]
+            t_second = earliest_per_service[ranked[1]]
+            lead_gap = max(0.0, (t_second - t_first).total_seconds())
+            # Gap of 0s -> 50% confidence; gap of >=10s -> 100% confidence
+            top_confidence = min(100.0, round(50.0 + 5.0 * lead_gap, 1))
+        elif len(ranked) == 1:
+            top_confidence = 75.0
+        else:
+            top_confidence = 0.0
 
         return BaselineResult(
             baseline_name=self.name,
@@ -49,6 +59,6 @@ class EarliestAnomalyBaseline(RCABaselineAdapter):
             verdict="DIAGNOSE",
             predicted_root_causes=ranked,
             candidate_scores=scores,
-            confidence=scores[ranked[0]] if ranked else 0.0,
+            confidence=top_confidence,
             metadata={"earliest_timestamps": {s: earliest_per_service[s].isoformat() for s in ranked}}
         )

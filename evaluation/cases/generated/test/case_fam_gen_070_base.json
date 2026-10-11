@@ -1,0 +1,182 @@
+{
+  "case_id": "case_fam_gen_070_base",
+  "family_id": "fam_gen_070",
+  "base_case_id": null,
+  "generator_version": "1.1.0",
+  "seed": 2212,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "6-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_070_base_001",
+      "event_time": "2026-09-04T01:32:00+00:00",
+      "observed_time": "2026-09-04T01:32:00+00:00",
+      "source": "syslog",
+      "service": "DynamoDB",
+      "metric": "ConnectionTimeout",
+      "value": 88.92,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_070_base_003",
+      "event_time": "2026-09-04T01:32:05.872583+00:00",
+      "observed_time": "2026-09-04T01:32:05.872583+00:00",
+      "source": "syslog",
+      "service": "Worker",
+      "metric": "JobQueueLag",
+      "value": 221.14,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_070_base_002",
+      "event_time": "2026-09-04T01:32:06.144575+00:00",
+      "observed_time": "2026-09-04T01:32:06.144575+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "HTTP500Errors",
+      "value": 27.67,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_070_base_004",
+      "event_time": "2026-09-04T01:32:12.699394+00:00",
+      "observed_time": "2026-09-04T01:32:12.699394+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "CheckoutFailures",
+      "value": 18.38,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_070_base_005",
+      "event_time": "2026-09-04T01:32:17.677515+00:00",
+      "observed_time": "2026-09-04T01:32:17.677515+00:00",
+      "source": "datadog",
+      "service": "Auth",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-04T01:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-04T01:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-04T01:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-04T01:32:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "DynamoDB"
+    ],
+    "onset_times": {
+      "DynamoDB": "2026-09-04T01:32:00+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "DynamoDB",
+      "Worker": "DynamoDB",
+      "Application": "DynamoDB"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "evt_case_fam_gen_070_base_001",
+        "evt_case_fam_gen_070_base_003",
+        "evt_case_fam_gen_070_base_002",
+        "evt_case_fam_gen_070_base_004",
+        "evt_case_fam_gen_070_base_005"
+      ]
+    ]
+  },
+  "perturbations": [],
+  "tags": [
+    "generated",
+    "6-node",
+    "single-root"
+  ],
+  "is_hard": false
+}
