@@ -58,6 +58,7 @@ class DBCloudEvent(Base):
     __table_args__ = (
         Index("ix_cloud_events_service_timestamp", "service", "timestamp"),
         Index("ix_cloud_events_unassigned", "timestamp", postgresql_where=text("incident_id IS NULL")),
+        Index("ix_cloud_events_ingested_at_unassigned", "ingested_at", postgresql_where=text("incident_id IS NULL")),
     )
 
 

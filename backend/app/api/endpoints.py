@@ -62,8 +62,40 @@ def get_ready():
 
     # Backlog health & degradation guardrail
     oldest_age = correlator_consumer.metrics_data.get("oldest_unassigned_age_seconds", 0.0)
+    unassigned_count = correlator_consumer.metrics_data.get("unassigned_count", 0)
+    is_leader = correlator_consumer.is_leader
+    leader_alive = True
+
+    if not is_leader and db_connected:
+        try:
+            with SessionLocal() as db_session:
+                from backend.app.db.models import DBSystemSetting, DBCloudEvent
+                from datetime import datetime, timezone
+                hb_row = db_session.query(DBSystemSetting).filter(DBSystemSetting.key == "leader_heartbeat").first()
+                if hb_row and hb_row.updated_at:
+                    hb_ts = hb_row.updated_at
+                    if hb_ts.tzinfo is None:
+                        hb_ts = hb_ts.replace(tzinfo=timezone.utc)
+                    hb_age = (datetime.now(timezone.utc) - hb_ts).total_seconds()
+                    if hb_age > 10.0:
+                        leader_alive = False
+
+                oldest_event = db_session.query(DBCloudEvent.ingested_at).filter(
+                    DBCloudEvent.incident_id.is_(None),
+                    DBCloudEvent.ingested_at.isnot(None)
+                ).order_by(DBCloudEvent.ingested_at.asc()).first()
+                if oldest_event and oldest_event[0]:
+                    evt_ts = oldest_event[0]
+                    if evt_ts.tzinfo is None:
+                        evt_ts = evt_ts.replace(tzinfo=timezone.utc)
+                    oldest_age = max(oldest_age, (datetime.now(timezone.utc) - evt_ts).total_seconds())
+
+                unassigned_count = db_session.query(DBCloudEvent).filter(DBCloudEvent.incident_id.is_(None)).count()
+        except Exception:
+            pass
+
     threshold = float(os.getenv("UNASSIGNED_AGE_THRESHOLD_SECONDS", "30.0"))
-    is_degraded = oldest_age > threshold
+    is_degraded = oldest_age > threshold or not leader_alive
 
     status_str = "degraded" if is_degraded else "ready"
     response_data = {
@@ -71,9 +103,10 @@ def get_ready():
         "database_connected": db_connected,
         "aws_connected": aws_status.get("connected", False),
         "in_memory_engine_ready": True,
-        "is_leader": correlator_consumer.is_leader,
+        "is_leader": is_leader,
+        "leader_alive": leader_alive,
         "oldest_unassigned_age_seconds": oldest_age,
-        "unassigned_count": correlator_consumer.metrics_data.get("unassigned_count", 0),
+        "unassigned_count": unassigned_count,
         "threshold_seconds": threshold
     }
 

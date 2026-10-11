@@ -78,11 +78,14 @@ def lambda_handler(event, context):
                     "reason": reason,
                     "alarm_data": detail,
                     "dimensions": dimensions_dict
-                }
+                },
+                "ingested_at": datetime.now(timezone.utc).isoformat()
             }
         elif "event_id" in event and "timestamp" in event:
             # Already a canonical CloudEvent format
-            raw_event = event
+            raw_event = dict(event)
+            if "ingested_at" not in raw_event:
+                raw_event["ingested_at"] = datetime.now(timezone.utc).isoformat()
         else:
             # Fallback for structured webhook logs
             raw_event = normalize_external_webhook(event)
