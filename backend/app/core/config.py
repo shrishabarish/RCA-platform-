@@ -13,7 +13,7 @@ class DatabaseConfig(BaseModel):
     url: str = Field(
         default_factory=lambda: os.getenv(
             "DATABASE_URL",
-            "postgresql://RCA_developer:RCADeveloper1@rca-db1.cjuiwiwa8mr6.eu-north-1.rds.amazonaws.com:5432/postgres"
+            "postgresql://postgres:postgres@localhost:5432/cloudlens_test"
         )
     )
     driver: str = Field(

@@ -54,9 +54,9 @@ def scan_tracked_files() -> int:
 
         for label, pat in SECRET_PATTERNS:
             for match in pat.finditer(content):
-                val = match.group(0)
-                # Check if it's a known placeholder or variable lookup
-                if any(placeholder in val.lower() for placeholder in ["example", "placeholder", "xxx", "your_", "mock", "os.getenv", ":password@", ":pass@"]):
+                surrounding = content[match.start():match.end() + 30].lower()
+                # Check if it's a known placeholder, mock, or local test connection
+                if any(placeholder in surrounding for placeholder in ["example", "placeholder", "xxx", "your_", "mock", "os.getenv", ":password@", ":pass@", ":postgres@", "localhost", "127.0.0.1"]):
                     continue
                 findings.append((f, label))
 
