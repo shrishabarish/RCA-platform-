@@ -61,77 +61,36 @@ python scripts/migrate_step_b_resolve_incidents.py --execute --batch-size 1000
 
 ### Step 4: Alembic Migrations (Baseline Stamp & Upgrade Head)
 
-#### 4a. Stamp Baseline Schema
-The production RDS schema currently matches the legacy baseline (`0001_baseline_prod_schema`). Stamp Alembic so it recognizes the existing tables:
-```bash
-alembic stamp 0001_baseline_prod_schema
-```
-- **Rehearsed Duration**: **0.12 seconds**.
+> [!IMPORTANT]
+> **Dependency on Step 1 Item 1**: As verified via live read-only inspection, production RDS already contains revision `0002_add_columns_and_indexes` in `alembic_version` with all additive columns and indexes present.
+> Running `alembic upgrade head` in this environment is a safe zero-operation verification (`No new upgrade operations detected`).
+> If deploying against a newly provisioned RDS clone or historical snapshot created prior to revision 0002:
+> 1. Stamp baseline: `alembic stamp 0001_baseline_prod_schema`
+> 2. Upgrade: `alembic upgrade head`
 
-#### 4b. Run Non-Blocking Additive Migration (`0002_add_columns_and_indexes`)
-Apply revision `0002_add_columns_and_indexes` to add missing tracking columns, create `system_settings`, and build indexes non-blockingly:
 ```bash
+alembic check
 alembic upgrade head
 ```
-- **Rehearsed Duration**: **0.85 seconds**.
-- **Real Schema Changes Applied**:
-  1. `incidents`:
-     - Columns: `archive_status` (VARCHAR(32), default 'PENDING'), `notification_status` (VARCHAR(32), default 'PENDING'), `delivery_error` (TEXT), `analysis_status` (VARCHAR(32), default 'PENDING'), `analyzed_at` (TIMESTAMP).
-     - Indexes: `ix_incidents_status_created_at`, `ix_incidents_open_created_at` (WHERE status = 'OPEN'), `ix_incidents_archive_status`, `ix_incidents_notification_status`, `ix_incidents_analysis_status`.
-  2. `cloud_events`:
-     - Columns: `ingested_at` (TIMESTAMP, default NOW()). Protects delayed real events from being missed by deploy cutoff.
-     - Indexes: `ix_cloud_events_service_timestamp`, `ix_cloud_events_unassigned` (WHERE incident_id IS NULL), `ix_cloud_events_ingested_at`.
-  3. `outbox_events`:
-     - Columns: `event_type` (VARCHAR(32)), `lease_until` (TIMESTAMP), `next_retry_at` (TIMESTAMP), `last_error` (TEXT), `updated_at` (TIMESTAMP).
-     - Indexes: `ix_outbox_events_incident_id`, `ix_outbox_events_lease_until`, `ix_outbox_events_next_retry_at`.
-  4. `system_settings`:
-     - Table created: `key` (VARCHAR PK), `value` (VARCHAR), `created_at` (TIMESTAMP), `updated_at` (TIMESTAMP).
-     - Index: `ix_system_settings_key`.
 
 ---
 
-### Step 5: Deploy Application Services & Production Correlator Topology
+### Step 5: Deploy Application Services (2 Workers, Embedded Mode)
 
-#### Production Topology (Two Correlator Workers Under Supervisor)
-Deploy two separate instances of the correlator process under a supervisor (systemd, supervisord, or ECS tasks):
-- **Worker 1 (Primary / Active Leader)**: Acquires Postgres advisory lock (ID: 987654321), drains backlog, updates `system_settings.leader_heartbeat` each loop.
-- **Worker 2 (Hot Standby)**: Continuously polls advisory lock and monitors leader heartbeat. Takes over within <= 2s if Worker 1 crashes, is killed, or hangs.
-- **Supervisor Configuration (`supervisord.conf`)**:
-```ini
-[program:cloudlens_correlator_1]
-command=python scripts/run_correlator.py
-directory=/opt/cloudlens
-autostart=true
-autorestart=true
-stopsignal=TERM
-stopwaitsecs=10
-environment=DEPLOY_CUTOFF_TIMESTAMP="%(ENV_DEPLOY_CUTOFF_TIMESTAMP)s",CORRELATOR_HEALTH_FILE="/tmp/correlator_health_1.json",LEADER_HEARTBEAT_TIMEOUT_SECONDS="10"
-
-[program:cloudlens_correlator_2]
-command=python scripts/run_correlator.py
-directory=/opt/cloudlens
-autostart=true
-autorestart=true
-stopsignal=TERM
-stopwaitsecs=10
-environment=DEPLOY_CUTOFF_TIMESTAMP="%(ENV_DEPLOY_CUTOFF_TIMESTAMP)s",CORRELATOR_HEALTH_FILE="/tmp/correlator_health_2.json",LEADER_HEARTBEAT_TIMEOUT_SECONDS="10"
-```
-
-#### Web Workers (FastAPI)
-Run web workers in decoupled mode (`CORRELATOR_EMBEDDED=false`) with conservative pool allocation:
+Deploy FastAPI web application in embedded mode (`CORRELATOR_EMBEDDED=true`) with conservative connection pool sizing:
 ```bash
-export CORRELATOR_EMBEDDED=false
+export CORRELATOR_EMBEDDED=true
 export DEPLOY_CUTOFF_TIMESTAMP="<CURRENT_UTC_ISO8601_TIMESTAMP>"
-export WORKERS=4
-export DB_POOL_SIZE=10
-export DB_MAX_OVERFLOW=5
-# Total connections: 4 * (10 + 5) = 60 conn + 3 correlator conn = 63 conn <= 80% of RDS max_connections (79)
-uvicorn backend.app.main:app --workers 4 --host 0.0.0.0 --port 8000
+export WORKERS=2
+export DB_POOL_SIZE=12
+export DB_MAX_OVERFLOW=8
+# Total connections: 2 workers * (12 + 8) = 40 conn + 3 correlator conn = 43 conn <= 47 (under 60% of RDS max_connections 79)
+uvicorn backend.app.main:app --workers 2 --host 0.0.0.0 --port 8000
 ```
 
 ---
 
-### Step 6: Post-Deployment Verification & Alarms
+### Step 6: Post-Deployment Verification & CloudWatch Alarms
 
 1. **Re-Enable EventBridge Rule**:
    ```bash
@@ -142,7 +101,15 @@ uvicorn backend.app.main:app --workers 4 --host 0.0.0.0 --port 8000
    ```bash
    curl -f http://<PROD_HOST>:8000/api/ready
    ```
-   Must return HTTP 200 with `"status": "ready"`. Returns HTTP 503 `"status": "degraded"` if oldest unassigned event age > 30s.
+   Must return HTTP 200 with `"status": "ready"`. Returns HTTP 503 `"status": "degraded"` if oldest unassigned event age > 30s or leader heartbeat age > 10s.
+
+3. **CloudWatch Alarm Configuration (Documentation Only)**:
+   - **Alarm Name**: `CloudLens-Correlator-Backlog-Age`
+   - **Metric**: `Custom/CloudLens -> CorrelatorOldestUnassignedAgeSeconds`
+   - **Statistic**: `Maximum`
+   - **Threshold**: `> 30 seconds for 2 consecutive 1-minute periods`
+   - **Action**: Alert PagerDuty / SRE SNS topic (`arn:aws:sns:eu-north-1:123456789012:cloudlens-sre-oncall`)
+   - **Remediation**: Check ECS task logs for deadlocks, restart stuck leader container, or verify RDS IOPS capacity.
 
 3. **CloudWatch Alarm Configuration**:
    Create a CloudWatch Metric Alarm monitoring backlog health:

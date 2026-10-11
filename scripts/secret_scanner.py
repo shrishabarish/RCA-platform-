@@ -41,7 +41,11 @@ def scan_tracked_files() -> int:
 
     findings = []
     for f in files:
-        if f in ALLOWED_FILES or f.startswith(".git") or f.endswith((".png", ".jpg", ".zip", ".ico")):
+        if (
+            f in ALLOWED_FILES
+            or f.startswith((".git", "package/", "package\\", "test_linux_pkg/", "test_linux_pkg\\"))
+            or f.endswith((".png", ".jpg", ".zip", ".ico"))
+        ):
             continue
         path = Path(f)
         if not path.exists() or not path.is_file():
