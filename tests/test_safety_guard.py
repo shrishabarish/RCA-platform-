@@ -13,13 +13,13 @@ from backend.app.core.safety import (
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-RDS_HOST_URL = "postgresql://myuser:mypassword@rca-db1.cjuiwiwa8mr6.eu-north-1.rds.amazonaws.com:5432/postgres"
+RDS_HOST_URL = "postgresql://myuser:mock_password@rca-db1.cjuiwiwa8mr6.eu-north-1.rds.amazonaws.com:5432/postgres"
 LOCAL_URL = "postgresql://postgres:postgres@localhost:5432/cloudlens_test"
 
 
 def test_mask_database_url():
     masked = mask_database_url(RDS_HOST_URL)
-    assert "mypassword" not in masked
+    assert "mock_password" not in masked
     assert "cjuiwiwa8mr6" not in masked
     assert "rca-db1" in masked
     assert "rds.amazonaws.com" in masked

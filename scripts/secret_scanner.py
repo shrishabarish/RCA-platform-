@@ -23,6 +23,7 @@ ALLOWED_FILES = {
     ".env.example",
     "scripts/secret_scanner.py",
     "tests/test_secret_scan.py",
+    "tests/test_safety_guard.py",
 }
 
 
