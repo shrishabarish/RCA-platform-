@@ -26,18 +26,13 @@ class DatabaseConfig(BaseModel):
     workers: int = Field(
         default_factory=lambda: int(os.getenv("WEB_CONCURRENCY", os.getenv("WORKERS", "1")))
     )
-    # Derive safe per-worker pool size reserving 20% for admin/migrations
+    # Default pool size and overflow sized conservatively for multi-worker safety
+    # 4 workers * (10 + 5) = 60 conn + 3 correlator conn = 63 conn <= 80% of 79
     pool_size: int = Field(
-        default_factory=lambda: int(os.getenv(
-            "DB_POOL_SIZE",
-            str(max(5, int((int(os.getenv("MAX_DB_CONNECTIONS", "79")) * 0.8 / max(1, int(os.getenv("WEB_CONCURRENCY", os.getenv("WORKERS", "1"))))) * 0.6)))
-        ))
+        default_factory=lambda: int(os.getenv("DB_POOL_SIZE", "10"))
     )
     max_overflow: int = Field(
-        default_factory=lambda: int(os.getenv(
-            "DB_MAX_OVERFLOW",
-            str(max(5, int((int(os.getenv("MAX_DB_CONNECTIONS", "79")) * 0.8 / max(1, int(os.getenv("WEB_CONCURRENCY", os.getenv("WORKERS", "1"))))) * 0.4)))
-        ))
+        default_factory=lambda: int(os.getenv("DB_MAX_OVERFLOW", "5"))
     )
     pool_recycle_seconds: int = 300
     pool_timeout_seconds: int = 10

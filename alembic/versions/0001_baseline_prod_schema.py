@@ -61,15 +61,15 @@ def upgrade() -> None:
     op.create_table(
         'outbox_events',
         sa.Column('id', sa.String(), nullable=False),
-        sa.Column('incident_id', sa.String(), nullable=True),
-        sa.Column('topic_arn', sa.String(), nullable=True),
-        sa.Column('payload_json', sa.JSON(), nullable=True),
+        sa.Column('incident_id', sa.String(), nullable=False),
+        sa.Column('event_type', sa.String(), nullable=False, server_default='SNS_NOTIFICATION'),
+        sa.Column('payload_json', sa.JSON(), nullable=False),
         sa.Column('status', sa.String(), nullable=True),
         sa.Column('attempts', sa.Integer(), nullable=True),
         sa.Column('max_attempts', sa.Integer(), nullable=True),
-        sa.Column('last_attempt_at', sa.DateTime(), nullable=True),
         sa.Column('last_error', sa.String(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['incident_id'], ['incidents.incident_id']),
         sa.PrimaryKeyConstraint('id')
     )

@@ -65,21 +65,17 @@ class DBOutboxItem(Base):
     __tablename__ = "outbox_events"
 
     id = Column(String, primary_key=True, index=True)
-    incident_id = Column(String, ForeignKey("incidents.incident_id"), nullable=True, index=True)
-    event_type = Column(String, server_default="SNS_NOTIFICATION", nullable=True)  # "S3_ARCHIVE" or "SNS_NOTIFICATION"
-    payload_json = Column(JSON, nullable=True)
+    incident_id = Column(String, ForeignKey("incidents.incident_id"), nullable=False, index=True)
+    event_type = Column(String, nullable=False, default="SNS_NOTIFICATION")  # "S3_ARCHIVE" or "SNS_NOTIFICATION"
+    payload_json = Column(JSON, nullable=False)
     status = Column(String, default="PENDING", index=True)  # PENDING, PROCESSING, RETRYING, SENT, FAILED, DEAD_LETTER
     attempts = Column(Integer, default=0)
     max_attempts = Column(Integer, default=8)
-    lease_until = Column(DateTime, nullable=True, index=True)
-    next_retry_at = Column(DateTime, nullable=True, index=True)
     last_error = Column(String, nullable=True)
     created_at = Column(DateTime)
     updated_at = Column(DateTime, nullable=True)
-
-    # Legacy schema compatibility columns
-    topic_arn = Column(String, nullable=True)
-    last_attempt_at = Column(DateTime, nullable=True)
+    lease_until = Column(DateTime, nullable=True, index=True)
+    next_retry_at = Column(DateTime, nullable=True, index=True)
 
     incident = relationship("DBIncident", back_populates="outbox_items")
 

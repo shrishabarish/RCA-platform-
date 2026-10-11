@@ -32,7 +32,7 @@ def test_alembic_upgrade_head_zero_diff_against_models():
     try:
         # Connect to engine with search_path set to the isolated test schema
         with engine.connect() as conn:
-            conn.execute(sa.text(f"SET search_path TO {schema_name}, public;"))
+            conn.execute(sa.text(f"SET search_path TO {schema_name};"))
             conn.commit()
 
             cfg = Config("alembic.ini")

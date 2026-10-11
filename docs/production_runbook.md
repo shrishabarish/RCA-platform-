@@ -118,10 +118,14 @@ environment=DEPLOY_CUTOFF_TIMESTAMP="%(ENV_DEPLOY_CUTOFF_TIMESTAMP)s",CORRELATOR
 ```
 
 #### Web Workers (FastAPI)
-Run web workers in decoupled mode (`CORRELATOR_EMBEDDED=false`):
+Run web workers in decoupled mode (`CORRELATOR_EMBEDDED=false`) with conservative pool allocation:
 ```bash
 export CORRELATOR_EMBEDDED=false
 export DEPLOY_CUTOFF_TIMESTAMP="<CURRENT_UTC_ISO8601_TIMESTAMP>"
+export WORKERS=4
+export DB_POOL_SIZE=10
+export DB_MAX_OVERFLOW=5
+# Total connections: 4 * (10 + 5) = 60 conn + 3 correlator conn = 63 conn <= 80% of RDS max_connections (79)
 uvicorn backend.app.main:app --workers 4 --host 0.0.0.0 --port 8000
 ```
 
