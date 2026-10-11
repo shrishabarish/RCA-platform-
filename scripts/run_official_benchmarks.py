@@ -26,7 +26,13 @@ import requests
 from sqlalchemy import create_engine, text
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
+
 DB_URL = "postgresql+pg8000://postgres:postgres@localhost:5432/cloudlens_test"
+check_database_safety(DB_URL, entry_point="run_official_benchmarks")
+print_database_host(DB_URL, entry_point="run_official_benchmarks")
 def get_git_info():
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(PROJECT_ROOT)).decode().strip()

@@ -9,13 +9,20 @@ import os
 import sys
 import time
 import argparse
+from pathlib import Path
 from sqlalchemy import create_engine, text
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
 
 
 def migrate_step_b(database_url: str, batch_size: int = 5000, execute: bool = False):
+    check_database_safety(database_url, entry_point="migrate_step_b")
+    print_database_host(database_url, entry_point="migrate_step_b")
     print("=" * 80)
     print("MIGRATION STEP B: BATCH RESOLUTION OF STALE OPEN INCIDENTS (>24H)")
-    print(f"Target DB: {database_url.split('@')[-1] if '@' in database_url else database_url}")
     print(f"Mode: {'EXECUTE' if execute else 'DRY RUN (READ ONLY)'}")
     print("=" * 80)
 

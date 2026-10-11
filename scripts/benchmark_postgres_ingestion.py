@@ -13,8 +13,14 @@ import uuid
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+from pathlib import Path
 import requests
 import numpy as np
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
 
 
 def benchmark_driver(driver_name: str, db_url_scheme: str, port: int = 8099):
@@ -22,8 +28,12 @@ def benchmark_driver(driver_name: str, db_url_scheme: str, port: int = 8099):
     print(f"BENCHMARKING DRIVER: {driver_name.upper()} (on port {port})")
     print("=" * 80)
 
+    db_target = os.getenv("DATABASE_URL", f"{db_url_scheme}://postgres:postgres@localhost:5432/cloudlens_test")
+    check_database_safety(db_target, entry_point="benchmark_postgres_ingestion")
+    print_database_host(db_target, entry_point="benchmark_postgres_ingestion")
+
     env = os.environ.copy()
-    env["DATABASE_URL"] = f"{db_url_scheme}://postgres:postgres@localhost:5432/cloudlens_test"
+    env["DATABASE_URL"] = db_target
     env["DB_DRIVER"] = driver_name
     env["PORT"] = str(port)
     env["CLOUDLENS_MOCK_AWS"] = "true"

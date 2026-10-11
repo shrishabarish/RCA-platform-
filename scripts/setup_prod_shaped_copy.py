@@ -13,6 +13,11 @@ from pathlib import Path
 import psycopg2
 from psycopg2.extras import execute_values
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
+
 DB_URL = "postgresql://cloudlens_user:cloudlens_test_pass@localhost:5432/cloudlens_prod_copy"
 
 BASELINE_DDL = """
@@ -70,7 +75,8 @@ CREATE INDEX ix_outbox_events_status ON outbox_events (status);
 """
 
 def generate_prod_copy():
-    print(f"Connecting to {DB_URL}...")
+    check_database_safety(DB_URL, entry_point="setup_prod_shaped_copy")
+    print_database_host(DB_URL, entry_point="setup_prod_shaped_copy")
     conn = psycopg2.connect(DB_URL)
     conn.autocommit = False
     cur = conn.cursor()

@@ -24,7 +24,11 @@ from sqlalchemy import create_engine, text
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
+
 POSTGRES_URL = os.getenv("POSTGRES_TEST_DATABASE_URL", "postgresql+pg8000://postgres:postgres@localhost:5432/cloudlens_test")
+check_database_safety(POSTGRES_URL, entry_point="step3_proofs")
+print_database_host(POSTGRES_URL, entry_point="step3_proofs")
 engine = create_engine(POSTGRES_URL)
 
 

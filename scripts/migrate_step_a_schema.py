@@ -16,6 +16,9 @@ from pathlib import Path
 from sqlalchemy import create_engine, inspect
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.app.core.safety import check_database_safety, print_database_host
 
 
 def get_alembic_sql() -> str:
@@ -32,10 +35,11 @@ def get_alembic_sql() -> str:
 
 
 def migrate_step_a(database_url: str, execute: bool = False):
+    check_database_safety(database_url, entry_point="migrate_step_a")
+    print_database_host(database_url, entry_point="migrate_step_a")
     print("=" * 80)
     print("MIGRATION STEP A: ADDITIVE COLUMNS & INDEXES")
     print("SINGLE SOURCE OF TRUTH: Alembic (0002_add_missing_columns_and_indexes.py)")
-    print(f"Target DB: {database_url.split('@')[-1] if '@' in database_url else database_url}")
     print(f"Mode: {'EXECUTE' if execute else 'DRY RUN (READ ONLY)'}")
     print("=" * 80)
 

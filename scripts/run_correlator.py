@@ -19,8 +19,14 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app.core.logging_config import setup_structured_logging
+from backend.app.core.safety import check_database_safety, print_database_host
+from backend.app.core.config import settings
+
 setup_structured_logging()
 logger = logging.getLogger("cloudlens.correlator_process")
+
+check_database_safety(settings.DATABASE_URL, entry_point="run_correlator")
+print_database_host(settings.DATABASE_URL, entry_point="run_correlator")
 
 from backend.app.services.correlator_consumer import correlator_consumer
 

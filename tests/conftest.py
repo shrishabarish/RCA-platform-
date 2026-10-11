@@ -22,12 +22,18 @@ os.environ["AWS_DEFAULT_REGION"] = "eu-north-1"
 os.environ["APP_ENV"] = "testing"
 
 
+from backend.app.core.safety import check_database_safety, print_database_host
+
+
 def pytest_configure(config):
     """Safety guard: pattern-based detection to prevent accidental production connection."""
     db_url = os.environ.get("DATABASE_URL", "")
     aws_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    if PROD_HOST_PATTERN in db_url:
-        pytest.exit(f"FATAL SAFETY GUARD: Tests attempted to run against remote cloud database: {db_url}", returncode=1)
+    if db_url:
+        try:
+            check_database_safety(db_url, entry_point="test_config")
+        except RuntimeError as e:
+            pytest.exit(str(e), returncode=1)
     if aws_key and aws_key.startswith("AKIA") and not aws_key.startswith("mock"):
         pytest.exit("FATAL SAFETY GUARD: Real AWS credentials detected in test execution environment!", returncode=1)
 

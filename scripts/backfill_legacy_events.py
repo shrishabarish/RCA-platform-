@@ -22,12 +22,14 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.app.db.models import DBCloudEvent, DBIncident, DBSystemSetting
 from backend.app.services.correlator_consumer import get_deploy_cutoff
+from backend.app.core.safety import check_database_safety, print_database_host
 
 
 def run_backfill(database_url: str, batch_size: int = 1000, rate_limit: int = 500, execute: bool = False):
+    check_database_safety(database_url, entry_point="backfill_legacy_events")
     print("=" * 80)
     print("CLOUDLENS LEGACY EVENT BACKFILL UTILITY")
-    print(f"Target DB: {database_url.split('@')[-1] if '@' in database_url else database_url}")
+    print_database_host(database_url, entry_point="backfill_legacy_events")
     print(f"Mode: {'EXECUTE' if execute else 'DRY RUN (READ ONLY)'}")
     print(f"Batch Size: {batch_size:,} | Rate Limit: {rate_limit:,} events/sec")
     print(f"Notifications: DISABLED (Zero Outbox rows generated)")

@@ -14,10 +14,16 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from backend.app.core.config import config
+from backend.app.core.safety import check_database_safety, print_database_host
 
 DATABASE_URL = config.database.url
 
 db_url = DATABASE_URL
+
+# Hard Guard: Refuse production RDS unless ALLOW_PRODUCTION=1 is explicitly set
+check_database_safety(db_url, entry_point="app_startup")
+print_database_host(db_url, entry_point="app_startup")
+
 selected_driver = config.database.driver.lower()
 
 # Format dialect string if bare postgresql:// provided

@@ -24,6 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app.db.database import Base, db_url
+from backend.app.core.safety import check_database_safety, print_database_host
 import backend.app.db.models
 
 target_metadata = Base.metadata
@@ -32,6 +33,8 @@ target_metadata = Base.metadata
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
     url = os.getenv("DATABASE_URL", db_url)
+    check_database_safety(url, entry_point="alembic")
+    print_database_host(url, entry_point="alembic")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -55,6 +58,8 @@ def run_migrations_online() -> None:
         return
 
     url = os.getenv("DATABASE_URL", db_url)
+    check_database_safety(url, entry_point="alembic")
+    print_database_host(url, entry_point="alembic")
     connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
