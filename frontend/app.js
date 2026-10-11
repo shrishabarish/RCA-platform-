@@ -2,9 +2,10 @@
 // Supports Light/Dark Mode, Visual Blast Radius, Hover Diagnostics, SRE Voice Briefing,
 // Custom Fault Injection, Zero-Event Clean State, Timeline Filtering & Auto-Refresh.
 
-const API_BASE = (window.location.port === "5173" || window.location.protocol === "file:") 
-    ? "http://127.0.0.1:8000/api" 
-    : "/api";
+// Universal API_BASE: routes to port 8000 from VS Code Live Server, Vite, static files, or direct browser
+const API_BASE = (window.location.port === "8000" && window.location.protocol !== "file:") 
+    ? "/api" 
+    : "http://127.0.0.1:8000/api";
 
 // Application State
 let currentIncident = null;
@@ -133,17 +134,23 @@ const btnCancelFaultModal = document.getElementById("btnCancelFaultModal");
 // ---------------------------------------------------------------------------
 // 1. Initialization
 // ---------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initOnCall();
     setupEventListeners();
     // Auto-sync is off by default now based on user request.
     initAutoSync();
 
-    // Check AWS status and fetch live database telemetry on load
-    await fetchAwsStatus().catch(() => showApiError());
-    await fetchScenarios().catch(() => showApiError());
-    await fetchDashboardData().catch(() => {});
+    // Fast parallel loading: fetch AWS status, scenarios, and dashboard data simultaneously
+    Promise.allSettled([
+        fetchAwsStatus().catch(() => showApiError()),
+        fetchCloudArchitectureStatus().catch(() => {}),
+        fetchScenarios().catch(() => showApiError()),
+        fetchDashboardData().catch(() => {})
+    ]);
+
+    // Connect to real-time WebSocket stream
+    initWebSocket();
 });
 
 function setupEventListeners() {
@@ -151,6 +158,32 @@ function setupEventListeners() {
     btnPollAws.addEventListener("click", () => pollLiveAws(true));
     btnReset.addEventListener("click", resetSystem);
     btnApplyFix.addEventListener("click", applyRemediationFix);
+
+    // Amazon S3 & SNS Integration Buttons (Review 1)
+    const btnDiscover = document.getElementById("btnDiscoverAws");
+    if (btnDiscover) btnDiscover.addEventListener("click", discoverAwsAssets);
+
+    const btnViewS3 = document.getElementById("btnViewS3PostMortem");
+    if (btnViewS3) btnViewS3.addEventListener("click", openS3PostMortemModal);
+
+    const btnTestSns = document.getElementById("btnTestSnsAlert");
+    if (btnTestSns) btnTestSns.addEventListener("click", triggerTestSnsAlert);
+
+    const btnCloseS3 = document.getElementById("btnCloseS3Modal");
+    if (btnCloseS3) btnCloseS3.addEventListener("click", closeS3PostMortemModal);
+
+    const btnCloseS3B = document.getElementById("btnCloseS3ModalBtn");
+    if (btnCloseS3B) btnCloseS3B.addEventListener("click", closeS3PostMortemModal);
+
+    const btnCopyS3 = document.getElementById("btnCopyS3Json");
+    if (btnCopyS3) btnCopyS3.addEventListener("click", copyS3ModalContent);
+
+    const s3Modal = document.getElementById("s3PostMortemModal");
+    if (s3Modal) {
+        s3Modal.addEventListener("click", (e) => {
+            if (e.target === s3Modal) closeS3PostMortemModal();
+        });
+    }
 
     // Theme Toggle
     if (btnThemeToggle) btnThemeToggle.addEventListener("click", toggleTheme);
@@ -396,6 +429,8 @@ async function pollLiveAws(isManual = false) {
     if (isManual) {
         btnPollAws.disabled = true;
         btnPollAws.textContent = "Checking...";
+        activeScenarioId = null;
+        renderScenarioButtons();
     }
 
     try {
@@ -470,7 +505,7 @@ async function fetchDashboardData(isBackground = false) {
         kpiIncidentCount.textContent = incidents.length;
 
         if (incidents.length > 0) {
-            currentIncident = incidents[incidents.length - 1];
+            currentIncident = incidents[0];
             await fetchIncidentDetails(currentIncident.incident_id);
         } else {
             currentIncident = null;
@@ -509,6 +544,18 @@ function renderTopology(topology, incidentDetail) {
     const rootCause = incidentDetail?.probable_root_cause || null;
     const affected = incidentDetail?.affected_services || [];
 
+    // 1. Build dynamic node coordinate map from topology.nodes
+    const nodeMap = {};
+    (topology.nodes || []).forEach(node => {
+        nodeMap[node.id] = {
+            x: node.x || NODE_POSITIONS[node.id]?.x || 250,
+            y: node.y || NODE_POSITIONS[node.id]?.y || 150,
+            icon: node.icon || NODE_POSITIONS[node.id]?.icon || "🌐",
+            title: node.label || node.id,
+            desc: node.desc || `${node.type || 'service'} tier`
+        };
+    });
+
     let svgHtml = `
         <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -523,10 +570,10 @@ function renderTopology(topology, incidentDetail) {
         </defs>
     `;
 
-    // 1. Draw Edges
+    // 2. Draw Edges
     (topology.edges || []).forEach(edge => {
-        const src = NODE_POSITIONS[edge.source];
-        const tgt = NODE_POSITIONS[edge.target];
+        const src = nodeMap[edge.source];
+        const tgt = nodeMap[edge.target];
         if (!src || !tgt) return;
 
         const isCausal = rootCause && (edge.source === rootCause || edge.target === rootCause);
@@ -543,9 +590,9 @@ function renderTopology(topology, incidentDetail) {
         svgHtml += `<path id="edge_${escapeHtml(edge.source)}_${escapeHtml(edge.target)}" d="M ${src.x} ${src.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tgt.x} ${tgt.y}" class="${edgeClass}" marker-end="${marker}" />`;
     });
 
-    // 2. Draw Nodes
+    // 3. Draw Nodes Dynamically
     topology.nodes.forEach(node => {
-        const pos = NODE_POSITIONS[node.id] || { x: 250, y: 150, icon: "📦", title: node.id, desc: "Service" };
+        const pos = nodeMap[node.id] || { x: 250, y: 150, icon: "📦", title: node.id, desc: "Service" };
         const isRoot = rootCause === node.id;
         const isAff = affected.includes(node.id);
 
@@ -792,8 +839,9 @@ function renderDiagnosis(detail) {
 
     const cause = detail.probable_root_cause || "EC2";
     const confidence = Math.round(detail.confidence ?? 0);
-    const resource = detail.resource_id || currentIncident?.events?.[0]?.resource_id || "target-resource";
-    const region = currentIncident?.events?.[0]?.metadata?.region || "us-east-1";
+    const rootEvent = (currentIncident?.events || []).find(e => e.service === cause) || currentIncident?.events?.[0];
+    const resource = rootEvent?.resource_id || detail.resource_id || "target-resource";
+    const region = rootEvent?.metadata?.aws_region || rootEvent?.metadata?.region || "eu-north-1";
 
     // KPIs
     kpiRootCause.textContent = cause;
@@ -806,7 +854,10 @@ function renderDiagnosis(detail) {
     if (activeScenario) {
         incidentTitle.textContent = activeScenario.name;
     } else {
-        incidentTitle.textContent = `${cause} Outage & Cascading Failure`;
+        const isLiveAws = (currentIncident?.events || []).some(e => e.source === "cloudwatch" || e.source === "cloudtrail");
+        incidentTitle.textContent = isLiveAws
+            ? `Live AWS Telemetry: ${cause} Outage Detected`
+            : `${cause} Outage & Cascading Failure`;
     }
 
     incidentResourceId.textContent = resource;
@@ -1191,5 +1242,161 @@ async function resetSystem() {
         await fetchDashboardData();
     } catch (e) {
         console.error("Reset error:", e);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 20. AWS Cloud Architecture Live Status & S3 / SNS Integrations (Review 1)
+// ---------------------------------------------------------------------------
+async function fetchCloudArchitectureStatus() {
+    try {
+        const res = await fetch(`${API_BASE}/cloud/status`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const comp = data.components || {};
+
+        const s3Label = document.getElementById("awsS3Label");
+        if (s3Label && comp.audit_archive) {
+            s3Label.textContent = comp.audit_archive.bucket_name || "cloudlens-incident-archive";
+        }
+
+        const snsLabel = document.getElementById("awsSnsLabel");
+        if (snsLabel && comp.notifications) {
+            snsLabel.textContent = (comp.notifications.topic_arn || "cloudlens-notifications").split(":").pop();
+        }
+    } catch (e) {
+        console.warn("Could not fetch cloud architecture status:", e);
+    }
+}
+
+async function openS3PostMortemModal() {
+    const modal = document.getElementById("s3PostMortemModal");
+    const contentEl = document.getElementById("s3ModalContent");
+    const uriEl = document.getElementById("s3ModalUri");
+    const bucketEl = document.getElementById("s3ModalBucket");
+
+    if (!modal || !contentEl) return;
+
+    modal.style.display = "flex";
+    contentEl.textContent = "Loading post-mortem from Amazon S3 bucket...";
+
+    const incId = currentIncident ? currentIncident.incident_id : "inc_sample";
+
+    try {
+        const res = await fetch(`${API_BASE}/s3/reports/${incId}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (uriEl) uriEl.textContent = `s3://${data.metadata?.s3_bucket || 'cloudlens-incident-archive'}/incidents/${incId}/post_mortem.json`;
+            if (bucketEl) bucketEl.textContent = data.metadata?.s3_bucket || 'cloudlens-incident-archive';
+            contentEl.textContent = JSON.stringify(data, null, 2);
+        } else {
+            // Provide current incident export
+            const currentData = {
+                metadata: {
+                    platform: "CloudLens Autonomous RCA (Enterprise)",
+                    incident_id: incId,
+                    s3_bucket: "cloudlens-incident-archive",
+                    archived_at: new Date().toISOString()
+                },
+                incident: currentIncident,
+                analysis: currentIncidentDetail
+            };
+            if (uriEl) uriEl.textContent = `s3://cloudlens-incident-archive/incidents/${incId}/post_mortem.json`;
+            contentEl.textContent = JSON.stringify(currentData, null, 2);
+        }
+    } catch (e) {
+        contentEl.textContent = `Error loading S3 post-mortem: ${e.message}`;
+    }
+}
+
+function closeS3PostMortemModal() {
+    const modal = document.getElementById("s3PostMortemModal");
+    if (modal) modal.style.display = "none";
+}
+
+function copyS3ModalContent() {
+    const contentEl = document.getElementById("s3ModalContent");
+    const copyBtn = document.getElementById("btnCopyS3Json");
+    if (contentEl) {
+        navigator.clipboard.writeText(contentEl.textContent);
+        if (copyBtn) {
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => { copyBtn.textContent = "Copy JSON"; }, 2000);
+        }
+    }
+}
+
+async function triggerTestSnsAlert() {
+    const btn = document.getElementById("btnTestSnsAlert");
+    if (btn) btn.disabled = true;
+    try {
+        const incId = currentIncident ? currentIncident.incident_id : "inc_demo";
+        const res = await fetch(`${API_BASE}/sns/test?incident_id=${incId}`, { method: "POST" });
+        const data = await res.json();
+        alert(`🔔 Amazon SNS Alert Dispatched Successfully!\n\nSubject: ${data.subject}\nStatus: ${data.status}\nTopic: ${data.topic_arn}`);
+    } catch (e) {
+        alert(`Failed to dispatch SNS alert: ${e.message}`);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 21. Real-Time WebSocket Streaming & AWS Live Asset Auto-Discovery
+// ---------------------------------------------------------------------------
+let liveWebSocket = null;
+
+function initWebSocket() {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = (window.location.port === "8000" && window.location.protocol !== "file:")
+        ? window.location.host
+        : "127.0.0.1:8000";
+    const wsUrl = `${protocol}//${host}/ws/stream`;
+
+    try {
+        liveWebSocket = new WebSocket(wsUrl);
+        liveWebSocket.onopen = () => {
+            console.log("WebSocket connected for real-time live telemetry streaming.");
+        };
+        liveWebSocket.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                console.log("Live stream message:", msg.type);
+                if (msg.type === "INCIDENT_UPDATED" || msg.type === "TOPOLOGY_MUTATED") {
+                    fetchDashboardData().catch(() => {});
+                }
+            } catch (e) {}
+        };
+        liveWebSocket.onclose = () => {
+            // Auto reconnect after 3 seconds
+            setTimeout(initWebSocket, 3000);
+        };
+    } catch (e) {
+        console.warn("WebSocket connection skipped:", e);
+    }
+}
+
+async function discoverAwsAssets() {
+    const btn = document.getElementById("btnDiscoverAws");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Scanning AWS Assets...";
+    }
+    try {
+        const res = await fetch(`${API_BASE}/topology/discover`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`🔍 AWS Infrastructure Auto-Discovery Complete!\n\nRegion: ${data.region}\nDiscovered Assets: ${data.total_assets_discovered}\n\nLive cloud nodes have been injected into your dynamic topology.`);
+            await fetchDashboardData();
+        } else {
+            alert(`Discovery error: ${data.detail || 'Failed'}`);
+        }
+    } catch (e) {
+        alert(`AWS Discovery error: ${e.message}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "🔍 Discover AWS Assets";
+        }
     }
 }

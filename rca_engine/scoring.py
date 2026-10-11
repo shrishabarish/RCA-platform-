@@ -2,16 +2,17 @@ import math
 from typing import List, Dict, Any
 from backend.app.models.event import CloudEvent, Severity
 from rca_engine.causal_graph import causal_graph_engine
+from backend.app.core.config import config
 
 SEVERITY_WEIGHTS = {
-    Severity.LOW.value: 2,
-    Severity.MEDIUM.value: 5,
-    Severity.HIGH.value: 8,
-    Severity.CRITICAL.value: 10,
-    "LOW": 2,
-    "MEDIUM": 5,
-    "HIGH": 8,
-    "CRITICAL": 10
+    Severity.LOW.value: config.scoring.severity_weights.get("LOW", 2),
+    Severity.MEDIUM.value: config.scoring.severity_weights.get("MEDIUM", 5),
+    Severity.HIGH.value: config.scoring.severity_weights.get("HIGH", 8),
+    Severity.CRITICAL.value: config.scoring.severity_weights.get("CRITICAL", 10),
+    "LOW": config.scoring.severity_weights.get("LOW", 2),
+    "MEDIUM": config.scoring.severity_weights.get("MEDIUM", 5),
+    "HIGH": config.scoring.severity_weights.get("HIGH", 8),
+    "CRITICAL": config.scoring.severity_weights.get("CRITICAL", 10)
 }
 
 
@@ -37,17 +38,19 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
             "metrics": {}
         }
 
+    cfg = config.scoring
+
     # 1. Temporal Lead Time Score (Max 25 pts)
     earliest_overall = min(e.timestamp for e in events)
     earliest_candidate = min(e.timestamp for e in candidate_events)
     time_delta_seconds = max(0.0, (earliest_candidate - earliest_overall).total_seconds())
 
-    # Exponential decay: S_temporal = 25 * exp(-0.02 * delta_t) with floor of 10 pts
+    # Exponential decay: S_temporal = max_temporal * exp(-lambda * delta_t) with floor
     if time_delta_seconds == 0:
-        temporal_score = 25
+        temporal_score = cfg.max_temporal_score
     else:
-        decayed = 25.0 * math.exp(-0.02 * time_delta_seconds)
-        temporal_score = max(10, int(round(decayed)))
+        decayed = float(cfg.max_temporal_score) * math.exp(-cfg.time_decay_lambda * time_delta_seconds)
+        temporal_score = max(cfg.min_decay_floor, int(round(decayed)))
 
     # 2. Topological Blast Radius & Centrality Score (Max 30 pts)
     direct_dependents = causal_graph_engine.get_direct_dependents(candidate_service)
@@ -58,7 +61,7 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
     base_topo = len(direct_dependents) * 15
     # Bonus from transitive reach
     transitive_bonus = min(len(transitive_blast) * 5, 10)
-    dependency_score = min(base_topo + transitive_bonus, 30)
+    dependency_score = min(base_topo + transitive_bonus, cfg.max_topology_score)
 
     # 3. Downstream Symptom Overlap Score (Max 20 pts)
     other_affected_services = set(e.service for e in events if e.service != candidate_service)
@@ -66,31 +69,29 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
 
     if other_affected_services:
         overlap_ratio = len(overlap) / len(other_affected_services)
-        downstream_symptom_score = int(round(overlap_ratio * 20.0))
+        downstream_symptom_score = int(round(overlap_ratio * float(cfg.max_symptom_score)))
     else:
         # Isolated single-service anomaly
         downstream_symptom_score = 10 if dependency_score == 0 else 5
 
     # 4. Metric Anomaly Magnitude Score (Max 15 pts)
-    # Checks severity of metric readings (e.g. CPU 98%, Error 85%, Latency > 2000ms)
     metric_score = 0
     max_metric_val = 0.0
     for e in candidate_events:
         if e.value is not None:
             max_metric_val = max(max_metric_val, e.value)
-            if "CPU" in (e.metric or "") and e.value >= 90.0:
-                metric_score = max(metric_score, 15)
-            elif "Throttle" in (e.metric or "") and e.value > 1000:
-                metric_score = max(metric_score, 15)
-            elif "Latency" in (e.metric or "") and e.value > 2000:
-                metric_score = max(metric_score, 14)
-            elif "Error" in (e.metric or "") and e.value > 50:
-                metric_score = max(metric_score, 14)
+            if "CPU" in (e.metric or "") and e.value >= cfg.cpu_critical_threshold:
+                metric_score = max(metric_score, cfg.max_metric_score)
+            elif "Throttle" in (e.metric or "") and e.value > cfg.throttle_critical_threshold:
+                metric_score = max(metric_score, cfg.max_metric_score)
+            elif "Latency" in (e.metric or "") and e.value > cfg.latency_critical_threshold_ms:
+                metric_score = max(metric_score, cfg.max_metric_score - 1)
+            elif "Error" in (e.metric or "") and e.value > cfg.error_rate_critical_threshold:
+                metric_score = max(metric_score, cfg.max_metric_score - 1)
             elif e.value > 0:
                 metric_score = max(metric_score, 10)
 
     if metric_score == 0:
-        # Fallback if metric value is None or boolean alarm
         metric_score = 10
 
     # 5. Severity Weight Score (Max 10 pts)
@@ -109,8 +110,8 @@ def score_candidate(candidate_service: str, events: List[CloudEvent]) -> Dict[st
         severity_score
     )
 
-    # Normalize total into a clean confidence percentage (Max 100)
     total_confidence = min(raw_total, 100)
+
 
     return {
         "service": candidate_service,

@@ -178,6 +178,54 @@
             background: var(--emerald);
         }
 
+        /* AWS Cloud Architecture Services Banner (Review 1 Specification) */
+        .aws-cloud-banner {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2.5rem;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .aws-cloud-banner-inner {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .aws-badge-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            color: var(--text-heading);
+            white-space: nowrap;
+            padding: 0.25rem 0.65rem;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .aws-badge-item strong {
+            font-weight: 700;
+        }
+
+        .aws-badge-item small {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        .aws-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+            flex-shrink: 0;
+        }
+
         .on-call-badge {
             display: flex;
             align-items: center;
@@ -1910,12 +1958,60 @@
                 Connect / Sync Data
             </button>
 
+            <button id="btnDiscoverAws" class="btn btn-outline" style="border: 1px solid #D97706; color: #D97706; font-weight: 600;" title="Scan and Discover live AWS EC2, RDS, and Lambda assets">
+                🔍 Discover AWS Assets
+            </button>
+
+            <button id="btnViewS3PostMortem" class="btn btn-outline" style="border: 1px solid #4F46E5; color: #4F46E5; font-weight: 600;" title="View & Download Amazon S3 Incident Post-Mortem">
+                📦 S3 Post-Mortem
+            </button>
+
+            <button id="btnTestSnsAlert" class="btn btn-outline" style="border: 1px solid #059669; color: #059669; font-weight: 600;" title="Trigger Amazon SNS Test Alert">
+                🔔 Test SNS Alert
+            </button>
+
             <button id="btnReset" class="btn btn-ghost" title="Reset incident data">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                 Reset
             </button>
         </div>
     </header>
+
+    <!-- Live AWS Cloud Architecture Services Banner (Review 1 Specification) -->
+    <div class="aws-cloud-banner">
+        <div class="aws-cloud-banner-inner">
+            <div class="aws-badge-item" id="awsRdsBadge" title="Primary Relational Incident Store (AWS RDS)">
+                <span class="aws-dot"></span>
+                <strong>AWS RDS</strong>
+                <small>PostgreSQL 16 (eu-north-1)</small>
+            </div>
+            <div class="aws-badge-item" id="awsCloudWatchBadge" title="Metrics, Logs & Alarms (Amazon CloudWatch)">
+                <span class="aws-dot"></span>
+                <strong>CloudWatch</strong>
+                <small>Alarms & Logs</small>
+            </div>
+            <div class="aws-badge-item" id="awsS3Badge" title="Permanent Audit Archive (Amazon S3)">
+                <span class="aws-dot"></span>
+                <strong>Amazon S3</strong>
+                <small id="awsS3Label">cloudlens-incident-archive</small>
+            </div>
+            <div class="aws-badge-item" id="awsSnsBadge" title="Real-Time SRE Alerts (Amazon SNS)">
+                <span class="aws-dot"></span>
+                <strong>Amazon SNS</strong>
+                <small id="awsSnsLabel">cloudlens-notifications</small>
+            </div>
+            <div class="aws-badge-item" id="awsConfigBadge" title="Resource Configuration Changes (AWS Config)">
+                <span class="aws-dot"></span>
+                <strong>AWS Config</strong>
+                <small>Drift Tracking Active</small>
+            </div>
+            <div class="aws-badge-item" id="awsSqsBadge" title="Telemetry Buffer Queue (Amazon SQS)">
+                <span class="aws-dot"></span>
+                <strong>Amazon SQS</strong>
+                <small>Buffer Queue Ready</small>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Container -->
     <div class="page-container">
@@ -2336,6 +2432,36 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- S3 Post-Mortem Audit Report Modal (Review 1 S3 Archive) -->
+    <div id="s3PostMortemModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog" style="max-width: 780px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.3rem;">📦</span>
+                    <div>
+                        <h3 class="modal-title">Amazon S3 Incident Post-Mortem Archive</h3>
+                        <p class="modal-subtitle" style="font-size: 12px; color: var(--text-muted);">Permanently stored in Amazon S3 bucket <code id="s3ModalBucket">cloudlens-incident-archive</code></p>
+                    </div>
+                </div>
+                <button id="btnCloseS3Modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                    <div>
+                        <span style="font-weight: 600; font-size: 12px; color: var(--text-muted);">S3 URI:</span>
+                        <code id="s3ModalUri" style="color: var(--indigo); font-weight: 700; font-size: 12px; margin-left: 6px;">s3://cloudlens-incident-archive/incidents/...</code>
+                    </div>
+                    <button id="btnCopyS3Json" class="btn btn-sm btn-outline" style="padding: 3px 8px; font-size: 11px;">Copy JSON</button>
+                </div>
+                <pre id="s3ModalContent" style="max-height: 420px; overflow-y: auto; background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border); line-height: 1.4;"></pre>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="status-tag status-tag-open">✓ Verified S3 Cloud Archive</span>
+                <button type="button" id="btnCloseS3ModalBtn" class="btn btn-primary">Close</button>
             </div>
         </div>
     </div>

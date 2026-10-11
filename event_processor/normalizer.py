@@ -65,6 +65,12 @@ EVENT_TYPE_MAP = {
     "HTTP_REQUEST_COMPLETED": {"event_type": "http_request_error", "metric": "HttpErrorCount", "value": 1.0},
     "FAULT_INJECTED": {"event_type": "fault_injection_marker", "metric": "FaultInjectionCount", "value": 1.0},
     "SERVICE_CRASH_INJECTED": {"event_type": "service_crash", "service_override": "EC2", "metric": "CrashCount", "value": 1.0},
+    # New CloudWatch Alarm mappings for Failure Injector
+    "db_disconnect": {"event_type": "db_connection_refused", "service_override": "DynamoDB", "metric": "ConnectionState", "value": 1.0},
+    "db_latency": {"event_type": "db_latency_high", "service_override": "DynamoDB", "metric": "LatencyMs", "value": 4000.0},
+    "api_error": {"event_type": "http_500_internal_error", "service_override": "API", "metric": "5xxErrorCount", "value": 1.0},
+    "dependency_timeout": {"event_type": "dependency_timeout_high", "service_override": "Worker", "metric": "TimeoutCount", "value": 1.0},
+    "service_unhealthy": {"event_type": "service_crash", "service_override": "EC2", "metric": "CrashCount", "value": 1.0},
 }
 
 # Map external log levels -> RCA severity

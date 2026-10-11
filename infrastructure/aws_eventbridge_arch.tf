@@ -88,3 +88,35 @@ resource "aws_iam_role" "lambda_exec_role" {
     }]
   })
 }
+
+# 6. Amazon S3 Bucket for Historical Incident Logs & Post-Mortem Reports (Slide 7 & 8)
+resource "aws_s3_bucket" "incident_archive" {
+  bucket        = "cloudlens-incident-archive"
+  force_destroy = false
+}
+
+resource "aws_s3_bucket_versioning" "archive_versioning" {
+  bucket = aws_s3_bucket.incident_archive.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# 7. Amazon SNS Topic for Autonomous Incident Notifications (Slide 7 & 8)
+resource "aws_sns_topic" "incident_notifications" {
+  name         = "cloudlens-incident-notifications"
+  display_name = "CloudLens SRE Incident Alerts"
+}
+
+# 8. EventBridge Rule for AWS Config Drift & Compliance Changes (Slide 6 & 8)
+resource "aws_cloudwatch_event_rule" "config_compliance_rule" {
+  name           = "cloudlens-config-compliance-change"
+  description    = "Captures AWS Config compliance & resource drift transitions"
+  event_bus_name = aws_cloudwatch_event_bus.observability_bus.name
+
+  event_pattern = jsonencode({
+    "source"      : ["aws.config"],
+    "detail-type" : ["Config Rules Compliance Change", "Configuration Item Change Notification"]
+  })
+}
+
