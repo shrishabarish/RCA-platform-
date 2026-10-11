@@ -1,16 +1,118 @@
+import os
 import sys
 from pathlib import Path
-import pytest
 from datetime import datetime, timezone
-from fastapi.testclient import TestClient
+from unittest.mock import MagicMock
+import pytest
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+# Pattern-based safety configuration reading from environment
+PROD_HOST_PATTERN = os.getenv("PROD_DB_HOST_PATTERN", "rds.amazonaws.com")
+
+# Switch environment to isolated test settings BEFORE loading any backend modules
+TEST_DB_PATH = PROJECT_ROOT / "test_cloudlens.db"
+os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH}"
+os.environ["AWS_ACCESS_KEY_ID"] = "mock-testing-key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "mock-testing-secret"
+os.environ["AWS_DEFAULT_REGION"] = "eu-north-1"
+os.environ["APP_ENV"] = "testing"
+
+
+def pytest_configure(config):
+    """Safety guard: pattern-based detection to prevent accidental production connection."""
+    db_url = os.environ.get("DATABASE_URL", "")
+    aws_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
+    if PROD_HOST_PATTERN in db_url:
+        pytest.exit(f"FATAL SAFETY GUARD: Tests attempted to run against remote cloud database: {db_url}", returncode=1)
+    if aws_key and aws_key.startswith("AKIA") and not aws_key.startswith("mock"):
+        pytest.exit("FATAL SAFETY GUARD: Real AWS credentials detected in test execution environment!", returncode=1)
+
+
 from backend.app.models.event import CloudEvent, EventSource, Severity
+from backend.app.db.database import Base, engine
 from backend.app.main import app
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database():
+    """Initializes a separate isolated test database and cleans up on session exit."""
+    Base.metadata.create_all(bind=engine)
+    from backend.app.services.correlator_consumer import correlator_consumer
+    correlator_consumer.start()
+    yield
+    correlator_consumer.stop(timeout=1.0)
+    from backend.app.services.outbox_worker import outbox_worker
+    outbox_worker.stop(timeout=1.0)
+    Base.metadata.drop_all(bind=engine)
+    if TEST_DB_PATH.exists():
+        try:
+            TEST_DB_PATH.unlink()
+        except Exception:
+            pass
+
+
+@pytest.fixture(autouse=True)
+def mock_aws_services(monkeypatch):
+    """Guarantees all AWS calls in tests are safely stubbed and never touch real AWS."""
+    mock_s3 = MagicMock()
+    mock_s3.head_bucket.return_value = {}
+    mock_s3.create_bucket.return_value = {}
+    mock_s3.put_object.return_value = {"ETag": "mock-etag"}
+    mock_s3.get_object.return_value = {"Body": MagicMock(read=lambda: b'{"incident_summary": {"probable_root_cause": "DynamoDB"}}')}
+    mock_s3.list_objects_v2.return_value = {"Contents": []}
+
+    mock_sns = MagicMock()
+    mock_sns.publish.return_value = {"MessageId": "mock-sns-msg-123"}
+    mock_sns.list_topics.return_value = {"Topics": [{"TopicArn": "arn:aws:sns:eu-north-1:123456789012:test-topic"}]}
+    mock_sns.create_topic.return_value = {"TopicArn": "arn:aws:sns:eu-north-1:123456789012:test-topic"}
+
+    mock_sqs = MagicMock()
+    mock_sqs.send_message.return_value = {"MessageId": "mock-sqs-msg-123"}
+    mock_sqs.receive_message.return_value = {"Messages": []}
+    mock_sqs.delete_message.return_value = {}
+
+    mock_ec2 = MagicMock()
+    mock_ec2.describe_instances.return_value = {"Reservations": []}
+    mock_ec2.reboot_instances.return_value = {}
+
+    mock_cw = MagicMock()
+    mock_cw.describe_alarms.return_value = {"MetricAlarms": []}
+    mock_cw.put_metric_data.return_value = {}
+
+    def fake_boto3_client(service_name, *args, **kwargs):
+        if service_name == "s3":
+            return mock_s3
+        elif service_name == "sns":
+            return mock_sns
+        elif service_name == "sqs":
+            return mock_sqs
+        elif service_name == "ec2":
+            return mock_ec2
+        elif service_name == "cloudwatch":
+            return mock_cw
+        return MagicMock()
+
+    import boto3
+    monkeypatch.setattr(boto3, "client", fake_boto3_client)
+
+    # Attach to existing module singletons
+    from event_processor.s3_archiver import s3_archiver
+    from event_processor.sns_notifier import sns_notifier
+    from event_processor.sqs_consumer import sqs_consumer
+    from event_processor.aws_discovery import aws_discovery
+
+    s3_archiver.client = mock_s3
+    s3_archiver.is_connected = True
+    sns_notifier.client = mock_sns
+    sns_notifier.is_connected = True
+    sqs_consumer.client = mock_sqs
+    sqs_consumer.is_connected = True
+    aws_discovery.ec2_client = mock_ec2
 
 
 @pytest.fixture

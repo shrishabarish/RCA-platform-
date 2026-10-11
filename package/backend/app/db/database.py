@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Default to a local SQLite database if no PostgreSQL URL is provided
 # This allows local development without setting up RDS immediately.
-# Example PostgreSQL URL: "postgresql://user:password@rds-endpoint.amazonaws.com/dbname"
+# Example PostgreSQL URL: "postgresql://user:<password>@rds-endpoint.amazonaws.com/dbname"
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./rca_data.db")
 
 # For SQLite, we need connect_args={"check_same_thread": False}

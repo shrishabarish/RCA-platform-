@@ -21,3 +21,12 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Vendored & Lambda Build Artifacts
+package/
+test_linux_pkg/
+deployment.zip
+*.zip
+*.tar.gz
+test_cloudlens.db
+test.db

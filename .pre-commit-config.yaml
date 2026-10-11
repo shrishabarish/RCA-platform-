@@ -1,0 +1,10 @@
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: secret-scanner
+        name: CloudLens Secret Scanner
+        entry: python scripts/secret_scanner.py
+        language: system
+        pass_filenames: false
+        always_run: true
