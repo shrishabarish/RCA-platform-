@@ -1,0 +1,374 @@
+{
+  "case_id": "case_fam_gen_031",
+  "family_id": "fam_gen_031",
+  "generator_version": "1.0",
+  "seed": 569,
+  "topology": {
+    "nodes": [
+      {
+        "id": "ComputeCluster",
+        "type": "compute",
+        "label": "EC2/K8s Compute Nodes",
+        "criticality": 0.9
+      },
+      {
+        "id": "PostgresPrimary",
+        "type": "database",
+        "label": "PostgreSQL Primary DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "RedisCache",
+        "type": "cache",
+        "label": "Redis In-Memory Cache",
+        "criticality": 0.8
+      },
+      {
+        "id": "ObjectStore",
+        "type": "storage",
+        "label": "S3 Object Store",
+        "criticality": 0.75
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "OAuth2/OIDC Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "PaymentGateway",
+        "type": "service",
+        "label": "Payment Processing Service",
+        "criticality": 0.95
+      },
+      {
+        "id": "OrderService",
+        "type": "service",
+        "label": "Order Management Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "CatalogService",
+        "type": "service",
+        "label": "Catalog & Product Service",
+        "criticality": 0.75
+      },
+      {
+        "id": "NotificationService",
+        "type": "service",
+        "label": "Push & Email Service",
+        "criticality": 0.65
+      },
+      {
+        "id": "WorkerCluster",
+        "type": "worker",
+        "label": "Async Job Worker Pool",
+        "criticality": 0.7
+      },
+      {
+        "id": "APIGateway",
+        "type": "service",
+        "label": "Public Ingress Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "WebFrontend",
+        "type": "frontend",
+        "label": "React/Next.js Web Frontend",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "APIGateway",
+        "AuthService"
+      ],
+      [
+        "APIGateway",
+        "OrderService"
+      ],
+      [
+        "APIGateway",
+        "CatalogService"
+      ],
+      [
+        "OrderService",
+        "PostgresPrimary"
+      ],
+      [
+        "OrderService",
+        "PaymentGateway"
+      ],
+      [
+        "OrderService",
+        "WorkerCluster"
+      ],
+      [
+        "OrderService",
+        "ComputeCluster"
+      ],
+      [
+        "CatalogService",
+        "RedisCache"
+      ],
+      [
+        "CatalogService",
+        "PostgresPrimary"
+      ],
+      [
+        "CatalogService",
+        "ComputeCluster"
+      ],
+      [
+        "PaymentGateway",
+        "PostgresPrimary"
+      ],
+      [
+        "PaymentGateway",
+        "ComputeCluster"
+      ],
+      [
+        "WorkerCluster",
+        "ObjectStore"
+      ],
+      [
+        "WorkerCluster",
+        "PostgresPrimary"
+      ],
+      [
+        "WorkerCluster",
+        "ComputeCluster"
+      ],
+      [
+        "NotificationService",
+        "WorkerCluster"
+      ],
+      [
+        "WebFrontend",
+        "APIGateway"
+      ],
+      [
+        "WebFrontend",
+        "NotificationService"
+      ]
+    ],
+    "topology_version": "12-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_031_001",
+      "event_time": "2026-09-04T00:43:00+00:00",
+      "observed_time": "2026-09-04T00:43:00+00:00",
+      "source": "otel",
+      "service": "PaymentGateway",
+      "metric": "Latency",
+      "value": 2903.84,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_002",
+      "event_time": "2026-09-04T00:43:05.827506+00:00",
+      "observed_time": "2026-09-04T00:43:05.827506+00:00",
+      "source": "datadog",
+      "service": "OrderService",
+      "metric": "HTTP500Errors",
+      "value": 32.24,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_005",
+      "event_time": "2026-09-04T00:43:10.374438+00:00",
+      "observed_time": "2026-09-04T00:43:10.374438+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_003",
+      "event_time": "2026-09-04T00:43:12.385226+00:00",
+      "observed_time": "2026-09-04T00:43:12.385226+00:00",
+      "source": "datadog",
+      "service": "APIGateway",
+      "metric": "HTTP500Errors",
+      "value": 38.93,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004",
+      "event_time": "2026-09-04T00:43:22.429372+00:00",
+      "observed_time": "2026-09-04T00:43:22.429372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_2",
+      "event_time": "2026-09-04T00:43:22.513372+00:00",
+      "observed_time": "2026-09-04T00:43:22.513372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_10",
+      "event_time": "2026-09-04T00:43:22.581372+00:00",
+      "observed_time": "2026-09-04T00:43:22.581372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_9",
+      "event_time": "2026-09-04T00:43:22.589372+00:00",
+      "observed_time": "2026-09-04T00:43:22.589372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_3",
+      "event_time": "2026-09-04T00:43:22.641372+00:00",
+      "observed_time": "2026-09-04T00:43:22.641372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_7",
+      "event_time": "2026-09-04T00:43:22.878372+00:00",
+      "observed_time": "2026-09-04T00:43:22.878372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_8",
+      "event_time": "2026-09-04T00:43:22.912372+00:00",
+      "observed_time": "2026-09-04T00:43:22.912372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_11",
+      "event_time": "2026-09-04T00:43:22.967372+00:00",
+      "observed_time": "2026-09-04T00:43:22.967372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_6",
+      "event_time": "2026-09-04T00:43:22.983372+00:00",
+      "observed_time": "2026-09-04T00:43:22.983372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_1",
+      "event_time": "2026-09-04T00:43:23.003372+00:00",
+      "observed_time": "2026-09-04T00:43:23.003372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_0",
+      "event_time": "2026-09-04T00:43:23.022372+00:00",
+      "observed_time": "2026-09-04T00:43:23.022372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_5",
+      "event_time": "2026-09-04T00:43:23.062372+00:00",
+      "observed_time": "2026-09-04T00:43:23.062372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_031_004_dup_4",
+      "event_time": "2026-09-04T00:43:23.201372+00:00",
+      "observed_time": "2026-09-04T00:43:23.201372+00:00",
+      "source": "syslog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 32.44,
+      "severity": "HIGH"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-04T00:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-04T00:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-04T00:43:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-04T00:43:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "PaymentGateway"
+    ],
+    "onset_times": {
+      "PaymentGateway": "2026-09-04T00:43:00+00:00"
+    },
+    "symptom_to_cause": {
+      "OrderService": "PaymentGateway",
+      "APIGateway": "PaymentGateway",
+      "WebFrontend": "PaymentGateway"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "duplicate"
+  ],
+  "tags": [
+    "generated",
+    "12-node",
+    "single-root",
+    "duplicate_burst"
+  ]
+}

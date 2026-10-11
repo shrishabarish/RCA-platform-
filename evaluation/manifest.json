@@ -1,0 +1,964 @@
+{
+  "manifest_version": "1.0",
+  "generator_version": "1.0",
+  "base_seed": 42,
+  "total_families": 75,
+  "dev_families_count": 45,
+  "test_families_count": 30,
+  "total_cases": 91,
+  "split_counts": {
+    "dev": 45,
+    "test": 30,
+    "handwritten": 16
+  },
+  "dev_breakdown": {
+    "cases": 45,
+    "by_topo": {
+      "6": 15,
+      "12": 15,
+      "20": 15
+    },
+    "by_pert": {
+      "drop_one_signal": 5,
+      "drop_all_signals_one_source": 5,
+      "delay_and_reorder": 6,
+      "second_independent_failure": 4,
+      "severe_decoy": 5,
+      "change_topology_mid_incident": 6,
+      "duplicate": 5,
+      "none": 5,
+      "clock_skew": 4
+    }
+  },
+  "test_breakdown": {
+    "cases": 30,
+    "by_topo": {
+      "6": 10,
+      "12": 10,
+      "20": 10
+    },
+    "by_pert": {
+      "duplicate": 3,
+      "clock_skew": 4,
+      "none": 3,
+      "drop_one_signal": 4,
+      "second_independent_failure": 4,
+      "drop_all_signals_one_source": 4,
+      "severe_decoy": 3,
+      "delay_and_reorder": 3,
+      "change_topology_mid_incident": 2
+    }
+  },
+  "files": {
+    "evaluation/cases/generated/dev/case_fam_gen_001.json": {
+      "case_id": "case_fam_gen_001",
+      "family_id": "fam_gen_001",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "0c0a976bd46144b14cd30407014fffb10343486dc25638d57607ec1c4f6cb19b"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_002.json": {
+      "case_id": "case_fam_gen_002",
+      "family_id": "fam_gen_002",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "aeb0ebeddeb1c63cf9546000076fea70c0f813b3154dac878af36260c70a3202"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_003.json": {
+      "case_id": "case_fam_gen_003",
+      "family_id": "fam_gen_003",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "83128b070453af2ae5407aaaa30bd106dc2434ee7c78c06d850f3d1a7a780d58"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_006.json": {
+      "case_id": "case_fam_gen_006",
+      "family_id": "fam_gen_006",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "0a32d7fca63693bfbd3fa880b77467a50582559a79fde88c5ce7ee86074712fd"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_007.json": {
+      "case_id": "case_fam_gen_007",
+      "family_id": "fam_gen_007",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "647ec992ebae64dea118e674b461aba2e8c8480f9cc5153dcfa51be706a083eb"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_008.json": {
+      "case_id": "case_fam_gen_008",
+      "family_id": "fam_gen_008",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "979490d38a005f3bd1696e7d9040bbe67a454dd9c17ab25720138f7c38f2f29d"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_011.json": {
+      "case_id": "case_fam_gen_011",
+      "family_id": "fam_gen_011",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "198399af68d54b49eb4f003b18d2bb0156d9dee851b609d2f1545b3857c00233"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_012.json": {
+      "case_id": "case_fam_gen_012",
+      "family_id": "fam_gen_012",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "23cad88aa7bcdd724f394f82bf3a5ff9d1488f1ea86163cc1e3a6873191b58f9"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_013.json": {
+      "case_id": "case_fam_gen_013",
+      "family_id": "fam_gen_013",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 13,
+      "sha256": "9d4f07b327a5648ebfcc2f8146c09057ae393314c576fcc3e36429e1d2a82f14"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_016.json": {
+      "case_id": "case_fam_gen_016",
+      "family_id": "fam_gen_016",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "23fb369297e5da82cce7da290196243839227ca7c8db6a3a6d258d6cd9bdfbc4"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_017.json": {
+      "case_id": "case_fam_gen_017",
+      "family_id": "fam_gen_017",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "7d3e15b8517f96c355b55116edf157eee0ac73d911b3b4d68ecb8068a08f5711"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_018.json": {
+      "case_id": "case_fam_gen_018",
+      "family_id": "fam_gen_018",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "fa97172b4f651302eb6440d8f15e869bdfb8ea8b57284617f4c3df39c725abc3"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_021.json": {
+      "case_id": "case_fam_gen_021",
+      "family_id": "fam_gen_021",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "2cb54b7a4bead6b14bb77b8cccc8c0b4bd3ef5a6d5b0c965a508c73273f879b5"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_022.json": {
+      "case_id": "case_fam_gen_022",
+      "family_id": "fam_gen_022",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 19,
+      "sha256": "2f61e00b8393d6b543055cce88fd6091f64213f42b91f42d4e1c1aec99c7e2c4"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_023.json": {
+      "case_id": "case_fam_gen_023",
+      "family_id": "fam_gen_023",
+      "split": "dev",
+      "topology_size": 6,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 8,
+      "sha256": "636c7f9bc0ace1821c9285887bdb9a8b265e0bfe61161bf1d4848c30e83ef128"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_026.json": {
+      "case_id": "case_fam_gen_026",
+      "family_id": "fam_gen_026",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "92fc449debad5124ad7c9c200d8e84f0088e7e66f620539c97804c7035d5e5e3"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_027.json": {
+      "case_id": "case_fam_gen_027",
+      "family_id": "fam_gen_027",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "a108e81130bcae41ab95eeef94f6562edbb09ff5b776ab2aa0972d070e2ee4b5"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_028.json": {
+      "case_id": "case_fam_gen_028",
+      "family_id": "fam_gen_028",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 1,
+      "sha256": "3932e76ace3c1e5eab24133bce790b8be95915f2ded8f1afa1e21ca04f4364a4"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_031.json": {
+      "case_id": "case_fam_gen_031",
+      "family_id": "fam_gen_031",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 17,
+      "sha256": "40ac0866dc238edbab2a48f233dd6448723f3d08b3a9ca7c6d2196188df33563"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_032.json": {
+      "case_id": "case_fam_gen_032",
+      "family_id": "fam_gen_032",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "1d271c99d315f0c3eaa7631938a432b1d511208213ecbfa08900e89c71abc43b"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_033.json": {
+      "case_id": "case_fam_gen_033",
+      "family_id": "fam_gen_033",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 13,
+      "sha256": "f4972b8dc9176bd0c48a582ee569e3baf0bc1a6f4483e3f8600bdf3cbba28b9f"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_036.json": {
+      "case_id": "case_fam_gen_036",
+      "family_id": "fam_gen_036",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "b11156055089034001491e4f76c68ab1ba88e228afa45e0471e40b3b9b371671"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_037.json": {
+      "case_id": "case_fam_gen_037",
+      "family_id": "fam_gen_037",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 1,
+      "sha256": "ed5911b6b654641e2131cb1ca9172808debd0eccd6fea02ced36ef97ceca0390"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_038.json": {
+      "case_id": "case_fam_gen_038",
+      "family_id": "fam_gen_038",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 2,
+      "sha256": "17df944b7f7bf0fde68763036ace485f49f4408a1368978c5a9db25b919d3e5c"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_041.json": {
+      "case_id": "case_fam_gen_041",
+      "family_id": "fam_gen_041",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 10,
+      "sha256": "393b712d362fa2cccfd454699da1b007ed4988099d8b1513d6240898d4766b92"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_042.json": {
+      "case_id": "case_fam_gen_042",
+      "family_id": "fam_gen_042",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "3ee33c51605cc584438ee8db9c49fc16493dca2e96d0dc8580abc663e61fb7c6"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_043.json": {
+      "case_id": "case_fam_gen_043",
+      "family_id": "fam_gen_043",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 13,
+      "sha256": "17544cdbdd126687d4f525482a68c48a814c4e91fc82a700637b60696395b717"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_046.json": {
+      "case_id": "case_fam_gen_046",
+      "family_id": "fam_gen_046",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 2,
+      "sha256": "b173f553fc8b8e0214f0b848cad7333c8d0788fbef05f3790498dcf0b4b896ed"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_047.json": {
+      "case_id": "case_fam_gen_047",
+      "family_id": "fam_gen_047",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 3,
+      "sha256": "b7feb893d6c46cf9dc696eb9ace04b47205be54ce3836b63d14d7a2bce32c4bf"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_048.json": {
+      "case_id": "case_fam_gen_048",
+      "family_id": "fam_gen_048",
+      "split": "dev",
+      "topology_size": 12,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "8cc2957fba6952e73416600d4fb28e8ea91b45422b365af80858ef446fabbad1"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_051.json": {
+      "case_id": "case_fam_gen_051",
+      "family_id": "fam_gen_051",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 16,
+      "sha256": "446e69155cf26834a0f5cd58af8373d67a2bd66ff13ac603f1acfb00e8de1a8a"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_052.json": {
+      "case_id": "case_fam_gen_052",
+      "family_id": "fam_gen_052",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "7a41b84bf0a0ec586c5e63a48e64413e4442f5a696371c308310fb66ea19382e"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_053.json": {
+      "case_id": "case_fam_gen_053",
+      "family_id": "fam_gen_053",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "7f0641bc03efa02370f79e0de81a618833bec2a43291cefaa35e315a0a995cf1"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_056.json": {
+      "case_id": "case_fam_gen_056",
+      "family_id": "fam_gen_056",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "53e3836200d90c5b2a0dfea4bb7d47c4ce1ad428ce1422e62832a3ef3eddf8ce"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_057.json": {
+      "case_id": "case_fam_gen_057",
+      "family_id": "fam_gen_057",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "d23fef21981518044c8f2e327c9c3ce6b52656636b1da6367626cd169b5ada88"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_058.json": {
+      "case_id": "case_fam_gen_058",
+      "family_id": "fam_gen_058",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 17,
+      "sha256": "f1f4a830a6e37344e10d4af2c2c3c92425a89d52ce7139567b448e8ab09ff9dd"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_061.json": {
+      "case_id": "case_fam_gen_061",
+      "family_id": "fam_gen_061",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "b450c67099b3e5ab118f44953caac07d0e7112978d367f8278c56287f9f82272"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_062.json": {
+      "case_id": "case_fam_gen_062",
+      "family_id": "fam_gen_062",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "7744e1ebe561996ec5f8538e74c4b29991813960e48b2c0d96407afa86475c18"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_063.json": {
+      "case_id": "case_fam_gen_063",
+      "family_id": "fam_gen_063",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "55259b28990ffae5de8221d95a072ad5f1c90fb0bf06ceb8cd08ceae8de38756"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_066.json": {
+      "case_id": "case_fam_gen_066",
+      "family_id": "fam_gen_066",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 18,
+      "sha256": "c27ddfe994df6c2c7a02bf6ff373068de408c207bc1d4c9501b7ff24384b2fab"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_067.json": {
+      "case_id": "case_fam_gen_067",
+      "family_id": "fam_gen_067",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 14,
+      "sha256": "84ac18df747fb0f2de2d0b1a59b8f5e4d6aff1943196f6fb7cc61806ff98d117"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_068.json": {
+      "case_id": "case_fam_gen_068",
+      "family_id": "fam_gen_068",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "665c4a572567b68e1517b247045a984cd8812e97f6618eef0099e328f3d67261"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_071.json": {
+      "case_id": "case_fam_gen_071",
+      "family_id": "fam_gen_071",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "f6ba110a7ff283e666d57a1ec2a2d9e825e08a189b7afc120b44e60f4123ba5e"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_072.json": {
+      "case_id": "case_fam_gen_072",
+      "family_id": "fam_gen_072",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "af7d72fc9f5e9418a00f36c4a48d02f0634f9c0d2962490cc9f83dfedffb3502"
+    },
+    "evaluation/cases/generated/dev/case_fam_gen_073.json": {
+      "case_id": "case_fam_gen_073",
+      "family_id": "fam_gen_073",
+      "split": "dev",
+      "topology_size": 20,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "70ddc4794a6d165c3c4f14f785b71e78951ef622192b50d51cb13c1ec39a2445"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_004.json": {
+      "case_id": "case_fam_gen_004",
+      "family_id": "fam_gen_004",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 8,
+      "sha256": "aff950fd2900385daee4a9c6f29749a6cc4529422a52defaf19d6e5cbae005eb"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_005.json": {
+      "case_id": "case_fam_gen_005",
+      "family_id": "fam_gen_005",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "797cb55e781899bbdf286481aa70fd2ed3efb603947cae577674fece7f7ed876"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_009.json": {
+      "case_id": "case_fam_gen_009",
+      "family_id": "fam_gen_009",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "53c77caf0cdb7d678023aaaf48a9b2bd48860fe97e3f96ef4596f00d78838096"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_010.json": {
+      "case_id": "case_fam_gen_010",
+      "family_id": "fam_gen_010",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 2,
+      "sha256": "ecda9d76ea1a69d1a3a3d0936c491fc2b94c3fdff74cf6a6374951e89aa8026a"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_014.json": {
+      "case_id": "case_fam_gen_014",
+      "family_id": "fam_gen_014",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "0579f914911709511ef83a51f0091150d849b43ff67adcae4739aff036722ef4"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_015.json": {
+      "case_id": "case_fam_gen_015",
+      "family_id": "fam_gen_015",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "6b93ae6efb4a8e9cef0e60ca659d4ca0f02890e551c7b159b60a9e5e07f2cdea"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_019.json": {
+      "case_id": "case_fam_gen_019",
+      "family_id": "fam_gen_019",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "bba8b26d6b5269a4ed01c49518ec7853db1c2a5ab6a04cc3f3927ce4fd7093a6"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_020.json": {
+      "case_id": "case_fam_gen_020",
+      "family_id": "fam_gen_020",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "fd0a29360df89048796fe2bd41f0af0f8f3e87170699612bc1d2bcd9c813ecf6"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_024.json": {
+      "case_id": "case_fam_gen_024",
+      "family_id": "fam_gen_024",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "511053d8247ad7a48587ecc6615bb7ce79d16d934fc4ae6c53423cd055f29441"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_025.json": {
+      "case_id": "case_fam_gen_025",
+      "family_id": "fam_gen_025",
+      "split": "test",
+      "topology_size": 6,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 9,
+      "sha256": "bc0aafb25d7af00028e2a819c8e591957f04e6844b32b2e9b65367cb22f0ed75"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_029.json": {
+      "case_id": "case_fam_gen_029",
+      "family_id": "fam_gen_029",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 8,
+      "sha256": "5b68d83d9120c30b3274525302cffd0e2806d69f75d40ce0332fffe820dccd74"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_030.json": {
+      "case_id": "case_fam_gen_030",
+      "family_id": "fam_gen_030",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 11,
+      "sha256": "4757f58871a6ac3e7b7eeb1c412a59b3848534626c7457079ee032f15db0cd1c"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_034.json": {
+      "case_id": "case_fam_gen_034",
+      "family_id": "fam_gen_034",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 12,
+      "sha256": "670630ce3715a6117e4406a35e15a1a3b0448c0202760bd638daacb3846c3503"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_035.json": {
+      "case_id": "case_fam_gen_035",
+      "family_id": "fam_gen_035",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "272d783b7fbb31479c3b2d98a6516ba193651fe67ecc5d6744c3d5d360f443a6"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_039.json": {
+      "case_id": "case_fam_gen_039",
+      "family_id": "fam_gen_039",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 2,
+      "sha256": "a641d334082dd893417ceecf013b81bfadbe8cce93d2f8a40c773a416a04a9a8"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_040.json": {
+      "case_id": "case_fam_gen_040",
+      "family_id": "fam_gen_040",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 16,
+      "sha256": "afcd8d526d39971d10ba255fa50d3fe2a658e15fcdf594e3b7a8c186d127b464"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_044.json": {
+      "case_id": "case_fam_gen_044",
+      "family_id": "fam_gen_044",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "47a0e42846fb163937c0b4de4b214f120da627d01b071161b4af9f01a399aaf4"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_045.json": {
+      "case_id": "case_fam_gen_045",
+      "family_id": "fam_gen_045",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "895c0e82f7bc65bea432ed5476947166e62d95f0eb21775a3386fea617532d98"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_049.json": {
+      "case_id": "case_fam_gen_049",
+      "family_id": "fam_gen_049",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 14,
+      "sha256": "5802d830168482d0b6a0b9de278ebf774a276ac57902b721625737b61ba17d11"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_050.json": {
+      "case_id": "case_fam_gen_050",
+      "family_id": "fam_gen_050",
+      "split": "test",
+      "topology_size": 12,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 13,
+      "sha256": "ed29b53ffedf8f29cfe7353b22f26e8074fa66c3e9a41b296f8ee4c03d67c931"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_054.json": {
+      "case_id": "case_fam_gen_054",
+      "family_id": "fam_gen_054",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "f6abfe4029da7ac65c8946b5b7987c178981fd26a5c4412bdf88d3fcd554099f"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_055.json": {
+      "case_id": "case_fam_gen_055",
+      "family_id": "fam_gen_055",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "470ae5c9c4c79eb2783cba79e2e73efad0d7f733de42e995d5b1e5bc55059e64"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_059.json": {
+      "case_id": "case_fam_gen_059",
+      "family_id": "fam_gen_059",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "f4c3024b8db9af2340624c5892ab0953ad7462b48ae5953f0a5a7c28f59bc355"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_060.json": {
+      "case_id": "case_fam_gen_060",
+      "family_id": "fam_gen_060",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 17,
+      "sha256": "26be68d81bec7f0ef7f54123c4125dcc58145415566b65b96ab478b38f48d91f"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_064.json": {
+      "case_id": "case_fam_gen_064",
+      "family_id": "fam_gen_064",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "9f2d25c1fa388d2c625c3bcae132ad600a22b9a2acff5a7dd3f02055da8f34aa"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_065.json": {
+      "case_id": "case_fam_gen_065",
+      "family_id": "fam_gen_065",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "48c1990ec7f7aa1e3ae2f1bc86145de8f236b500ab40de8cde29dfef2f9eacff"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_069.json": {
+      "case_id": "case_fam_gen_069",
+      "family_id": "fam_gen_069",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 7,
+      "sha256": "888e2d5dee186641378c586ee79e9262078e7216e37d3cfd0395eda6057d8426"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_070.json": {
+      "case_id": "case_fam_gen_070",
+      "family_id": "fam_gen_070",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "0869b820f83be2fda625ab69b1da4da0283b4f054959abdbeb5360a65c13b291"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_074.json": {
+      "case_id": "case_fam_gen_074",
+      "family_id": "fam_gen_074",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 6,
+      "sha256": "75c3b756ce858d4df190db7ea108615e95114f74a1bef51aa3d4a339f9858219"
+    },
+    "evaluation/cases/generated/test/case_fam_gen_075.json": {
+      "case_id": "case_fam_gen_075",
+      "family_id": "fam_gen_075",
+      "split": "test",
+      "topology_size": 20,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "ce7ca9b3c23bac85e953606d574cd3d280732e07b698a4d21cd5cc207a1b19dd"
+    },
+    "evaluation/cases/handwritten/hw_adv_clock_skew.json": {
+      "case_id": "hw_adv_clock_skew",
+      "family_id": "fam_hw_adv_clock_skew",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "clock_skew",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "e38e45c48839460025cb2543d05ee26655a8f81d3c46f05936513475c39bb9dd"
+    },
+    "evaluation/cases/handwritten/hw_adv_drop_single_signal.json": {
+      "case_id": "hw_adv_drop_single_signal",
+      "family_id": "fam_hw_adv_drop_signal",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "drop_one_signal",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "654e2857aa5bf73ac15a2a7d3e8391345e9d534d39d21884b2bf26a38e74c280"
+    },
+    "evaluation/cases/handwritten/hw_adv_duplicate_burst.json": {
+      "case_id": "hw_adv_duplicate_burst",
+      "family_id": "fam_hw_adv_dup_burst",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "duplicate",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 16,
+      "sha256": "37a6e32cf69a8aa01bc3a2e2737431220bf41ce43296765931b745a9bd2c0627"
+    },
+    "evaluation/cases/handwritten/hw_adv_flapping_service_decoy.json": {
+      "case_id": "hw_adv_flapping_service_decoy",
+      "family_id": "fam_hw_adv_flapping",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 6,
+      "sha256": "2b2cec94eecb5857d22b1e9230d5b8f89f350fcafaaa008b7d86b3d18fd06c2e"
+    },
+    "evaluation/cases/handwritten/hw_adv_late_upstream_event.json": {
+      "case_id": "hw_adv_late_upstream_event",
+      "family_id": "fam_hw_adv_late_arrival",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "delay_and_reorder",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "3df0880a8106ec10eff4971f0b6a4089ed2605dca3b8baf6bd741901e6ecc416"
+    },
+    "evaluation/cases/handwritten/hw_adv_missing_root_telemetry.json": {
+      "case_id": "hw_adv_missing_root_telemetry",
+      "family_id": "fam_hw_adv_silent_root",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 2,
+      "sha256": "92f6845451af73fb37a2b2d779fecbd48b00e64b5fdecb6b2a619e9d5b7c7307"
+    },
+    "evaluation/cases/handwritten/hw_adv_severe_decoy.json": {
+      "case_id": "hw_adv_severe_decoy",
+      "family_id": "fam_hw_adv_decoy",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "severe_decoy",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "7421c2471d94d4abe2c4c88afdc7f2e4232dc318a9c36e531b7713987f14eadf"
+    },
+    "evaluation/cases/handwritten/hw_adv_silent_partition_abstain.json": {
+      "case_id": "hw_adv_silent_partition_abstain",
+      "family_id": "fam_hw_adv_partition",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 2,
+      "sha256": "e923852a9dfe403e577517e37794340bb6e5ac4b1faab7bfe076b9da18868187"
+    },
+    "evaluation/cases/handwritten/hw_adv_topology_change_mid_incident.json": {
+      "case_id": "hw_adv_topology_change_mid_incident",
+      "family_id": "fam_hw_adv_topo_change",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "change_topology_mid_incident",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "cf2619d68417cb1b910586c49af254cb7bc5bff9d4d513b902a3d55bdf04a03b"
+    },
+    "evaluation/cases/handwritten/hw_adv_two_disjoint_cascades.json": {
+      "case_id": "hw_adv_two_disjoint_cascades",
+      "family_id": "fam_hw_adv_disjoint",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "3e325d94944ad3a995bf2245289ec4e5c0be7d8535324ac739b7ef2ed12fbf0e"
+    },
+    "evaluation/cases/handwritten/hw_adv_two_roots_shared_api.json": {
+      "case_id": "hw_adv_two_roots_shared_api",
+      "family_id": "fam_hw_adv_multi_root",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "second_independent_failure",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 4,
+      "sha256": "884ec102cfdcf93a4c3ffd6fe07ad91d9f7353d7340034552f6b03fcc2ae54d1"
+    },
+    "evaluation/cases/handwritten/hw_adv_whole_source_down.json": {
+      "case_id": "hw_adv_whole_source_down",
+      "family_id": "fam_hw_adv_source_down",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "drop_all_signals_one_source",
+      "expected_verdict": "ABSTAIN",
+      "num_events": 1,
+      "sha256": "5387669920bcd4bc497226fb11a2f9b1d93e380bcdeae321f0a3c832820c7466"
+    },
+    "evaluation/cases/handwritten/hw_scenario_auth_outage.json": {
+      "case_id": "hw_scenario_auth_outage",
+      "family_id": "fam_hw_scenarios",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "5d295f0aac759195e30208e7cf99c4440b426c2637c9b3e64449629a3e5a07ca"
+    },
+    "evaluation/cases/handwritten/hw_scenario_cascade.json": {
+      "case_id": "hw_scenario_cascade",
+      "family_id": "fam_hw_scenarios",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 5,
+      "sha256": "833da7d5bd73054cf7228d1c4784b2840cbd6286ec033d04804bbf752502176b"
+    },
+    "evaluation/cases/handwritten/hw_scenario_db_exhaustion.json": {
+      "case_id": "hw_scenario_db_exhaustion",
+      "family_id": "fam_hw_scenarios",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 3,
+      "sha256": "868c9f467fe8ddf4e2fdb21ee0a5ee1cd1c85fdd82f157dd3a5cae79c74819a2"
+    },
+    "evaluation/cases/handwritten/hw_scenario_memory_leak.json": {
+      "case_id": "hw_scenario_memory_leak",
+      "family_id": "fam_hw_scenarios",
+      "split": "handwritten",
+      "topology_size": 6,
+      "perturbation": "none",
+      "expected_verdict": "DIAGNOSE",
+      "num_events": 2,
+      "sha256": "daa26d7f0a0b366905522f683a9ee7d616554741b12238547e19b2e2618e0a7f"
+    }
+  }
+}

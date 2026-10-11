@@ -1,0 +1,6 @@
+{
+  "confident_wrong_threshold": 75.0,
+  "top_k_ranks": [1, 3],
+  "bootstrap_samples": 1000,
+  "bootstrap_confidence_level": 0.95
+}

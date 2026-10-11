@@ -1,0 +1,267 @@
+{
+  "case_id": "case_fam_gen_035",
+  "family_id": "fam_gen_035",
+  "generator_version": "1.0",
+  "seed": 637,
+  "topology": {
+    "nodes": [
+      {
+        "id": "ComputeCluster",
+        "type": "compute",
+        "label": "EC2/K8s Compute Nodes",
+        "criticality": 0.9
+      },
+      {
+        "id": "PostgresPrimary",
+        "type": "database",
+        "label": "PostgreSQL Primary DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "RedisCache",
+        "type": "cache",
+        "label": "Redis In-Memory Cache",
+        "criticality": 0.8
+      },
+      {
+        "id": "ObjectStore",
+        "type": "storage",
+        "label": "S3 Object Store",
+        "criticality": 0.75
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "OAuth2/OIDC Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "PaymentGateway",
+        "type": "service",
+        "label": "Payment Processing Service",
+        "criticality": 0.95
+      },
+      {
+        "id": "OrderService",
+        "type": "service",
+        "label": "Order Management Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "CatalogService",
+        "type": "service",
+        "label": "Catalog & Product Service",
+        "criticality": 0.75
+      },
+      {
+        "id": "NotificationService",
+        "type": "service",
+        "label": "Push & Email Service",
+        "criticality": 0.65
+      },
+      {
+        "id": "WorkerCluster",
+        "type": "worker",
+        "label": "Async Job Worker Pool",
+        "criticality": 0.7
+      },
+      {
+        "id": "APIGateway",
+        "type": "service",
+        "label": "Public Ingress Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "WebFrontend",
+        "type": "frontend",
+        "label": "React/Next.js Web Frontend",
+        "criticality": 0.6
+      },
+      {
+        "id": "SidecarProxy_230",
+        "type": "service",
+        "label": "Dynamic Envoy Proxy",
+        "criticality": 0.7
+      }
+    ],
+    "edges": [
+      [
+        "APIGateway",
+        "AuthService"
+      ],
+      [
+        "APIGateway",
+        "OrderService"
+      ],
+      [
+        "APIGateway",
+        "CatalogService"
+      ],
+      [
+        "OrderService",
+        "PostgresPrimary"
+      ],
+      [
+        "OrderService",
+        "PaymentGateway"
+      ],
+      [
+        "OrderService",
+        "WorkerCluster"
+      ],
+      [
+        "OrderService",
+        "ComputeCluster"
+      ],
+      [
+        "CatalogService",
+        "RedisCache"
+      ],
+      [
+        "CatalogService",
+        "PostgresPrimary"
+      ],
+      [
+        "CatalogService",
+        "ComputeCluster"
+      ],
+      [
+        "PaymentGateway",
+        "PostgresPrimary"
+      ],
+      [
+        "PaymentGateway",
+        "ComputeCluster"
+      ],
+      [
+        "WorkerCluster",
+        "ObjectStore"
+      ],
+      [
+        "WorkerCluster",
+        "PostgresPrimary"
+      ],
+      [
+        "WorkerCluster",
+        "ComputeCluster"
+      ],
+      [
+        "NotificationService",
+        "WorkerCluster"
+      ],
+      [
+        "WebFrontend",
+        "APIGateway"
+      ],
+      [
+        "WebFrontend",
+        "NotificationService"
+      ],
+      [
+        "NotificationService",
+        "SidecarProxy_230"
+      ],
+      [
+        "SidecarProxy_230",
+        "WorkerCluster"
+      ]
+    ],
+    "topology_version": "dyn-v2"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_035_001",
+      "event_time": "2026-09-03T13:23:00+00:00",
+      "observed_time": "2026-09-03T13:23:00+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "AuthTokenErrorRate",
+      "value": 61.87,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_SidecarProxy_230",
+      "event_time": "2026-09-03T13:23:03.475738+00:00",
+      "observed_time": "2026-09-03T13:23:03.475738+00:00",
+      "source": "otel",
+      "service": "SidecarProxy_230",
+      "metric": "Latency",
+      "value": 1800.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_035_002",
+      "event_time": "2026-09-03T13:23:03.706783+00:00",
+      "observed_time": "2026-09-03T13:23:03.706783+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 2183.97,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_035_004",
+      "event_time": "2026-09-03T13:23:08.973640+00:00",
+      "observed_time": "2026-09-03T13:23:08.973640+00:00",
+      "source": "otel",
+      "service": "WorkerCluster",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_fam_gen_035_003",
+      "event_time": "2026-09-03T13:23:11.685513+00:00",
+      "observed_time": "2026-09-03T13:23:11.685513+00:00",
+      "source": "datadog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 10.22,
+      "severity": "HIGH"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T13:23:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T13:23:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T13:23:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T13:23:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "AuthService"
+    ],
+    "onset_times": {
+      "AuthService": "2026-09-03T13:23:00+00:00"
+    },
+    "symptom_to_cause": {
+      "APIGateway": "AuthService",
+      "WebFrontend": "AuthService"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "change_topology_mid_incident"
+  ],
+  "tags": [
+    "generated",
+    "12-node",
+    "single-root",
+    "topology_change"
+  ]
+}

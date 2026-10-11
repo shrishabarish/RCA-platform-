@@ -1,0 +1,399 @@
+{
+  "case_id": "case_fam_gen_068",
+  "family_id": "fam_gen_068",
+  "generator_version": "1.0",
+  "seed": 1198,
+  "topology": {
+    "nodes": [
+      {
+        "id": "RdsPostgres",
+        "type": "database",
+        "label": "RDS Aurora PostgreSQL",
+        "criticality": 0.95
+      },
+      {
+        "id": "DynamoTable",
+        "type": "database",
+        "label": "DynamoDB Metadata Store",
+        "criticality": 0.9
+      },
+      {
+        "id": "S3Bucket",
+        "type": "storage",
+        "label": "S3 Artifact Store",
+        "criticality": 0.75
+      },
+      {
+        "id": "ElastiCacheRedis",
+        "type": "cache",
+        "label": "ElastiCache Cluster",
+        "criticality": 0.8
+      },
+      {
+        "id": "KafkaBroker",
+        "type": "queue",
+        "label": "Kafka Event Stream",
+        "criticality": 0.9
+      },
+      {
+        "id": "EksComputeA",
+        "type": "compute",
+        "label": "EKS Node Group A",
+        "criticality": 0.9
+      },
+      {
+        "id": "EksComputeB",
+        "type": "compute",
+        "label": "EKS Node Group B",
+        "criticality": 0.9
+      },
+      {
+        "id": "LambdaWorker",
+        "type": "lambda",
+        "label": "Serverless Lambda Consumer",
+        "criticality": 0.7
+      },
+      {
+        "id": "UserAuthService",
+        "type": "auth",
+        "label": "IAM & Session Service",
+        "criticality": 0.95
+      },
+      {
+        "id": "BillingService",
+        "type": "service",
+        "label": "Billing & Stripe Invoicing",
+        "criticality": 0.9
+      },
+      {
+        "id": "InventoryService",
+        "type": "service",
+        "label": "Warehouse Inventory",
+        "criticality": 0.8
+      },
+      {
+        "id": "ShippingService",
+        "type": "service",
+        "label": "Logistics & Dispatch",
+        "criticality": 0.75
+      },
+      {
+        "id": "SearchIndexService",
+        "type": "service",
+        "label": "OpenSearch Engine",
+        "criticality": 0.8
+      },
+      {
+        "id": "FraudDetectionService",
+        "type": "service",
+        "label": "ML Fraud Scoring",
+        "criticality": 0.85
+      },
+      {
+        "id": "EmailService",
+        "type": "service",
+        "label": "Transactional Mailer",
+        "criticality": 0.6
+      },
+      {
+        "id": "AnalyticsWorker",
+        "type": "worker",
+        "label": "Clickhouse Pipeline",
+        "criticality": 0.65
+      },
+      {
+        "id": "PublicApiGateway",
+        "type": "service",
+        "label": "External API Router",
+        "criticality": 0.9
+      },
+      {
+        "id": "AdminApiGateway",
+        "type": "service",
+        "label": "Internal Admin Router",
+        "criticality": 0.8
+      },
+      {
+        "id": "MobileAppBackend",
+        "type": "service",
+        "label": "BFF Mobile Service",
+        "criticality": 0.7
+      },
+      {
+        "id": "WebPortal",
+        "type": "frontend",
+        "label": "Customer Portal SPA",
+        "criticality": 0.65
+      }
+    ],
+    "edges": [
+      [
+        "WebPortal",
+        "PublicApiGateway"
+      ],
+      [
+        "MobileAppBackend",
+        "PublicApiGateway"
+      ],
+      [
+        "PublicApiGateway",
+        "UserAuthService"
+      ],
+      [
+        "PublicApiGateway",
+        "BillingService"
+      ],
+      [
+        "PublicApiGateway",
+        "InventoryService"
+      ],
+      [
+        "PublicApiGateway",
+        "SearchIndexService"
+      ],
+      [
+        "AdminApiGateway",
+        "UserAuthService"
+      ],
+      [
+        "AdminApiGateway",
+        "BillingService"
+      ],
+      [
+        "AdminApiGateway",
+        "ShippingService"
+      ],
+      [
+        "BillingService",
+        "FraudDetectionService"
+      ],
+      [
+        "BillingService",
+        "EmailService"
+      ],
+      [
+        "InventoryService",
+        "ShippingService"
+      ],
+      [
+        "ShippingService",
+        "EmailService"
+      ],
+      [
+        "BillingService",
+        "KafkaBroker"
+      ],
+      [
+        "InventoryService",
+        "KafkaBroker"
+      ],
+      [
+        "FraudDetectionService",
+        "KafkaBroker"
+      ],
+      [
+        "AnalyticsWorker",
+        "KafkaBroker"
+      ],
+      [
+        "LambdaWorker",
+        "KafkaBroker"
+      ],
+      [
+        "UserAuthService",
+        "DynamoTable"
+      ],
+      [
+        "UserAuthService",
+        "ElastiCacheRedis"
+      ],
+      [
+        "BillingService",
+        "RdsPostgres"
+      ],
+      [
+        "InventoryService",
+        "RdsPostgres"
+      ],
+      [
+        "ShippingService",
+        "RdsPostgres"
+      ],
+      [
+        "SearchIndexService",
+        "ElastiCacheRedis"
+      ],
+      [
+        "AnalyticsWorker",
+        "S3Bucket"
+      ],
+      [
+        "LambdaWorker",
+        "S3Bucket"
+      ],
+      [
+        "BillingService",
+        "EksComputeA"
+      ],
+      [
+        "InventoryService",
+        "EksComputeA"
+      ],
+      [
+        "SearchIndexService",
+        "EksComputeB"
+      ],
+      [
+        "FraudDetectionService",
+        "EksComputeB"
+      ],
+      [
+        "AnalyticsWorker",
+        "EksComputeB"
+      ]
+    ],
+    "topology_version": "20-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_068_007",
+      "event_time": "2026-09-03T20:26:40.982790+00:00",
+      "observed_time": "2026-09-03T20:27:15.982790+00:00",
+      "source": "otel",
+      "service": "AdminApiGateway",
+      "metric": "HTTP500Errors",
+      "value": 29.28,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_001",
+      "event_time": "2026-09-03T20:27:00+00:00",
+      "observed_time": "2026-09-03T20:27:00+00:00",
+      "source": "syslog",
+      "service": "EksComputeB",
+      "metric": "CPUUtilization",
+      "value": 96.1,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_002",
+      "event_time": "2026-09-03T20:27:03.865885+00:00",
+      "observed_time": "2026-09-03T20:27:03.865885+00:00",
+      "source": "syslog",
+      "service": "SearchIndexService",
+      "metric": "HTTP500Errors",
+      "value": 25.8,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_003",
+      "event_time": "2026-09-03T20:27:05.541710+00:00",
+      "observed_time": "2026-09-03T20:27:05.541710+00:00",
+      "source": "syslog",
+      "service": "AnalyticsWorker",
+      "metric": "JobQueueLag",
+      "value": 409.56,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_004",
+      "event_time": "2026-09-03T20:27:06.611369+00:00",
+      "observed_time": "2026-09-03T20:27:06.611369+00:00",
+      "source": "cloudwatch",
+      "service": "FraudDetectionService",
+      "metric": "Latency",
+      "value": 2328.35,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_006",
+      "event_time": "2026-09-03T20:27:12.550740+00:00",
+      "observed_time": "2026-09-03T20:27:12.550740+00:00",
+      "source": "cloudwatch",
+      "service": "BillingService",
+      "metric": "HTTP500Errors",
+      "value": 29.29,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_009",
+      "event_time": "2026-09-03T20:27:12.735110+00:00",
+      "observed_time": "2026-09-03T20:27:12.735110+00:00",
+      "source": "datadog",
+      "service": "WebPortal",
+      "metric": "CheckoutFailures",
+      "value": 11.13,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_005",
+      "event_time": "2026-09-03T20:27:14.537392+00:00",
+      "observed_time": "2026-09-03T20:27:14.537392+00:00",
+      "source": "cloudwatch",
+      "service": "PublicApiGateway",
+      "metric": "Latency",
+      "value": 2982.1,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_068_008",
+      "event_time": "2026-09-03T20:27:16.429899+00:00",
+      "observed_time": "2026-09-03T20:27:16.429899+00:00",
+      "source": "datadog",
+      "service": "MobileAppBackend",
+      "metric": "HTTP500Errors",
+      "value": 34.36,
+      "severity": "HIGH"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T20:27:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T20:27:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T20:27:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T20:27:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "EksComputeB"
+    ],
+    "onset_times": {
+      "EksComputeB": "2026-09-03T20:27:00+00:00"
+    },
+    "symptom_to_cause": {
+      "SearchIndexService": "EksComputeB",
+      "AnalyticsWorker": "EksComputeB",
+      "FraudDetectionService": "EksComputeB",
+      "PublicApiGateway": "EksComputeB",
+      "BillingService": "EksComputeB",
+      "AdminApiGateway": "EksComputeB",
+      "MobileAppBackend": "EksComputeB",
+      "WebPortal": "EksComputeB"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "clock_skew"
+  ],
+  "tags": [
+    "generated",
+    "20-node",
+    "single-root",
+    "clock_skew:AdminApiGateway:-35s"
+  ]
+}

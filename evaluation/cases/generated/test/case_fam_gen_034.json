@@ -1,0 +1,330 @@
+{
+  "case_id": "case_fam_gen_034",
+  "family_id": "fam_gen_034",
+  "generator_version": "1.0",
+  "seed": 620,
+  "topology": {
+    "nodes": [
+      {
+        "id": "ComputeCluster",
+        "type": "compute",
+        "label": "EC2/K8s Compute Nodes",
+        "criticality": 0.9
+      },
+      {
+        "id": "PostgresPrimary",
+        "type": "database",
+        "label": "PostgreSQL Primary DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "RedisCache",
+        "type": "cache",
+        "label": "Redis In-Memory Cache",
+        "criticality": 0.8
+      },
+      {
+        "id": "ObjectStore",
+        "type": "storage",
+        "label": "S3 Object Store",
+        "criticality": 0.75
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "OAuth2/OIDC Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "PaymentGateway",
+        "type": "service",
+        "label": "Payment Processing Service",
+        "criticality": 0.95
+      },
+      {
+        "id": "OrderService",
+        "type": "service",
+        "label": "Order Management Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "CatalogService",
+        "type": "service",
+        "label": "Catalog & Product Service",
+        "criticality": 0.75
+      },
+      {
+        "id": "NotificationService",
+        "type": "service",
+        "label": "Push & Email Service",
+        "criticality": 0.65
+      },
+      {
+        "id": "WorkerCluster",
+        "type": "worker",
+        "label": "Async Job Worker Pool",
+        "criticality": 0.7
+      },
+      {
+        "id": "APIGateway",
+        "type": "service",
+        "label": "Public Ingress Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "WebFrontend",
+        "type": "frontend",
+        "label": "React/Next.js Web Frontend",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "APIGateway",
+        "AuthService"
+      ],
+      [
+        "APIGateway",
+        "OrderService"
+      ],
+      [
+        "APIGateway",
+        "CatalogService"
+      ],
+      [
+        "OrderService",
+        "PostgresPrimary"
+      ],
+      [
+        "OrderService",
+        "PaymentGateway"
+      ],
+      [
+        "OrderService",
+        "WorkerCluster"
+      ],
+      [
+        "OrderService",
+        "ComputeCluster"
+      ],
+      [
+        "CatalogService",
+        "RedisCache"
+      ],
+      [
+        "CatalogService",
+        "PostgresPrimary"
+      ],
+      [
+        "CatalogService",
+        "ComputeCluster"
+      ],
+      [
+        "PaymentGateway",
+        "PostgresPrimary"
+      ],
+      [
+        "PaymentGateway",
+        "ComputeCluster"
+      ],
+      [
+        "WorkerCluster",
+        "ObjectStore"
+      ],
+      [
+        "WorkerCluster",
+        "PostgresPrimary"
+      ],
+      [
+        "WorkerCluster",
+        "ComputeCluster"
+      ],
+      [
+        "NotificationService",
+        "WorkerCluster"
+      ],
+      [
+        "WebFrontend",
+        "APIGateway"
+      ],
+      [
+        "WebFrontend",
+        "NotificationService"
+      ]
+    ],
+    "topology_version": "12-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_034_001",
+      "event_time": "2026-09-03T18:39:00+00:00",
+      "observed_time": "2026-09-03T18:39:00+00:00",
+      "source": "datadog",
+      "service": "PostgresPrimary",
+      "metric": "ThrottleRequests",
+      "value": 2075.39,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_005",
+      "event_time": "2026-09-03T18:39:03.622050+00:00",
+      "observed_time": "2026-09-03T18:39:03.622050+00:00",
+      "source": "syslog",
+      "service": "PaymentGateway",
+      "metric": "Latency",
+      "value": 2852.75,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_003",
+      "event_time": "2026-09-03T18:39:04.246984+00:00",
+      "observed_time": "2026-09-03T18:39:04.246984+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerCluster",
+      "metric": "MemoryUtilization",
+      "value": 96.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_002",
+      "event_time": "2026-09-03T18:39:04.469539+00:00",
+      "observed_time": "2026-09-03T18:39:04.469539+00:00",
+      "source": "syslog",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 2450.4,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_009",
+      "event_time": "2026-09-03T18:39:04.671207+00:00",
+      "observed_time": "2026-09-03T18:39:04.671207+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "AuthTokenErrorRate",
+      "value": 93.39,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_004",
+      "event_time": "2026-09-03T18:39:05.506615+00:00",
+      "observed_time": "2026-09-03T18:39:05.506615+00:00",
+      "source": "syslog",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 4047.36,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_006",
+      "event_time": "2026-09-03T18:39:07.124322+00:00",
+      "observed_time": "2026-09-03T18:39:07.124322+00:00",
+      "source": "syslog",
+      "service": "NotificationService",
+      "metric": "HTTP500Errors",
+      "value": 25.81,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_010",
+      "event_time": "2026-09-03T18:39:08.658342+00:00",
+      "observed_time": "2026-09-03T18:39:08.658342+00:00",
+      "source": "syslog",
+      "service": "APIGateway",
+      "metric": "HTTP500Errors",
+      "value": 37.9,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_007",
+      "event_time": "2026-09-03T18:39:12.425290+00:00",
+      "observed_time": "2026-09-03T18:39:12.425290+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 2719.47,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_011",
+      "event_time": "2026-09-03T18:39:18.103186+00:00",
+      "observed_time": "2026-09-03T18:39:18.103186+00:00",
+      "source": "datadog",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 26.35,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_034_008",
+      "event_time": "2026-09-03T18:39:18.911644+00:00",
+      "observed_time": "2026-09-03T18:39:18.911644+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "CheckoutFailures",
+      "value": 22.63,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_decoy_ComputeCluster",
+      "event_time": "2026-09-03T18:39:26.072062+00:00",
+      "observed_time": "2026-09-03T18:39:26.072062+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 99.9,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T18:39:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T18:39:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T18:39:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T18:39:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "PostgresPrimary",
+      "AuthService"
+    ],
+    "onset_times": {
+      "PostgresPrimary": "2026-09-03T18:39:00+00:00",
+      "AuthService": "2026-09-03T18:39:04.671207+00:00"
+    },
+    "symptom_to_cause": {
+      "OrderService": "PostgresPrimary",
+      "WorkerCluster": "PostgresPrimary",
+      "CatalogService": "PostgresPrimary",
+      "PaymentGateway": "PostgresPrimary",
+      "NotificationService": "PostgresPrimary",
+      "APIGateway": "AuthService",
+      "WebFrontend": "AuthService"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "severe_decoy"
+  ],
+  "tags": [
+    "generated",
+    "12-node",
+    "multi-root",
+    "decoy:ComputeCluster"
+  ]
+}

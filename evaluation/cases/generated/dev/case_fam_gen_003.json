@@ -1,0 +1,152 @@
+{
+  "case_id": "case_fam_gen_003",
+  "family_id": "fam_gen_003",
+  "generator_version": "1.0",
+  "seed": 93,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "6-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_003_003",
+      "event_time": "2026-09-04T01:42:12.555690+00:00",
+      "observed_time": "2026-09-04T01:42:23.910322+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_fam_gen_003_002",
+      "event_time": "2026-09-04T01:42:03.864213+00:00",
+      "observed_time": "2026-09-04T01:42:21.413215+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 42.57,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_003_001",
+      "event_time": "2026-09-04T01:42:00+00:00",
+      "observed_time": "2026-09-04T01:42:20.055663+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "HTTP500Errors",
+      "value": 41.49,
+      "severity": "HIGH"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-04T01:42:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-04T01:42:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-04T01:42:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-04T01:42:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "API"
+    ],
+    "onset_times": {
+      "API": "2026-09-04T01:42:00+00:00"
+    },
+    "symptom_to_cause": {
+      "Application": "API"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "delay_and_reorder"
+  ],
+  "tags": [
+    "generated",
+    "6-node",
+    "single-root",
+    "out_of_order"
+  ]
+}

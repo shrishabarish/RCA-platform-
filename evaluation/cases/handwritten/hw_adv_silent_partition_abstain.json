@@ -1,0 +1,119 @@
+{
+  "case_id": "hw_adv_silent_partition_abstain",
+  "family_id": "fam_hw_adv_partition",
+  "generator_version": "1.0",
+  "seed": 1016,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "1.0"
+  },
+  "events": [
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T21:00:00+00:00",
+      "observed_time": "2026-09-02T21:00:00+00:00",
+      "source": "datadog",
+      "service": "Auth",
+      "metric": "TokenValidationLatency",
+      "value": 120.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T21:00:10+00:00",
+      "observed_time": "2026-09-02T21:00:10+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "HeartbeatLag",
+      "value": 5.0,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-02T21:00:00+00:00",
+      "status": "DEGRADED"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [],
+    "onset_times": {},
+    "symptom_to_cause": {},
+    "expected_verdict": "ABSTAIN"
+  },
+  "perturbations": [],
+  "tags": [
+    "handwritten",
+    "adversarial",
+    "abstain-required",
+    "no-root"
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "case_id": "hw_adv_late_upstream_event",
+  "family_id": "fam_hw_adv_late_arrival",
+  "generator_version": "1.0",
+  "seed": 1009,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "1.0"
+  },
+  "events": [
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T14:00:10+00:00",
+      "observed_time": "2026-09-02T14:00:12+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "Latency",
+      "value": 2300.0,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T14:00:20+00:00",
+      "observed_time": "2026-09-02T14:00:22+00:00",
+      "source": "otel",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 15.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T14:00:00+00:00",
+      "observed_time": "2026-09-02T14:00:25+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "CPUUtilization",
+      "value": 97.0,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-02T14:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "EC2"
+    ],
+    "onset_times": {
+      "EC2": "2026-09-02T14:00:00+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "EC2",
+      "Application": "EC2"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "delay_and_reorder"
+  ],
+  "tags": [
+    "handwritten",
+    "adversarial",
+    "late-arrival"
+  ]
+}

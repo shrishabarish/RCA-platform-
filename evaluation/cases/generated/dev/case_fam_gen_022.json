@@ -1,0 +1,316 @@
+{
+  "case_id": "case_fam_gen_022",
+  "family_id": "fam_gen_022",
+  "generator_version": "1.0",
+  "seed": 416,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "6-node-v1"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_fam_gen_022_001",
+      "event_time": "2026-09-03T18:32:00+00:00",
+      "observed_time": "2026-09-03T18:32:00+00:00",
+      "source": "syslog",
+      "service": "Auth",
+      "metric": "JWTSignatureFailures",
+      "value": 67.8,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_004",
+      "event_time": "2026-09-03T18:32:05.622540+00:00",
+      "observed_time": "2026-09-03T18:32:05.622540+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "CPUUtilization",
+      "value": 98.14,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_002",
+      "event_time": "2026-09-03T18:32:07.444626+00:00",
+      "observed_time": "2026-09-03T18:32:07.444626+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "Latency",
+      "value": 3447.31,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_006",
+      "event_time": "2026-09-03T18:32:11.059628+00:00",
+      "observed_time": "2026-09-03T18:32:11.059628+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "Latency",
+      "value": 3772.05,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_005",
+      "event_time": "2026-09-03T18:32:11.494185+00:00",
+      "observed_time": "2026-09-03T18:32:11.494185+00:00",
+      "source": "otel",
+      "service": "Worker",
+      "metric": "MemoryUtilization",
+      "value": 97.2,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_003",
+      "event_time": "2026-09-03T18:32:12.611619+00:00",
+      "observed_time": "2026-09-03T18:32:12.611619+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "CheckoutFailures",
+      "value": 22.79,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007",
+      "event_time": "2026-09-03T18:32:12.633692+00:00",
+      "observed_time": "2026-09-03T18:32:12.633692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_6",
+      "event_time": "2026-09-03T18:32:12.874692+00:00",
+      "observed_time": "2026-09-03T18:32:12.874692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_9",
+      "event_time": "2026-09-03T18:32:12.910692+00:00",
+      "observed_time": "2026-09-03T18:32:12.910692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_4",
+      "event_time": "2026-09-03T18:32:12.926692+00:00",
+      "observed_time": "2026-09-03T18:32:12.926692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_2",
+      "event_time": "2026-09-03T18:32:13.011692+00:00",
+      "observed_time": "2026-09-03T18:32:13.011692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_5",
+      "event_time": "2026-09-03T18:32:13.040692+00:00",
+      "observed_time": "2026-09-03T18:32:13.040692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_10",
+      "event_time": "2026-09-03T18:32:13.078692+00:00",
+      "observed_time": "2026-09-03T18:32:13.078692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_1",
+      "event_time": "2026-09-03T18:32:13.227692+00:00",
+      "observed_time": "2026-09-03T18:32:13.227692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_8",
+      "event_time": "2026-09-03T18:32:13.234692+00:00",
+      "observed_time": "2026-09-03T18:32:13.234692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_7",
+      "event_time": "2026-09-03T18:32:13.335692+00:00",
+      "observed_time": "2026-09-03T18:32:13.335692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_0",
+      "event_time": "2026-09-03T18:32:13.344692+00:00",
+      "observed_time": "2026-09-03T18:32:13.344692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_007_dup_3",
+      "event_time": "2026-09-03T18:32:13.379692+00:00",
+      "observed_time": "2026-09-03T18:32:13.379692+00:00",
+      "source": "syslog",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 44.83,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_fam_gen_022_008",
+      "event_time": "2026-09-03T18:32:27.634667+00:00",
+      "observed_time": "2026-09-03T18:32:27.634667+00:00",
+      "source": "datadog",
+      "service": "DynamoDB",
+      "metric": "RoutineHealthCheckLatency",
+      "value": 12.0,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-03T18:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-09-03T18:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-09-03T18:32:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-09-03T18:32:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "Auth",
+      "EC2"
+    ],
+    "onset_times": {
+      "Auth": "2026-09-03T18:32:00+00:00",
+      "EC2": "2026-09-03T18:32:05.622540+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "EC2",
+      "Application": "EC2",
+      "Worker": "EC2"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "duplicate"
+  ],
+  "tags": [
+    "generated",
+    "6-node",
+    "multi-root",
+    "duplicate_burst"
+  ]
+}

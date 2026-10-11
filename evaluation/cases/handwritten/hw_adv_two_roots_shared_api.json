@@ -1,0 +1,149 @@
+{
+  "case_id": "hw_adv_two_roots_shared_api",
+  "family_id": "fam_hw_adv_multi_root",
+  "generator_version": "1.0",
+  "seed": 1006,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "1.0"
+  },
+  "events": [
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T11:00:00+00:00",
+      "observed_time": "2026-09-02T11:00:00+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "ThrottleRequests",
+      "value": 1200.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T11:00:02+00:00",
+      "observed_time": "2026-09-02T11:00:02+00:00",
+      "source": "datadog",
+      "service": "Auth",
+      "metric": "AuthTokenErrorRate",
+      "value": 70.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T11:00:08+00:00",
+      "observed_time": "2026-09-02T11:00:08+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "Latency",
+      "value": 2600.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T11:00:14+00:00",
+      "observed_time": "2026-09-02T11:00:14+00:00",
+      "source": "otel",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 40.0,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-02T11:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "DynamoDB",
+      "Auth"
+    ],
+    "onset_times": {
+      "DynamoDB": "2026-09-02T11:00:00+00:00",
+      "Auth": "2026-09-02T11:00:02+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "DynamoDB",
+      "Application": "Auth"
+    },
+    "expected_verdict": "DIAGNOSE"
+  },
+  "perturbations": [
+    "second_independent_failure"
+  ],
+  "tags": [
+    "handwritten",
+    "adversarial",
+    "multi-root"
+  ]
+}

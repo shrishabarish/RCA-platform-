@@ -1,0 +1,128 @@
+{
+  "case_id": "hw_adv_missing_root_telemetry",
+  "family_id": "fam_hw_adv_silent_root",
+  "generator_version": "1.0",
+  "seed": 1007,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Host",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Database",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth & IdP Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Background Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Backend API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "frontend",
+        "label": "Web Application UI",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "1.0"
+  },
+  "events": [
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T12:00:00+00:00",
+      "observed_time": "2026-09-02T12:00:00+00:00",
+      "source": "datadog",
+      "service": "API",
+      "metric": "Latency",
+      "value": 2400.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": null,
+      "event_time": "2026-09-02T12:00:06+00:00",
+      "observed_time": "2026-09-02T12:00:06+00:00",
+      "source": "otel",
+      "service": "Application",
+      "metric": "5xxErrorRate",
+      "value": 20.0,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-09-02T12:00:00+00:00",
+      "status": "DOWN"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "EC2"
+    ],
+    "onset_times": {
+      "EC2": "2026-09-02T11:59:50+00:00"
+    },
+    "symptom_to_cause": {
+      "API": "EC2",
+      "Application": "EC2"
+    },
+    "expected_verdict": "ABSTAIN"
+  },
+  "perturbations": [
+    "drop_all_signals_one_source"
+  ],
+  "tags": [
+    "handwritten",
+    "adversarial",
+    "abstain-required",
+    "missing-root"
+  ]
+}
