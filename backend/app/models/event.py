@@ -44,6 +44,7 @@ class CloudEvent(BaseModel):
     value: Optional[float] = None
     severity: Severity
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    ingested_at: Optional[datetime] = None
 
 
 class Incident(BaseModel):
@@ -63,6 +64,11 @@ class Incident(BaseModel):
     affected_services: List[str] = Field(default_factory=list)
     score_breakdown: Dict[str, Any] = Field(default_factory=dict)
     remediation_suggestion: Optional[str] = None
+    archive_status: str = "PENDING"
+    notification_status: str = "PENDING"
+    delivery_error: Optional[str] = None
+    analysis_status: str = "PENDING"
+    analyzed_at: Optional[datetime] = None
 
 
 class RemediationPlan(BaseModel):

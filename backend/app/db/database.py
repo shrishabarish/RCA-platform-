@@ -1,25 +1,55 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root so DATABASE_URL points to AWS RDS
+root_dir = Path(__file__).resolve().parent.parent.parent.parent
+load_dotenv(root_dir / ".env")
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Default to a local SQLite database if no PostgreSQL URL is provided
-# This allows local development without setting up RDS immediately.
-# Example PostgreSQL URL: "postgresql://user:password@rds-endpoint.amazonaws.com/dbname"
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./rca_data.db")
+from backend.app.core.config import config
 
-# For SQLite, we need connect_args={"check_same_thread": False}
-# For PostgreSQL, this argument is not needed/supported.
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    # Use pg8000 (pure Python) to avoid C-extension/glibc issues in AWS Lambda
-    db_url = DATABASE_URL
-    if db_url.startswith("postgresql://"):
-        db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
-    elif db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
-    engine = create_engine(db_url)
+DATABASE_URL = config.database.url
+
+db_url = DATABASE_URL
+selected_driver = config.database.driver.lower()
+
+# Format dialect string if bare postgresql:// provided
+if db_url.startswith("postgresql://") or db_url.startswith("postgres://"):
+    prefix = "postgresql://" if db_url.startswith("postgresql://") else "postgres://"
+    if selected_driver in ("psycopg", "psycopg3"):
+        db_url = db_url.replace(prefix, "postgresql+psycopg://", 1)
+    elif selected_driver == "psycopg2":
+        db_url = db_url.replace(prefix, "postgresql+psycopg2://", 1)
+    else:
+        db_url = db_url.replace(prefix, "postgresql+pg8000://", 1)
+
+connect_args = {}
+engine_kwargs = {"pool_pre_ping": True}
+
+if "postgresql" in db_url or "postgres" in db_url:
+    if "pg8000" in db_url:
+        connect_args["timeout"] = config.database.connect_timeout_seconds
+    elif "psycopg" in db_url:
+        connect_args["connect_timeout"] = config.database.connect_timeout_seconds
+
+    engine_kwargs.update({
+        "pool_size": config.database.pool_size,
+        "max_overflow": config.database.max_overflow,
+        "pool_timeout": config.database.pool_timeout_seconds,
+        "pool_recycle": config.database.pool_recycle_seconds
+    })
+elif db_url.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
+
+engine = create_engine(
+    db_url,
+    connect_args=connect_args,
+    **engine_kwargs
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -31,3 +61,4 @@ def get_db():
         yield db
     finally:
         db.close()
+
