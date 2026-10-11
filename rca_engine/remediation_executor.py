@@ -44,11 +44,28 @@ class CloudRemediationExecutor:
         incident_id: str,
         root_cause: str,
         resource_id: Optional[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        verdict: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Executes safe cloud self-healing actions matching the root cause.
+        Remediation Guard (L6): INSUFFICIENT_EVIDENCE and PROBABLE never trigger automated remediation.
+        Only CONFIRMED may trigger automated remediation.
         """
+        if verdict is not None:
+            v_clean = str(verdict).upper()
+            if v_clean in ("INSUFFICIENT_EVIDENCE", "PROBABLE", "ABSTAIN"):
+                logger.warning(f"Remediation blocked for incident {incident_id}: verdict '{v_clean}' does not meet CONFIRMED requirement.")
+                return {
+                    "status": "BLOCKED_BY_VERDICT_GUARD",
+                    "incident_id": incident_id,
+                    "target_service": root_cause,
+                    "reason": f"Remediation blocked: Automated execution forbidden for verdict '{v_clean}'. Only CONFIRMED diagnoses may trigger automated remediation.",
+                    "commands_executed": [],
+                    "safety_checks_passed": False,
+                    "execution_logs": [f"REMEDIATION GUARD: Blocked execution due to unconfirmed verdict '{v_clean}'."]
+                }
+
         start_time = datetime.now(timezone.utc)
         target = resource_id or "auto-detected-target"
         logs: List[str] = []

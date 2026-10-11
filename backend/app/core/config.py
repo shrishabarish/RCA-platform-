@@ -126,6 +126,13 @@ class ScoringConfig(BaseModel):
         return v
 
 
+class RCAConfig(BaseModel):
+    mode: str = Field(
+        default_factory=lambda: os.getenv("RCA_MODE", "off").lower()
+    )  # "off", "shadow", "v2"
+    timeout_seconds: float = 2.0
+
+
 class AppConfig(BaseModel):
     env: str = Field(default_factory=lambda: os.getenv("APP_ENV", "development"))
     host: str = Field(default_factory=lambda: os.getenv("HOST", "0.0.0.0"))
@@ -140,6 +147,7 @@ class AppConfig(BaseModel):
     correlator: CorrelatorConfig = Field(default_factory=CorrelatorConfig)
     topology: TopologyConfig = Field(default_factory=TopologyConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
+    rca: RCAConfig = Field(default_factory=RCAConfig)
 
     service_aliases: Dict[str, str] = {
         "codereview-backend": "API",

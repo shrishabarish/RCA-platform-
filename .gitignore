@@ -30,3 +30,4 @@ deployment.zip
 *.tar.gz
 test_cloudlens.db
 test.db
+scratch/

@@ -1,0 +1,47 @@
+{
+  "services": {
+    "EC2": {
+      "type": "compute",
+      "expected_signals": [
+        {"metric": "CPUUtilization", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true},
+        {"metric": "MemoryUtilization", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true}
+      ]
+    },
+    "DynamoDB": {
+      "type": "database",
+      "expected_signals": [
+        {"metric": "WriteThrottleEvents", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true},
+        {"metric": "ReadThrottleEvents", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true},
+        {"metric": "SystemErrors", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true}
+      ]
+    },
+    "Auth": {
+      "type": "auth",
+      "expected_signals": [
+        {"metric": "AuthFailureRate", "source": "cloudtrail", "interval_seconds": 30, "is_anomaly_only": true},
+        {"metric": "TokenLatency", "source": "otel", "interval_seconds": 30, "is_anomaly_only": true}
+      ]
+    },
+    "Worker": {
+      "type": "worker",
+      "expected_signals": [
+        {"metric": "QueueDepth", "source": "cloudwatch", "interval_seconds": 60, "is_anomaly_only": true},
+        {"metric": "PodRestartCount", "source": "syslog", "interval_seconds": 60, "is_anomaly_only": true}
+      ]
+    },
+    "API": {
+      "type": "api_gateway",
+      "expected_signals": [
+        {"metric": "5xxErrorRate", "source": "cloudwatch", "interval_seconds": 15, "is_anomaly_only": true},
+        {"metric": "Latency", "source": "otel", "interval_seconds": 15, "is_anomaly_only": true}
+      ]
+    },
+    "Application": {
+      "type": "service",
+      "expected_signals": [
+        {"metric": "ErrorRate", "source": "cloudwatch", "interval_seconds": 15, "is_anomaly_only": true},
+        {"metric": "Latency", "source": "otel", "interval_seconds": 15, "is_anomaly_only": true}
+      ]
+    }
+  }
+}

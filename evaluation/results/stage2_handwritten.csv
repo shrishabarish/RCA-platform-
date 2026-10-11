@@ -1,0 +1,17 @@
+case_id,family_id,expected_verdict,true_roots,rca_v2_verdict,rca_v2_top1,rca_v2_conf,CS_top1,CS_conf,match_ground_truth
+hw_adv_clock_skew,fam_hw_adv_clock_skew,DIAGNOSE,DynamoDB,DIAGNOSE,DynamoDB,92.0,DynamoDB,92.0,True
+hw_adv_drop_single_signal,fam_hw_adv_drop_signal,DIAGNOSE,EC2,DIAGNOSE,EC2,87.0,EC2,87.0,True
+hw_adv_duplicate_burst,fam_hw_adv_dup_burst,DIAGNOSE,EC2,DIAGNOSE,EC2,98.0,EC2,98.0,True
+hw_adv_flapping_service_decoy,fam_hw_adv_flapping,DIAGNOSE,Auth,DIAGNOSE,Auth,85.0,Auth,85.0,True
+hw_adv_late_upstream_event,fam_hw_adv_late_arrival,DIAGNOSE,EC2,DIAGNOSE,EC2,100.0,EC2,100.0,True
+hw_adv_missing_root_telemetry,fam_hw_adv_silent_root,ABSTAIN,EC2,ABSTAIN,API,87.0,API,87.0,True
+hw_adv_severe_decoy,fam_hw_adv_decoy,DIAGNOSE,DynamoDB,DIAGNOSE,DynamoDB,95.0,DynamoDB,95.0,True
+hw_adv_silent_partition_abstain,fam_hw_adv_partition,ABSTAIN,,ABSTAIN,Auth,62.0,Auth,62.0,True
+hw_adv_topology_change_mid_incident,fam_hw_adv_topo_change,DIAGNOSE,DynamoDB,DIAGNOSE,DynamoDB,100.0,DynamoDB,100.0,True
+hw_adv_two_disjoint_cascades,fam_hw_adv_disjoint,DIAGNOSE,Auth;Worker,DIAGNOSE,Auth,87.0,Auth,87.0,True
+hw_adv_two_roots_shared_api,fam_hw_adv_multi_root,DIAGNOSE,DynamoDB;Auth,DIAGNOSE,DynamoDB,93.0,DynamoDB,93.0,True
+hw_adv_whole_source_down,fam_hw_adv_source_down,ABSTAIN,DynamoDB,ABSTAIN,Application,59.0,Application,59.0,True
+hw_scenario_auth_outage,fam_hw_scenarios,DIAGNOSE,Auth,DIAGNOSE,Auth,94.0,Auth,94.0,True
+hw_scenario_cascade,fam_hw_scenarios,DIAGNOSE,EC2,DIAGNOSE,EC2,98.0,EC2,98.0,True
+hw_scenario_db_exhaustion,fam_hw_scenarios,DIAGNOSE,DynamoDB,DIAGNOSE,DynamoDB,100.0,DynamoDB,100.0,True
+hw_scenario_memory_leak,fam_hw_scenarios,DIAGNOSE,Worker,DIAGNOSE,Worker,85.0,Worker,85.0,True

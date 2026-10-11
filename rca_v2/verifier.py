@@ -93,16 +93,18 @@ class EvidenceVerifier:
         # 4. Contradictions detection
         contradictions: List[Contradiction] = []
 
-        # Check a: Primary root's telemetry source is DOWN or UNKNOWN
+        # Check a: Primary root's telemetry source is DOWN (collector outage)
         for ev in top_evidence:
             if ev.state == EvidenceState.UNOBSERVED:
-                contradictions.append(Contradiction(
-                    contradiction_type="TELEMETRY_SOURCE_UNAVAILABLE",
-                    description=f"Primary telemetry source '{ev.source}' for '{top_svc}' is DOWN or UNKNOWN.",
-                    involved_services=[top_svc],
-                    severity="CRITICAL"
-                ))
-                break
+                source_st = self.health_tracker.get_source_status(ev.source)
+                if source_st == SourceHealthStatus.DOWN:
+                    contradictions.append(Contradiction(
+                        contradiction_type="TELEMETRY_SOURCE_UNAVAILABLE",
+                        description=f"Primary telemetry source '{ev.source}' for '{top_svc}' is DOWN.",
+                        involved_services=[top_svc],
+                        severity="CRITICAL"
+                    ))
+                    break
 
         # Check b: Quiet timeline (no critical or high anomaly events, only pings)
         severities = set(
