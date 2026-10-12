@@ -104,6 +104,17 @@ def test_l2_live_source_health_derivation():
             value=90.0,
             severity="HIGH"
         ),
+        # CloudTrail (event-driven): 300s ago -> silence alone means UNKNOWN, never DOWN
+        EventData(
+            event_id="e4",
+            event_time=(base_t - timedelta(seconds=300)).isoformat(),
+            observed_time=(base_t - timedelta(seconds=300)).isoformat(),
+            source="cloudtrail",
+            service="Auth",
+            metric="AuthFailureRate",
+            value=10.0,
+            severity="HIGH"
+        ),
     ]
 
     records = derive_live_source_health(events, reference_time=base_t)
@@ -112,6 +123,7 @@ def test_l2_live_source_health_derivation():
     assert rec_map["cloudwatch"] == "HEALTHY", f"Expected HEALTHY, got {rec_map['cloudwatch']}"
     assert rec_map["otel"] == "DEGRADED", f"Expected DEGRADED, got {rec_map['otel']}"
     assert rec_map["datadog"] == "DOWN", f"Expected DOWN, got {rec_map['datadog']}"
+    assert rec_map["cloudtrail"] == "UNKNOWN", f"Expected UNKNOWN for event-driven source with silence, got {rec_map['cloudtrail']}"
     assert rec_map["syslog"] == "UNKNOWN", f"Expected UNKNOWN for unobserved source, got {rec_map['syslog']}"
 
 
@@ -286,19 +298,62 @@ def test_l6_remediation_guard_blocks_unconfirmed_verdicts():
     assert res_conf["safety_checks_passed"] is True
     assert len(res_conf["commands_executed"]) > 0
 
+    # 5. Missing verdict in v2 mode -> BLOCKED (fails closed)
+    from backend.app.core.config import config
+    orig_mode = config.rca.mode
+    try:
+        config.rca.mode = "v2"
+        res_no_verdict = remediation_executor.execute_remediation(
+            incident_id="inc_guard_5",
+            root_cause="EC2",
+            resource_id="i-test123",
+            dry_run=True,
+            verdict=None
+        )
+        assert res_no_verdict["status"] == "BLOCKED_BY_VERDICT_GUARD"
+        assert res_no_verdict["safety_checks_passed"] is False
+    finally:
+        config.rca.mode = orig_mode
+
 
 def test_l7_live_entrypoint_replays_cases_with_matching_verdict():
     """
     Requirement L7:
-    Replay DEV and hand-written cases through live entry point and verify identical verdict.
+    Replay DEV and hand-written cases through live entry point using real case IDs
+    and require the same verdict and diagnosis as the harness.
     """
     hw_dir = Path("evaluation/cases/handwritten")
-    cases = [EvaluationCase.model_validate_json(f.read_text(encoding="utf-8")) for f in hw_dir.glob("*.json")]
+    dev_dir = Path("evaluation/cases/generated/dev")
+
+    # Real case IDs to explicitly test
+    real_hw_case_ids = [
+        "hw_scenario_auth_outage",
+        "hw_scenario_db_exhaustion",
+        "hw_scenario_memory_leak",
+        "hw_scenario_cascade",
+        "hw_adv_whole_source_down",
+        "hw_adv_clock_skew"
+    ]
+    real_dev_case_ids = [
+        "case_fam_gen_001_base",
+        "case_fam_gen_004_drop_all_signals_one_source",
+        "case_fam_gen_006_base",
+        "case_fam_gen_014_second_independent_failure"
+    ]
+
+    target_cases = []
+    for cid in real_hw_case_ids:
+        f = hw_dir / f"{cid}.json"
+        target_cases.append(EvaluationCase.model_validate_json(f.read_text(encoding="utf-8")))
+
+    for cid in real_dev_case_ids:
+        f = dev_dir / f"{cid}.json"
+        target_cases.append(EvaluationCase.model_validate_json(f.read_text(encoding="utf-8")))
 
     bridge = LiveIncidentBridge()
     cfg = RCAv2Config.load_from_file(Path("rca_v2/config.json"))
 
-    for c in cases:
+    for c in target_cases:
         cloud_events = LiveEventAdapter.adapt_events(c.events)
         cg = CausalGraphEngine.from_topology(c.topology)
         
@@ -313,14 +368,17 @@ def test_l7_live_entrypoint_replays_cases_with_matching_verdict():
         )
 
         res = bridge.analyze(inc, mode="v2", custom_graph_engine=cg, source_health=c.source_health)
+        harness_diag = diagnose(
+            events=cloud_events,
+            topology=type("LiveTopology", (), {"nodes": [{"id": n, "type": cg.graph.nodes[n].get("type", "service")} for n in cg.graph.nodes], "edges": list(cg.graph.edges)})(),
+            source_health=c.source_health,
+            config=cfg
+        )
         
-        # Check verdict match
-        diag_expected = c.ground_truth.expected_verdict
-        if diag_expected == "ABSTAIN":
-            assert res.get("rca_v2_verdict") == "INSUFFICIENT_EVIDENCE"
-        else:
-            assert res.get("rca_v2_verdict") in ("CONFIRMED", "PROBABLE")
-            assert res.get("probable_root_cause") in c.ground_truth.true_root_causes
+        # Check that live bridge verdict matches the harness diagnosis verdict
+        assert res.get("rca_v2_verdict") == harness_diag.verdict.value, f"Mismatch on case {c.case_id}"
+        if harness_diag.verdict != Verdict.INSUFFICIENT_EVIDENCE:
+            assert res.get("probable_root_cause") == harness_diag.top_candidate.service, f"Root cause mismatch on case {c.case_id}"
 
 
 def test_l7_streaming_case_event_by_event():

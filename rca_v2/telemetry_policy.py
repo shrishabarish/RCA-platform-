@@ -17,6 +17,10 @@ class TelemetryPolicy(BaseModel):
     Enables rca_v2 to evaluate evidence coverage.
     Requirement L3: Missing policy means signals are NOT marked QUIET.
     """
+    source_types: Dict[str, str] = Field(default_factory=lambda: {
+        "cloudtrail": "event_driven",
+        "cloudwatch_alarms": "event_driven"
+    })
     service_policies: Dict[str, List[ExpectedSignalPolicy]] = Field(default_factory=dict)
     type_policies: Dict[str, List[ExpectedSignalPolicy]] = Field(default_factory=lambda: {
         "compute": [
@@ -54,17 +58,26 @@ class TelemetryPolicy(BaseModel):
         ]
     })
 
+    def is_event_driven(self, source: str) -> bool:
+        """Returns True if the source is event-driven rather than periodic."""
+        s = source.lower()
+        return self.source_types.get(s, "periodic") == "event_driven"
+
     @classmethod
     def load_live_policy(cls, path: Optional[Path] = None) -> "TelemetryPolicy":
         policy_file = path or (Path(__file__).resolve().parent / "live_telemetry_policy.json")
         if policy_file.exists():
             data = json.loads(policy_file.read_text(encoding="utf-8"))
             services = data.get("services", {})
+            src_types = data.get("source_types", {
+                "cloudtrail": "event_driven",
+                "cloudwatch_alarms": "event_driven"
+            })
             svc_map = {}
             for s_name, s_info in services.items():
                 sigs = [ExpectedSignalPolicy(**sig) for sig in s_info.get("expected_signals", [])]
                 svc_map[s_name] = sigs
-            return cls(service_policies=svc_map)
+            return cls(service_policies=svc_map, source_types=src_types)
         return cls()
 
     def get_expected_signals_for_node(self, node_id: str, node_type: str = "service") -> List[ExpectedSignalPolicy]:

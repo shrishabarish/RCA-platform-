@@ -52,9 +52,22 @@ class CloudRemediationExecutor:
         Remediation Guard (L6): INSUFFICIENT_EVIDENCE and PROBABLE never trigger automated remediation.
         Only CONFIRMED may trigger automated remediation.
         """
+        rca_mode = getattr(config.rca, "mode", "off").lower() if hasattr(config, "rca") else "off"
+        if rca_mode == "v2" and verdict is None:
+            logger.warning(f"Remediation blocked for incident {incident_id}: in v2 mode, an explicit CONFIRMED verdict is required, but verdict is None.")
+            return {
+                "status": "BLOCKED_BY_VERDICT_GUARD",
+                "incident_id": incident_id,
+                "target_service": root_cause,
+                "reason": "Remediation blocked: In v2 mode, automated execution requires an explicit CONFIRMED verdict; no verdict was provided.",
+                "commands_executed": [],
+                "safety_checks_passed": False,
+                "execution_logs": ["REMEDIATION GUARD: Blocked execution due to missing verdict in v2 mode."]
+            }
+
         if verdict is not None:
             v_clean = str(verdict).upper()
-            if v_clean in ("INSUFFICIENT_EVIDENCE", "PROBABLE", "ABSTAIN"):
+            if v_clean in ("INSUFFICIENT_EVIDENCE", "PROBABLE", "ABSTAIN") or v_clean != "CONFIRMED":
                 logger.warning(f"Remediation blocked for incident {incident_id}: verdict '{v_clean}' does not meet CONFIRMED requirement.")
                 return {
                     "status": "BLOCKED_BY_VERDICT_GUARD",

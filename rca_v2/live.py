@@ -111,7 +111,8 @@ def derive_live_source_health(
     events: List[CloudEvent],
     reference_time: Optional[datetime] = None,
     expected_sources: Optional[List[str]] = None,
-    source_intervals: Optional[Dict[str, int]] = None
+    source_intervals: Optional[Dict[str, int]] = None,
+    policy: Optional[TelemetryPolicy] = None
 ) -> List[SourceHealthRecord]:
     """
     Derives live source health status from the event stream.
@@ -120,7 +121,9 @@ def derive_live_source_health(
     - Silence duration Delta_t = reference_time - last_seen_time.
     - If Delta_t <= 2 * I_s -> HEALTHY (source active within normal window).
     - If 2 * I_s < Delta_t <= 4 * I_s -> DEGRADED (source is delayed / lagging).
-    - If Delta_t > 4 * I_s -> DOWN (source silent past 4x interval; collector outage).
+    - If Delta_t > 4 * I_s:
+        * Periodic sources -> DOWN (collector outage).
+        * Event-driven sources (e.g. CloudWatch alarms, CloudTrail) -> UNKNOWN (never DOWN by silence alone).
     - If a source was never observed in the stream and cannot be derived -> UNKNOWN.
     """
     target_sources = expected_sources or ["cloudwatch", "cloudtrail", "otel", "datadog", "syslog", "application"]
@@ -132,6 +135,8 @@ def derive_live_source_health(
         "syslog": 60,
         "application": 15
     }
+
+    active_policy = policy or TelemetryPolicy.load_live_policy()
 
     if not events:
         # Cannot derive anything from empty stream
@@ -171,6 +176,7 @@ def derive_live_source_health(
 
         delta_sec = (ref_dt - last_seen[s]).total_seconds()
         interval = intervals.get(s, 60)
+        is_ev_driven = active_policy.is_event_driven(s) if active_policy else (s.lower() in ("cloudtrail", "cloudwatch_alarms"))
 
         if delta_sec < 0:
             status = "HEALTHY"
@@ -179,7 +185,10 @@ def derive_live_source_health(
         elif delta_sec <= 4 * interval:
             status = "DEGRADED"
         else:
-            status = "DOWN"
+            if is_ev_driven:
+                status = "UNKNOWN"
+            else:
+                status = "DOWN"
 
         records.append(SourceHealthRecord(
             source=s,
@@ -240,26 +249,31 @@ class LiveIncidentBridge:
         topology_obj = type("LiveTopology", (), {"nodes": topo_nodes, "edges": topo_edges})()
 
         # Derive live source health from event stream if not explicitly provided
-        effective_source_health = source_health if source_health is not None else derive_live_source_health(cloud_events)
+        effective_source_health = source_health if source_health is not None else derive_live_source_health(cloud_events, policy=self.policy)
 
         # Execute rca_v2 with timeout and exception guard (L5)
         v2_result: Optional[DiagnosisResult] = None
         error_msg: Optional[str] = None
         t0 = time.perf_counter()
 
+        import concurrent.futures
         try:
-            v2_result = diagnose(
-                events=cloud_events,
-                topology=topology_obj,
-                source_health=effective_source_health,
-                telemetry_policy=self.policy,
-                config=self.config
-            )
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(
+                    diagnose,
+                    events=cloud_events,
+                    topology=topology_obj,
+                    source_health=effective_source_health,
+                    telemetry_policy=self.policy,
+                    config=self.config
+                )
+                v2_result = future.result(timeout=self.timeout_seconds)
             elapsed = time.perf_counter() - t0
-            if elapsed > self.timeout_seconds:
-                logger.warning(f"rca_v2 exceeded timeout limit ({elapsed:.3f}s > {self.timeout_seconds}s); falling back to Current Scorer")
-                v2_result = None
-                error_msg = f"TimeoutExceeded: {elapsed:.3f}s"
+        except concurrent.futures.TimeoutError:
+            elapsed = time.perf_counter() - t0
+            logger.warning(f"rca_v2 exceeded timeout limit ({elapsed:.3f}s > {self.timeout_seconds}s); falling back to Current Scorer")
+            v2_result = None
+            error_msg = f"TimeoutExceeded: {elapsed:.3f}s"
         except Exception as ex:
             logger.error(f"rca_v2 execution failed with exception: {ex}; falling back to Current Scorer", exc_info=True)
             v2_result = None

@@ -1,4 +1,13 @@
 {
+  "source_types": {
+    "cloudwatch": "periodic",
+    "otel": "periodic",
+    "datadog": "periodic",
+    "syslog": "periodic",
+    "application": "periodic",
+    "cloudtrail": "event_driven",
+    "cloudwatch_alarms": "event_driven"
+  },
   "services": {
     "EC2": {
       "type": "compute",
