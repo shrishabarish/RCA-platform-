@@ -1,0 +1,2746 @@
+{
+  "case_id": "case_v3_dev3_085_idle_silent_control",
+  "family_id": "fam_v3_dev3_06",
+  "base_case_id": null,
+  "generator_version": "3.0.0",
+  "seed": 3086,
+  "topology": {
+    "nodes": [
+      {
+        "id": "IngestionService",
+        "type": "service",
+        "label": "Data Ingestion API",
+        "criticality": 0.85
+      },
+      {
+        "id": "MessageQueue",
+        "type": "queue",
+        "label": "SQS Message Queue",
+        "criticality": 0.9
+      },
+      {
+        "id": "WorkerHost",
+        "type": "compute",
+        "label": "EC2 Worker Fleet",
+        "criticality": 0.8
+      },
+      {
+        "id": "BatchWorker",
+        "type": "worker",
+        "label": "Batch Processing Worker",
+        "criticality": 0.85
+      },
+      {
+        "id": "AnalyticsDB",
+        "type": "database",
+        "label": "Analytics DynamoDB Table",
+        "criticality": 0.9
+      },
+      {
+        "id": "ReportingService",
+        "type": "service",
+        "label": "Reporting Service",
+        "criticality": 0.7
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "EdgeGateway",
+        "type": "api_gateway",
+        "label": "Edge Ingress Gateway",
+        "criticality": 0.95
+      },
+      {
+        "id": "CacheCluster",
+        "type": "cache",
+        "label": "Memcached Cluster",
+        "criticality": 0.75
+      },
+      {
+        "id": "NotificationService",
+        "type": "service",
+        "label": "Notification Dispatcher",
+        "criticality": 0.65
+      }
+    ],
+    "edges": [
+      [
+        "EdgeGateway",
+        "IngestionService"
+      ],
+      [
+        "EdgeGateway",
+        "ReportingService"
+      ],
+      [
+        "EdgeGateway",
+        "AuthService"
+      ],
+      [
+        "IngestionService",
+        "MessageQueue"
+      ],
+      [
+        "BatchWorker",
+        "MessageQueue"
+      ],
+      [
+        "BatchWorker",
+        "WorkerHost"
+      ],
+      [
+        "BatchWorker",
+        "AnalyticsDB"
+      ],
+      [
+        "ReportingService",
+        "AnalyticsDB"
+      ],
+      [
+        "ReportingService",
+        "CacheCluster"
+      ],
+      [
+        "BatchWorker",
+        "NotificationService"
+      ]
+    ],
+    "topology_version": "v3-topo-10node"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0001",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.016000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 18.64,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0002",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.037000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 21.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0003",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.016000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 29.02,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0004",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.042000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 14.47,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0005",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.016000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 22.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0006",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.013000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 22.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0007",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.033000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 23.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0008",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.034000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 23.87,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0009",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.006000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 12.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0010",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.046000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 14.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0011",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.011000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 12.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0012",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.045000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 25.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0013",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.023000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 29.96,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0014",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.010000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 19.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0015",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.022000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 20.33,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0016",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.039000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 15.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0017",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.011000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 14.35,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0018",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.025000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 26.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0019",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.015000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 26.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0020",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.031000+00:00",
+      "source": "otel",
+      "service": "IngestionService",
+      "metric": "Latency",
+      "value": 22.44,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0021",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.020000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 22.65,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0022",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.016000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 22.02,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0023",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.035000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 15.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0024",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.010000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 21.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0025",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.019000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 18.46,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0026",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.035000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 27.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0027",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.027000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 28.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0028",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.021000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 20.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0029",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 23.8,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0030",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.046000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 18.25,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0031",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.006000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 23.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0032",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.033000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 17.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0033",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 14.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0034",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.007000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 28.64,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0035",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.032000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 27.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0036",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.027000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 17.02,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0037",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.014000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 20.45,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0038",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.047000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 25.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0039",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.028000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 25.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0040",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.005000+00:00",
+      "source": "cloudwatch",
+      "service": "IngestionService",
+      "metric": "ErrorRate",
+      "value": 14.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0041",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 20.82,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0042",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.038000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 25.95,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0043",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 20.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0044",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.027000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 15.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0045",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.044000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 28.98,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0046",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.006000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 18.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0047",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 13.06,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0048",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.027000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 18.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0049",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.016000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 14.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0050",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.018000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 16.81,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0051",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.007000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 90.91,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0052",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.017000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 85.34,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0053",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.008000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 93.38,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0054",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.050000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 86.47,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0055",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.012000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 95.87,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0056",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.037000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 92.25,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0057",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.046000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 96.66,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0058",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 93.84,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0059",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.015000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 99.09,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0060",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 94.16,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0061",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "BatchWorker",
+      "metric": "QueueDepth",
+      "value": 16.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0062",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.044000+00:00",
+      "source": "cloudwatch",
+      "service": "BatchWorker",
+      "metric": "QueueDepth",
+      "value": 500.46,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0063",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "BatchWorker",
+      "metric": "QueueDepth",
+      "value": 356.69,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0064",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "BatchWorker",
+      "metric": "QueueDepth",
+      "value": 283.35,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0065",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "BatchWorker",
+      "metric": "QueueDepth",
+      "value": 287.47,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0066",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.019000+00:00",
+      "source": "syslog",
+      "service": "BatchWorker",
+      "metric": "ErrorRate",
+      "value": 24.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0067",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.042000+00:00",
+      "source": "syslog",
+      "service": "BatchWorker",
+      "metric": "ErrorRate",
+      "value": 365.37,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0068",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.026000+00:00",
+      "source": "syslog",
+      "service": "BatchWorker",
+      "metric": "ErrorRate",
+      "value": 435.95,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0069",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.034000+00:00",
+      "source": "syslog",
+      "service": "BatchWorker",
+      "metric": "ErrorRate",
+      "value": 355.32,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0070",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.014000+00:00",
+      "source": "syslog",
+      "service": "BatchWorker",
+      "metric": "ErrorRate",
+      "value": 334.3,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0071",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "WriteThrottleEvents",
+      "value": 20.7,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0072",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.040000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "WriteThrottleEvents",
+      "value": 19.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0073",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "WriteThrottleEvents",
+      "value": 20.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0074",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.008000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "WriteThrottleEvents",
+      "value": 26.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0075",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "WriteThrottleEvents",
+      "value": 12.74,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0076",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "CPUUtilization",
+      "value": 24.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0077",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.039000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "CPUUtilization",
+      "value": 22.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0078",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "CPUUtilization",
+      "value": 19.31,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0079",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "CPUUtilization",
+      "value": 15.47,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0080",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "CPUUtilization",
+      "value": 19.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0081",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "IOPS",
+      "value": 29.08,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0082",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "IOPS",
+      "value": 21.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0083",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.045000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "IOPS",
+      "value": 13.96,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0084",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "IOPS",
+      "value": 22.28,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0085",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "AnalyticsDB",
+      "metric": "IOPS",
+      "value": 18.87,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0086",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.023000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 14.14,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0087",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.024000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 17.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0088",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.005000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 15.72,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0089",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.009000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 25.56,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0090",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.046000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 29.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0091",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.037000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 22.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0092",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.042000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 14.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0093",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.012000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 19.4,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0094",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.016000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 27.04,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0095",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.009000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 25.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0096",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.035000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 20.53,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0097",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.045000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 13.25,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0098",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.022000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 29.74,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0099",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.005000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 25.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0100",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.007000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 15.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0101",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.045000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 29.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0102",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.009000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 13.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0103",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.009000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 13.41,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0104",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.010000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 23.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0105",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.019000+00:00",
+      "source": "otel",
+      "service": "ReportingService",
+      "metric": "Latency",
+      "value": 27.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0106",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 14.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0107",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.041000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 26.4,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0108",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.041000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 26.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0109",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.015000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 20.92,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0110",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 19.9,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0111",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.043000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 18.92,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0112",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.050000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 17.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0113",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.016000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 15.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0114",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 24.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0115",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.029000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 19.8,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0116",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.005000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 20.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0117",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.010000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 27.09,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0118",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 18.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0119",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.023000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 19.4,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0120",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.023000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 25.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0121",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.048000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 27.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0122",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.027000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 28.35,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0123",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.005000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 23.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0124",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.044000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 27.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0125",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.042000+00:00",
+      "source": "cloudwatch",
+      "service": "ReportingService",
+      "metric": "ErrorRate",
+      "value": 29.22,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0126",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.047000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 18.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0127",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.021000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 28.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0128",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.036000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 19.7,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0129",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.046000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 17.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0130",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.018000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 24.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0131",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.049000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 14.26,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0132",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.031000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 19.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0133",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.047000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 18.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0134",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.050000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 29.61,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0135",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.012000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 22.05,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0136",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.042000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 28.17,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0137",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.016000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 18.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0138",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.005000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 18.07,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0139",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.026000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 18.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0140",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.018000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 12.85,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0141",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.014000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 17.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0142",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.022000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 22.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0143",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.018000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 20.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0144",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.013000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 25.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0145",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.045000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 28.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0146",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 14.62,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0147",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.039000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 28.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0148",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.033000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 28.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0149",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.020000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 23.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0150",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 26.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0151",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.036000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 28.46,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0152",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.014000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 16.03,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0153",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.020000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 23.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0154",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 15.88,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0155",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.035000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 24.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0156",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.027000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 12.9,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0157",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.047000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 15.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0158",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.015000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 17.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0159",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.030000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 22.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0160",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.047000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 17.46,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0161",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.014000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 12.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0162",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 22.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0163",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.022000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 25.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0164",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.023000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 21.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0165",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.044000+00:00",
+      "source": "cloudwatch",
+      "service": "EdgeGateway",
+      "metric": "5xxErrorRate",
+      "value": 23.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0166",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.008000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 13.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0167",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.005000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 28.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0168",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.027000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 22.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0169",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.049000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 23.53,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0170",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.021000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 15.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0171",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.007000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 17.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0172",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.038000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 18.41,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0173",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.038000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 17.4,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0174",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.048000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 28.18,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0175",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.022000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 23.41,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0176",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.026000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 16.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0177",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.044000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 15.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0178",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.047000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 23.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0179",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.040000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 18.09,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0180",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.033000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 18.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0181",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.031000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 24.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0182",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.032000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 21.46,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0183",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.012000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 29.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0184",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.014000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 12.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0185",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.008000+00:00",
+      "source": "otel",
+      "service": "EdgeGateway",
+      "metric": "Latency",
+      "value": 17.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0186",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CacheHitRatio",
+      "value": 17.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0187",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.017000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CacheHitRatio",
+      "value": 26.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0188",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.037000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CacheHitRatio",
+      "value": 13.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0189",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CacheHitRatio",
+      "value": 20.87,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0190",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.006000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CacheHitRatio",
+      "value": 12.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0191",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CPUUtilization",
+      "value": 18.65,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0192",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.012000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CPUUtilization",
+      "value": 20.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0193",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CPUUtilization",
+      "value": 17.07,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0194",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CPUUtilization",
+      "value": 23.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0195",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "CacheCluster",
+      "metric": "CPUUtilization",
+      "value": 19.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0196",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.036000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 25.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0197",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.044000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 25.27,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0198",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.022000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 21.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0199",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.046000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 27.26,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0200",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.020000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 17.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0201",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.005000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 16.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0202",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.027000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 28.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0203",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.034000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 26.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0204",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.007000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 21.52,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0205",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.007000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 17.18,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0206",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.022000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 25.34,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0207",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.006000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 18.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0208",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.020000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 23.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0209",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.012000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 24.28,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0210",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.013000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 23.06,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0211",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.027000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 20.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0212",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.009000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 15.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0213",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.036000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 22.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0214",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.031000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 14.52,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0215",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.032000+00:00",
+      "source": "otel",
+      "service": "NotificationService",
+      "metric": "Latency",
+      "value": 22.94,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0216",
+      "event_time": "2026-10-16T12:00:00+00:00",
+      "observed_time": "2026-10-16T12:00:00.010000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 17.17,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0217",
+      "event_time": "2026-10-16T12:00:15+00:00",
+      "observed_time": "2026-10-16T12:00:15.020000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 28.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0218",
+      "event_time": "2026-10-16T12:00:30+00:00",
+      "observed_time": "2026-10-16T12:00:30.026000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 21.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0219",
+      "event_time": "2026-10-16T12:00:45+00:00",
+      "observed_time": "2026-10-16T12:00:45.026000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 16.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0220",
+      "event_time": "2026-10-16T12:01:00+00:00",
+      "observed_time": "2026-10-16T12:01:00.018000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 12.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0221",
+      "event_time": "2026-10-16T12:01:15+00:00",
+      "observed_time": "2026-10-16T12:01:15.020000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 26.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0222",
+      "event_time": "2026-10-16T12:01:30+00:00",
+      "observed_time": "2026-10-16T12:01:30.026000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 16.22,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0223",
+      "event_time": "2026-10-16T12:01:45+00:00",
+      "observed_time": "2026-10-16T12:01:45.033000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 23.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0224",
+      "event_time": "2026-10-16T12:02:00+00:00",
+      "observed_time": "2026-10-16T12:02:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 21.33,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0225",
+      "event_time": "2026-10-16T12:02:15+00:00",
+      "observed_time": "2026-10-16T12:02:15.018000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 17.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0226",
+      "event_time": "2026-10-16T12:02:30+00:00",
+      "observed_time": "2026-10-16T12:02:30.017000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 16.95,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0227",
+      "event_time": "2026-10-16T12:02:45+00:00",
+      "observed_time": "2026-10-16T12:02:45.048000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 29.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0228",
+      "event_time": "2026-10-16T12:03:00+00:00",
+      "observed_time": "2026-10-16T12:03:00.022000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 14.26,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0229",
+      "event_time": "2026-10-16T12:03:15+00:00",
+      "observed_time": "2026-10-16T12:03:15.021000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 19.44,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0230",
+      "event_time": "2026-10-16T12:03:30+00:00",
+      "observed_time": "2026-10-16T12:03:30.030000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 28.6,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0231",
+      "event_time": "2026-10-16T12:03:45+00:00",
+      "observed_time": "2026-10-16T12:03:45.042000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 29.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0232",
+      "event_time": "2026-10-16T12:04:00+00:00",
+      "observed_time": "2026-10-16T12:04:00.034000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 13.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0233",
+      "event_time": "2026-10-16T12:04:15+00:00",
+      "observed_time": "2026-10-16T12:04:15.048000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 17.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0234",
+      "event_time": "2026-10-16T12:04:30+00:00",
+      "observed_time": "2026-10-16T12:04:30.025000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 19.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v3_dev3_085_idle_silent_control_0235",
+      "event_time": "2026-10-16T12:04:45+00:00",
+      "observed_time": "2026-10-16T12:04:45.042000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "ErrorRate",
+      "value": 24.99,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "application",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T12:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "WorkerHost"
+    ],
+    "onset_times": {
+      "WorkerHost": "2026-10-16T12:01:00+00:00"
+    },
+    "symptom_to_cause": {
+      "BatchWorker": "WorkerHost"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "WorkerHost"
+      ]
+    ]
+  },
+  "perturbations": [],
+  "tags": [
+    "generator_3.0",
+    "idle_healthy_control",
+    "control_svc_MessageQueue"
+  ],
+  "is_hard": false,
+  "telemetry_policy": {
+    "source_types": {
+      "cloudtrail": "event_driven",
+      "cloudwatch_alarms": "event_driven"
+    },
+    "service_policies": {},
+    "type_policies": {
+      "compute": [
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CPUUsage",
+            "CPUPressure"
+          ]
+        },
+        {
+          "metric": "MemoryUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "MemoryPressure",
+            "MemoryUsage",
+            "OOMKills"
+          ]
+        }
+      ],
+      "database": [
+        {
+          "metric": "WriteThrottleEvents",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ReadThrottleEvents",
+            "ThrottleRequests",
+            "ConnectionTimeout",
+            "WriteThrottles"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        },
+        {
+          "metric": "IOPS",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DiskIOPS",
+            "ReadIOPS",
+            "WriteIOPS"
+          ]
+        }
+      ],
+      "service": [
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "5xxErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "Errors",
+            "ExceptionCount"
+          ]
+        }
+      ],
+      "api_gateway": [
+        {
+          "metric": "5xxErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "5xxErrors",
+            "CheckoutFailures"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        }
+      ],
+      "worker": [
+        {
+          "metric": "QueueDepth",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JobQueueLag",
+            "ApproximateNumberOfMessagesVisible",
+            "QueueLag"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "syslog",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "WorkerFailures",
+            "JobFailures",
+            "Errors"
+          ]
+        }
+      ],
+      "auth": [
+        {
+          "metric": "AuthFailureRate",
+          "source": "cloudtrail",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JWTSignatureFailures",
+            "AuthFailures",
+            "TokenValidationErrors"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "AuthLatency",
+            "ResponseTime"
+          ]
+        }
+      ],
+      "cache": [
+        {
+          "metric": "CacheHitRatio",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CacheMissRate",
+            "HitRatio"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        }
+      ],
+      "queue": [
+        {
+          "metric": "ApproximateNumberOfMessagesVisible",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "QueueDepth",
+            "QueueLag",
+            "JobQueueLag"
+          ]
+        },
+        {
+          "metric": "DeadLetterQueueCount",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DLQCount",
+            "DeadLetterCount"
+          ]
+        }
+      ]
+    }
+  }
+}

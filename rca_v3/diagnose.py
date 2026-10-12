@@ -45,7 +45,12 @@ def diagnose(
     - Principled verdict verification (2e).
     """
     cfg = config or RCAv3Config()
-    policy = telemetry_policy or TelemetryPolicy()
+    if isinstance(telemetry_policy, dict):
+        policy = TelemetryPolicy.model_validate(telemetry_policy)
+    elif telemetry_policy is not None:
+        policy = telemetry_policy
+    else:
+        policy = TelemetryPolicy()
 
     # 1. Initialize isolated components
     health_tracker = SourceHealthTracker(source_health if True else [])
