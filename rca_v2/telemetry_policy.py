@@ -90,6 +90,11 @@ class TelemetryPolicy(BaseModel):
             if s_name.lower() == node_id.lower():
                 return sigs
 
+        # 1. Structural node_type from metadata takes precedence if recognized
+        if node_type and node_type in self.type_policies:
+            return self.type_policies[node_type]
+
+        # 2. Fall back to name patterns if node_type is unrecognized or generic
         node_id_lower = node_id.lower()
         if "dynamo" in node_id_lower or "postgres" in node_id_lower or "db" in node_id_lower:
             return self.type_policies.get("database", [])
