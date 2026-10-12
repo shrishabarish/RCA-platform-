@@ -56,7 +56,7 @@ class RootSetSelector:
         # 2. Check ablation flag: if set selection is disabled, use greedy 0.85 rule
         if not self.config.enable_set_root_selection:
             top_cand = candidates[0]
-            score_floor = max(self.config.min_score_diagnose, top_cand.combined_score * 0.85)
+            score_floor = max(self.config.min_score_diagnose, top_cand.combined_score * self.config.min_relative_score_multi_root)
             greedy_roots = [c.service for c in candidates if c.combined_score >= score_floor]
             if not greedy_roots:
                 greedy_roots = [top_cand.service]

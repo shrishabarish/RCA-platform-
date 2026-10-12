@@ -55,16 +55,31 @@ class CircuitBreaker:
     ) -> Tuple[Any, bool]:
         """
         Executes primary_fn if breaker is closed.
-        If breaker is open, immediately invokes fallback_fn.
+        If breaker is open, immediately invokes fallback_fn without waiting.
+        If timeout_sec is specified, runs primary_fn with timeout protection and fast-fails.
         Returns (result, was_fallback_used).
         """
         if self.is_open():
             return fallback_fn(), True
 
-        try:
-            res = primary_fn()
-            self.record_success()
-            return res, False
-        except Exception as ex:
-            self.record_failure()
-            return fallback_fn(), True
+        if timeout_sec is not None and timeout_sec > 0:
+            import concurrent.futures
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            try:
+                future = executor.submit(primary_fn)
+                res = future.result(timeout=timeout_sec)
+                executor.shutdown(wait=False)
+                self.record_success()
+                return res, False
+            except Exception as ex:
+                executor.shutdown(wait=False)
+                self.record_failure()
+                return fallback_fn(), True
+        else:
+            try:
+                res = primary_fn()
+                self.record_success()
+                return res, False
+            except Exception as ex:
+                self.record_failure()
+                return fallback_fn(), True

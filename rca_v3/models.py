@@ -90,3 +90,12 @@ class DiagnosisResult(BaseModel):
     source_health_summary: Dict[str, str] = Field(default_factory=dict)
     explanation: StructuredExplanation
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+def get_event_field(e: Any, field: str, default: Any = None) -> Any:
+    """Safely extracts field from event whether it is a dict or model object."""
+    if isinstance(e, dict):
+        val = e.get(field)
+        return val if val is not None else default
+    val = getattr(e, field, None)
+    return val if val is not None else default

@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional, Set, Tuple
 from datetime import datetime, timezone
 
-from rca_v3.models import CandidateDiagnosis
+from rca_v3.models import CandidateDiagnosis, get_event_field
 from rca_v3.causal_graph import CausalGraphV3
 from rca_v3.config import RCAv3Config
 
@@ -42,15 +42,15 @@ class SymptomScorer:
         # 1. Identify all observed symptom services and their earliest onset times and max severity
         symptom_services: Dict[str, Dict[str, Any]] = {}
         for e in events:
-            svc = getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)
+            svc = get_event_field(e, "service")
             if not svc:
                 continue
-            ts_str = getattr(e, "event_time", None) or (e.get("event_time") if isinstance(e, dict) else None)
+            ts_str = get_event_field(e, "event_time")
             dt = datetime.fromisoformat(ts_str) if ts_str else datetime.now(timezone.utc)
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
-            sev = str(getattr(e, "severity", "HIGH") or (e.get("severity", "HIGH") if isinstance(e, dict) else "HIGH")).upper()
-            w = SEVERITY_WEIGHTS.get(sev, 0.5)
+            sev = str(get_event_field(e, "severity", "HIGH")).upper()
+            w = self.config.severity_weights.get(sev, 0.5)
 
             if svc not in symptom_services:
                 symptom_services[svc] = {
@@ -112,18 +112,23 @@ class SymptomScorer:
             # If enabled: balance 5-factor score (ranking_score) with symptom_coverage
             if self.config.enable_symptom_scoring:
                 if cand.is_unobserved:
-                    # Unobserved candidate: ranking_score is 0, score comes from symptom coverage
-                    cand.combined_score = round(100.0 * cov * 0.95, 2)
+                    # Unobserved candidate: ranking_score is 0, score comes from symptom coverage with discount
+                    cand.combined_score = round(100.0 * cov * self.config.symptom_discount_factor, 2)
                 else:
-                    # Weighted combination: 40% ranking_score + 60% symptom_coverage (scaled to 100)
-                    cand.combined_score = round(0.40 * cand.ranking_score + 0.60 * (100.0 * cov), 2)
+                    # Weighted combination from config parameters
+                    cand.combined_score = round(
+                        self.config.weight_ranking_score * cand.ranking_score +
+                        self.config.weight_symptom_coverage * (100.0 * cov),
+                        2
+                    )
             else:
                 # Ablation: pure 5-factor ranking_score
                 cand.combined_score = cand.ranking_score
 
-        # 3. Deterministic tie-breaking:
-        # Sort key: (-combined_score, earliest_event_time ASC, service_name ASC)
-        candidates.sort(key=lambda c: (-c.combined_score, c.earliest_event_time, c.service))
+        # 3. Deterministic tie-breaking (Step 2b Parsimony):
+        # Never rank an unobserved candidate above an observed candidate that explains the same symptoms.
+        # Observed candidate strictly precedes unobserved candidate when combined_score ties.
+        candidates.sort(key=lambda c: (-c.combined_score, c.is_unobserved, c.earliest_event_time, c.service))
 
         # Re-assign ranks
         for idx, cand in enumerate(candidates, start=1):

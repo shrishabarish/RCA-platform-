@@ -1,0 +1,2535 @@
+{
+  "case_id": "case_v2_val2_022_multi_root_independent",
+  "family_id": "fam_v2_val2_10",
+  "base_case_id": null,
+  "generator_version": "2.0.0",
+  "seed": 2022,
+  "topology": {
+    "nodes": [
+      {
+        "id": "ComputeCluster",
+        "type": "compute",
+        "label": "K8s Compute Nodes",
+        "criticality": 0.9
+      },
+      {
+        "id": "PostgresPrimary",
+        "type": "database",
+        "label": "PostgreSQL Primary DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "RedisCache",
+        "type": "cache",
+        "label": "Redis Cache",
+        "criticality": 0.8
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "OrderService",
+        "type": "service",
+        "label": "Order Management Service",
+        "criticality": 0.85
+      },
+      {
+        "id": "CatalogService",
+        "type": "service",
+        "label": "Catalog Service",
+        "criticality": 0.75
+      },
+      {
+        "id": "APIGateway",
+        "type": "api_gateway",
+        "label": "API Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "WebFrontend",
+        "type": "service",
+        "label": "Web Frontend",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "APIGateway",
+        "AuthService"
+      ],
+      [
+        "APIGateway",
+        "OrderService"
+      ],
+      [
+        "APIGateway",
+        "CatalogService"
+      ],
+      [
+        "OrderService",
+        "PostgresPrimary"
+      ],
+      [
+        "OrderService",
+        "ComputeCluster"
+      ],
+      [
+        "CatalogService",
+        "RedisCache"
+      ],
+      [
+        "CatalogService",
+        "PostgresPrimary"
+      ],
+      [
+        "CatalogService",
+        "ComputeCluster"
+      ],
+      [
+        "WebFrontend",
+        "APIGateway"
+      ]
+    ],
+    "topology_version": "v2-topo-8node"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0001",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 18.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0006",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.045000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "MemoryUtilization",
+      "value": 14.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0011",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 1150.72,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0016",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "CPUUtilization",
+      "value": 86.54,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0021",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "IOPS",
+      "value": 1140.59,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0026",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.023000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CacheHitRatio",
+      "value": 877.89,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0031",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.044000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CPUUtilization",
+      "value": 95.28,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0036",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.050000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 14.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0046",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.039000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 23.35,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0056",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.034000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 14.45,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0076",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 29.61,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0096",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.028000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 25.92,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0116",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.034000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 28.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0136",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.040000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 19.07,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0156",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.035000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 28.98,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0176",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.038000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 22.23,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0196",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 22.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0057",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.023000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 24.15,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0077",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.008000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 29.03,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0097",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.047000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 26.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0117",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.032000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 28.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0137",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.040000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 14.27,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0157",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.037000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 22.65,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0177",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.030000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 20.65,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0197",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.008000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 23.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0037",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.044000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 28.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0047",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.036000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 25.56,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0058",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.014000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 15.52,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0078",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.038000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 27.89,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0098",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.040000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 23.05,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0118",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.019000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 16.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0138",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.041000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 26.18,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0158",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.008000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 16.26,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0178",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.010000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 22.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0198",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.049000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 17.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0059",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.046000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 17.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0079",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.008000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 13.95,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0099",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.008000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 29.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0119",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.010000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 20.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0139",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.046000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 18.15,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0159",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.047000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 24.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0179",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.032000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 18.09,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0199",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.012000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 27.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0002",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 10.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0007",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.038000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "MemoryUtilization",
+      "value": 16.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0012",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 809.03,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0017",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "CPUUtilization",
+      "value": 94.15,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0022",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.006000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "IOPS",
+      "value": 802.44,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0027",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CacheHitRatio",
+      "value": 564.95,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0032",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.015000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CPUUtilization",
+      "value": 91.3,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0038",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.013000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 13.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0048",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.014000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 15.95,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0060",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.006000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 347.86,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0080",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 531.84,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0100",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.047000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 497.47,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0120",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.030000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 272.98,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0140",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 15.07,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0160",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.016000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 18.62,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0180",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.023000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 20.15,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0200",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.015000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 16.52,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0061",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.042000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 484.61,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0081",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.036000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 321.37,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0101",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.024000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 435.54,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0121",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.037000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 307.74,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0141",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.017000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 24.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0161",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.049000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 21.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0181",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.025000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 15.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0201",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.038000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 27.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0039",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.046000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 26.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0049",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.050000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 14.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0062",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.043000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 580.22,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0082",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.035000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 555.25,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0102",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.024000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 542.92,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0122",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.049000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 432.63,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0142",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.029000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 14.17,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0162",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.042000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 13.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0182",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.023000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 19.09,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0202",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.020000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 16.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0063",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.018000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 542.3,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0083",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.012000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 479.19,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0103",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.007000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 350.52,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0123",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.042000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 461.23,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0143",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.028000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 25.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0163",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.041000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 18.14,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0183",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.011000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 17.47,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0203",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.032000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 25.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0003",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.031000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 24.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0008",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "MemoryUtilization",
+      "value": 18.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0013",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 535.94,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0018",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.007000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "CPUUtilization",
+      "value": 89.01,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0023",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.006000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "IOPS",
+      "value": 990.26,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0028",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CacheHitRatio",
+      "value": 902.9,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0033",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CPUUtilization",
+      "value": 86.51,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0040",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.028000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 18.53,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0050",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.023000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 20.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0064",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.014000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 302.24,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0084",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 508.22,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0104",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.011000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 531.51,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0124",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 371.37,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0144",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.030000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 25.54,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0164",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.027000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 17.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0184",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.049000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 27.62,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0204",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 24.27,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0065",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.035000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 537.23,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0085",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.010000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 413.0,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0105",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.013000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 377.38,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0125",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.048000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 436.26,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0145",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.048000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 25.05,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0165",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.012000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 13.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0185",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.016000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 26.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0205",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.040000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 12.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0041",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.026000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 21.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0051",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.021000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 13.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0066",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.034000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 377.93,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0086",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.021000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 539.37,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0106",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.023000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 360.97,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0126",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.033000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 545.71,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0146",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.045000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 21.41,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0166",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.045000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 21.98,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0186",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.045000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 17.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0206",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.031000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 20.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0067",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.039000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 318.1,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0087",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.021000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 398.56,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0107",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.017000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 270.91,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0127",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.005000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 286.11,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0147",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.035000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 26.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0167",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.009000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 17.18,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0187",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.010000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 20.77,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0207",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.007000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 15.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0004",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 20.28,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0009",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.028000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "MemoryUtilization",
+      "value": 10.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0014",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 838.15,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0019",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.039000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "CPUUtilization",
+      "value": 97.36,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0024",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "IOPS",
+      "value": 794.99,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0029",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CacheHitRatio",
+      "value": 789.35,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0034",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.034000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CPUUtilization",
+      "value": 98.88,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0042",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.045000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 16.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0052",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.041000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 24.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0068",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.036000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 326.03,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0088",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 328.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0108",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.013000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 470.99,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0128",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.046000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 484.8,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0148",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.014000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 14.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0168",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.024000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 27.88,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0188",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.049000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 28.17,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0208",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 19.88,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0069",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.032000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 563.87,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0089",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.018000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 557.32,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0109",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.047000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 434.19,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0129",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.050000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 302.25,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0149",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.037000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 21.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0169",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.030000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 19.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0189",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.026000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 28.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0209",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.011000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 12.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0043",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.011000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 21.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0053",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.023000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 16.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0070",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.035000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 260.09,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0090",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.032000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 367.72,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0110",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.037000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 436.77,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0130",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.009000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 456.15,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0150",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.008000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 22.74,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0170",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.049000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 23.61,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0190",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.008000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 25.94,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0210",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.030000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 15.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0071",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.017000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 448.48,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0091",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.047000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 341.75,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0111",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.014000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 382.49,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0131",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.026000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 302.14,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0151",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.018000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 13.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0171",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.014000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 24.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0191",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.048000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 23.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0211",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.038000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 28.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0005",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "CPUUtilization",
+      "value": 22.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0010",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "ComputeCluster",
+      "metric": "MemoryUtilization",
+      "value": 14.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0015",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 976.16,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0020",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "CPUUtilization",
+      "value": 94.17,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0025",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "IOPS",
+      "value": 1075.54,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0030",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CacheHitRatio",
+      "value": 1044.66,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0035",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "CPUUtilization",
+      "value": 86.84,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0044",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.047000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 20.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0054",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.009000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 28.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0072",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.037000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 352.48,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0092",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 571.29,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0112",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.045000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 430.72,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0132",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.040000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 265.18,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0152",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.045000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 27.88,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0172",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.009000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 28.72,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0192",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.021000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 12.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0212",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.038000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 26.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0073",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.035000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 347.84,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0093",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.047000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 441.62,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0113",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.009000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 461.53,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0133",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.022000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 373.92,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0153",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.043000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 20.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0173",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.006000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 14.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0193",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.017000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 28.36,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0213",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.043000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 27.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0045",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.029000+00:00",
+      "source": "cloudtrail",
+      "service": "AuthService",
+      "metric": "AuthFailureRate",
+      "value": 19.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0055",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.016000+00:00",
+      "source": "otel",
+      "service": "AuthService",
+      "metric": "Latency",
+      "value": 25.98,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0074",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.045000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 528.72,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0094",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.044000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 424.81,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0114",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.047000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 529.49,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0134",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.013000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 443.13,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0154",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.009000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 18.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0174",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.043000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 20.74,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0194",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.041000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 22.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0214",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.013000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 25.05,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0075",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.024000+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "Latency",
+      "value": 342.8,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0095",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.010000+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ErrorRate",
+      "value": 260.48,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0115",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.037000+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "Latency",
+      "value": 260.15,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0135",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.005000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "ErrorRate",
+      "value": 494.57,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0155",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.046000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "5xxErrorRate",
+      "value": 25.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0175",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.021000+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 18.31,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0195",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.040000+00:00",
+      "source": "otel",
+      "service": "WebFrontend",
+      "metric": "Latency",
+      "value": 26.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_val2_022_multi_root_independent_0215",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.012000+00:00",
+      "source": "cloudwatch",
+      "service": "WebFrontend",
+      "metric": "ErrorRate",
+      "value": 18.06,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "application",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "PostgresPrimary",
+      "RedisCache"
+    ],
+    "onset_times": {
+      "PostgresPrimary": "2026-10-15T10:01:00+00:00",
+      "RedisCache": "2026-10-15T10:01:00+00:00"
+    },
+    "symptom_to_cause": {
+      "CatalogService": "PostgresPrimary",
+      "OrderService": "PostgresPrimary"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "PostgresPrimary",
+        "RedisCache"
+      ]
+    ]
+  },
+  "perturbations": [
+    "two_simultaneous_independent_failures"
+  ],
+  "tags": [
+    "multi_root_independent",
+    "multi_root"
+  ],
+  "is_hard": true,
+  "telemetry_policy": {
+    "source_types": {
+      "cloudtrail": "event_driven",
+      "cloudwatch_alarms": "event_driven"
+    },
+    "service_policies": {},
+    "type_policies": {
+      "compute": [
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CPUUsage",
+            "CPUPressure"
+          ]
+        },
+        {
+          "metric": "MemoryUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "MemoryPressure",
+            "MemoryUsage",
+            "OOMKills"
+          ]
+        }
+      ],
+      "database": [
+        {
+          "metric": "WriteThrottleEvents",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ReadThrottleEvents",
+            "ThrottleRequests",
+            "ConnectionTimeout",
+            "WriteThrottles"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        },
+        {
+          "metric": "IOPS",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DiskIOPS",
+            "ReadIOPS",
+            "WriteIOPS"
+          ]
+        }
+      ],
+      "service": [
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "5xxErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "Errors",
+            "ExceptionCount"
+          ]
+        }
+      ],
+      "api_gateway": [
+        {
+          "metric": "5xxErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "5xxErrors",
+            "CheckoutFailures"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        }
+      ],
+      "worker": [
+        {
+          "metric": "QueueDepth",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JobQueueLag",
+            "ApproximateNumberOfMessagesVisible",
+            "QueueLag"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "syslog",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "WorkerFailures",
+            "JobFailures",
+            "Errors"
+          ]
+        }
+      ],
+      "auth": [
+        {
+          "metric": "AuthFailureRate",
+          "source": "cloudtrail",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JWTSignatureFailures",
+            "AuthFailures",
+            "TokenValidationErrors"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "AuthLatency",
+            "ResponseTime"
+          ]
+        }
+      ],
+      "cache": [
+        {
+          "metric": "CacheHitRatio",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CacheMissRate",
+            "HitRatio"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        }
+      ],
+      "queue": [
+        {
+          "metric": "ApproximateNumberOfMessagesVisible",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "QueueDepth",
+            "QueueLag",
+            "JobQueueLag"
+          ]
+        },
+        {
+          "metric": "DeadLetterQueueCount",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DLQCount",
+            "DeadLetterCount"
+          ]
+        }
+      ]
+    }
+  }
+}

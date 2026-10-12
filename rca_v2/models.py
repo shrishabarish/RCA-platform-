@@ -32,6 +32,7 @@ class SignalEvidence(BaseModel):
     event_ref: Optional[str] = None
     timestamp: Optional[str] = None
     value: Optional[float] = None
+    is_required: bool = True
     details: str = ""
 
 

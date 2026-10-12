@@ -104,31 +104,15 @@ def diagnose(
             severity=sev
         ))
 
-    # 4. Generate candidate pool
-    candidates: List[CandidateDiagnosis] = []
-
-    # Step 2a: Unobserved graph candidates
-    if cfg.enable_graph_candidates:
-        cand_gen = GraphCandidateGenerator(
-            graph_v3=graph_v3,
-            policy=policy,
-            health_tracker=health_tracker
-        )
-        unobserved_cands = cand_gen.find_unobserved_candidates(
-            topology_nodes=topo_nodes,
-            event_services=event_services,
-            service_earliest_times=service_earliest_times
-        )
-        candidates.extend(unobserved_cands)
-
-    # Observed candidates from events
+    # 4. Step 2b Parsimony: Score observed candidates from events first
     observed_services = sorted(list(event_services))
+    observed_candidates: List[CandidateDiagnosis] = []
     for svc in observed_services:
         res = score_candidate(svc, cloud_events, graph_engine=graph_v3.engine)
         score = float(res.get("total", 0.0))
         earliest_t = service_earliest_times.get(svc, datetime.max.replace(tzinfo=timezone.utc).isoformat())
 
-        candidates.append(CandidateDiagnosis(
+        observed_candidates.append(CandidateDiagnosis(
             service=svc,
             ranking_score=score,
             combined_score=score,
@@ -137,8 +121,40 @@ def diagnose(
             is_unobserved=False
         ))
 
-    # 5. Step 2b: Symptom explanation scoring & deterministic tie-breaking
-    candidates = symptom_scorer.compute_symptom_coverage(candidates=candidates, events=events)
+    # Evaluate symptoms explained by observed candidates
+    observed_candidates = symptom_scorer.compute_symptom_coverage(candidates=observed_candidates, events=events)
+
+    # Step 2b Parsimony:
+    # Identify symptoms explained by the best observed candidate(s).
+    # If the top observed candidate already explains all symptoms, unobserved ancestors are NOT needed.
+    top_observed_explained: Set[str] = set()
+    if observed_candidates:
+        top_obs = observed_candidates[0]
+        top_observed_explained = symptom_scorer.get_explained_symptoms_for_candidate(
+            top_obs.service, top_obs.earliest_event_time, events
+        ) & event_services
+
+    unexplained_by_top_observed = event_services - top_observed_explained
+
+    # Add unobserved ancestor ONLY if observed candidates leave symptoms unexplained
+    candidates: List[CandidateDiagnosis] = list(observed_candidates)
+    if cfg.enable_graph_candidates and unexplained_by_top_observed:
+        cand_gen = GraphCandidateGenerator(
+            graph_v3=graph_v3,
+            policy=policy,
+            health_tracker=health_tracker
+        )
+        unobserved_cands = cand_gen.find_unobserved_candidates(
+            topology_nodes=topo_nodes,
+            event_services=event_services,
+            service_earliest_times=service_earliest_times,
+            unexplained_symptoms=unexplained_by_top_observed,
+            min_marginal_coverage=cfg.min_unobserved_marginal_coverage,
+            total_symptoms=max(1, len(event_services))
+        )
+        if unobserved_cands:
+            candidates.extend(unobserved_cands)
+            candidates = symptom_scorer.compute_symptom_coverage(candidates=candidates, events=events)
 
     # 6. Step 2c: Multi-root separation via candidate set marginal coverage
     predicted_roots, root_hypotheses, residual_symptoms = root_selector.select_root_set(

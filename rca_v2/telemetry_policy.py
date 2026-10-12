@@ -9,6 +9,8 @@ class ExpectedSignalPolicy(BaseModel):
     source: str
     interval_seconds: int = 60
     is_anomaly_only: bool = True  # True if silence (absence) is expected when healthy (QUIET)
+    is_required: bool = True      # Step 2c: Coverage is defined over signals marked required in policy
+    aliases: List[str] = Field(default_factory=list) # Synonymous metric names
 
 
 class TelemetryPolicy(BaseModel):
@@ -24,37 +26,37 @@ class TelemetryPolicy(BaseModel):
     service_policies: Dict[str, List[ExpectedSignalPolicy]] = Field(default_factory=dict)
     type_policies: Dict[str, List[ExpectedSignalPolicy]] = Field(default_factory=lambda: {
         "compute": [
-            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="MemoryUtilization", source="datadog", interval_seconds=60, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["CPUUsage", "CPUPressure"]),
+            ExpectedSignalPolicy(metric="MemoryUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["MemoryPressure", "MemoryUsage", "OOMKills"]),
         ],
         "database": [
-            ExpectedSignalPolicy(metric="WriteThrottleEvents", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="IOPS", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="WriteThrottleEvents", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["ReadThrottleEvents", "ThrottleRequests", "ConnectionTimeout", "WriteThrottles"]),
+            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=False, aliases=["CPUUsage"]),
+            ExpectedSignalPolicy(metric="IOPS", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=False, aliases=["DiskIOPS", "ReadIOPS", "WriteIOPS"]),
         ],
         "service": [
-            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=15, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="ErrorRate", source="cloudwatch", interval_seconds=15, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=15, is_anomaly_only=True, is_required=True, aliases=["ResponseTime", "P99Latency"]),
+            ExpectedSignalPolicy(metric="ErrorRate", source="cloudwatch", interval_seconds=15, is_anomaly_only=True, is_required=True, aliases=["5xxErrorRate", "HTTP500Errors", "HTTP500", "Errors", "ExceptionCount"]),
         ],
         "api_gateway": [
-            ExpectedSignalPolicy(metric="5xxErrorRate", source="cloudwatch", interval_seconds=15, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=15, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="5xxErrorRate", source="cloudwatch", interval_seconds=15, is_anomaly_only=True, is_required=True, aliases=["ErrorRate", "HTTP500Errors", "HTTP500", "5xxErrors", "CheckoutFailures"]),
+            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=15, is_anomaly_only=True, is_required=True, aliases=["ResponseTime", "P99Latency"]),
         ],
         "worker": [
-            ExpectedSignalPolicy(metric="QueueDepth", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="ErrorRate", source="syslog", interval_seconds=60, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="QueueDepth", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["JobQueueLag", "ApproximateNumberOfMessagesVisible", "QueueLag"]),
+            ExpectedSignalPolicy(metric="ErrorRate", source="syslog", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["WorkerFailures", "JobFailures", "Errors"]),
         ],
         "auth": [
-            ExpectedSignalPolicy(metric="AuthFailureRate", source="cloudtrail", interval_seconds=30, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=30, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="AuthFailureRate", source="cloudtrail", interval_seconds=30, is_anomaly_only=True, is_required=True, aliases=["JWTSignatureFailures", "AuthFailures", "TokenValidationErrors"]),
+            ExpectedSignalPolicy(metric="Latency", source="otel", interval_seconds=30, is_anomaly_only=True, is_required=True, aliases=["AuthLatency", "ResponseTime"]),
         ],
         "cache": [
-            ExpectedSignalPolicy(metric="CacheHitRatio", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="CacheHitRatio", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["CacheMissRate", "HitRatio"]),
+            ExpectedSignalPolicy(metric="CPUUtilization", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=False, aliases=["CPUUsage"]),
         ],
         "queue": [
-            ExpectedSignalPolicy(metric="ApproximateNumberOfMessagesVisible", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
-            ExpectedSignalPolicy(metric="DeadLetterQueueCount", source="cloudwatch", interval_seconds=60, is_anomaly_only=True),
+            ExpectedSignalPolicy(metric="ApproximateNumberOfMessagesVisible", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=True, aliases=["QueueDepth", "QueueLag", "JobQueueLag"]),
+            ExpectedSignalPolicy(metric="DeadLetterQueueCount", source="cloudwatch", interval_seconds=60, is_anomaly_only=True, is_required=False, aliases=["DLQCount", "DeadLetterCount"]),
         ]
     })
 

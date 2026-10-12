@@ -53,4 +53,5 @@ class EvaluationCase(BaseModel):
     perturbations: List[str] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list)
     is_hard: bool = False
+    telemetry_policy: Optional[Dict[str, Any]] = None
 

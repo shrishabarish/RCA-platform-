@@ -18,16 +18,43 @@ class RCAv3Config(BaseModel):
     max_propagation_delay_sec: float = 300.0   # Maximum propagation delay between cause and symptom (5 min)
     clock_skew_tolerance_sec: float = 60.0     # Clock skew tolerance window (1 min)
 
+    # Scoring & Symptom Scoring Parameters
+    symptom_discount_factor: float = 0.95      # Explained symptom scaling factor
+    weight_ranking_score: float = 0.40         # Weight for ranking_score in combined_score
+    weight_symptom_coverage: float = 0.60      # Weight for symptom_coverage in combined_score
+    severity_weights: Dict[str, float] = Field(default_factory=lambda: {
+        "CRITICAL": 1.0,
+        "HIGH": 0.8,
+        "MEDIUM": 0.5,
+        "LOW": 0.2
+    })
+    max_propagation_hops: int = 3              # Max causal graph traversal depth
+
     # Multi-root Set Selection Parameters
     min_marginal_symptom_coverage: float = 0.15 # Min incremental symptom coverage required to add candidate root
+    min_relative_score_multi_root: float = 0.85 # Candidate score threshold relative to top candidate
 
-    # Decision Thresholds
+    # Graph-Generated Unobserved Candidate Parameters
+    unobserved_max_hops: int = 2               # Max hops upstream to search for unobserved roots
+    unobserved_decay_factor: float = 0.85      # Score decay per distance hop
+    unobserved_base_score: float = 50.0        # Initial base score for unobserved candidate
+    min_unobserved_marginal_coverage: float = 0.15 # Marginal symptom coverage needed to consider unobserved ancestor
+
+    # Decision Thresholds & Rules
     min_score_diagnose: float = 50.0           # Floor score for diagnosis
     min_score_confirmed: float = 75.0          # Preregistered threshold for CONFIRMED
     min_coverage_confirmed: float = 0.50       # Required evidence coverage for CONFIRMED
     min_margin_confirmed: float = 4.0          # Required score margin for CONFIRMED
     max_down_sources_allowed: int = 0          # Maximum DOWN sources allowed before abstaining
     block_on_contradiction: bool = True        # Contradictions force INSUFFICIENT_EVIDENCE
+    contradiction_same_candidate_only: bool = True # Two independent roots are NOT a contradiction; contradiction blocks CONFIRMED only when evidence conflicts about same candidate
+
+    # Confidence Thresholds
+    confidence_high_score: float = 90.0
+    confidence_med_score: float = 80.0
+    confidence_low_score: float = 70.0
+    confidence_margin_high: float = 20.0
+    confidence_margin_med: float = 10.0
 
     # Live Circuit Breaker Parameters
     circuit_breaker_max_failures: int = 3      # Consecutive timeouts before breaker opens

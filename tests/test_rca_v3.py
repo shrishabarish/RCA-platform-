@@ -90,6 +90,14 @@ def test_2a_graph_generated_candidates_and_unobserved_cap(base_topology):
             "source": "application",
             "severity": "CRITICAL",
             "metric": "Latency"
+        },
+        {
+            "event_id": "evt_worker",
+            "service": "Worker",
+            "event_time": (t0 + timedelta(seconds=3)).isoformat(),
+            "source": "application",
+            "severity": "HIGH",
+            "metric": "JobFailures"
         }
     ]
     source_health = [
@@ -242,3 +250,131 @@ def test_2f_circuit_breaker():
     assert fb3 is True
     assert res3 == "fallback_result"
     assert call_count["primary"] == p_calls  # Zero primary calls made while open!
+
+
+def test_check_c_parallel_siblings_not_contradiction(base_topology):
+    """
+    Step 2e regression test:
+    Parallel siblings (Auth and DynamoDB, both callees of API) reporting anomalies
+    must NOT trigger COMPETING_DISJOINT_ROOTS. They are independent roots or noise,
+    and contradiction only blocks CONFIRMED when evidence conflicts about the same candidate.
+    """
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    # Auth fails as root; DynamoDB has background health check noise
+    events = [
+        {
+            "event_id": "evt_auth",
+            "service": "Auth",
+            "event_time": t0.isoformat(),
+            "source": "cloudtrail",
+            "severity": "CRITICAL",
+            "metric": "AuthFailureRate"
+        },
+        {
+            "event_id": "evt_api",
+            "service": "API",
+            "event_time": (t0 + timedelta(seconds=2)).isoformat(),
+            "source": "otel",
+            "severity": "HIGH",
+            "metric": "Latency"
+        },
+        {
+            "event_id": "evt_ddb_noise",
+            "service": "DynamoDB",
+            "event_time": (t0 + timedelta(seconds=3)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "RoutineHealthCheckLatency"
+        }
+    ]
+
+    res = diagnose(events, base_topology, config=RCAv3Config(contradiction_same_candidate_only=True))
+    # Must NOT abstain due to COMPETING_DISJOINT_ROOTS
+    contradiction_types = [c.contradiction_type for c in res.contradictions]
+    assert "COMPETING_DISJOINT_ROOTS" not in contradiction_types
+    # Must identify Auth as top candidate
+    assert res.top_candidate is not None
+    assert res.top_candidate.service == "Auth"
+    assert res.verdict != Verdict.INSUFFICIENT_EVIDENCE
+
+
+def test_real_hang_and_circuit_breaker_lifecycle():
+    """
+    Step 2e regression test:
+    Real hang test using time.sleep.
+    Consecutive timeouts trip the circuit breaker; once open, subsequent calls fast-fail immediately.
+    """
+    import time
+
+    cb = CircuitBreaker(max_failures=2, cooldown_sec=10.0)
+
+    call_log = []
+
+    def hanging_function():
+        time.sleep(2.0)
+        return "hung"
+
+    def fallback_function():
+        return "fallback_ok"
+
+    # Call 1: Times out at 0.1s
+    t0 = time.perf_counter()
+    res1, fb1 = cb.execute(hanging_function, fallback_function, timeout_sec=0.1)
+    el1 = time.perf_counter() - t0
+    assert fb1 is True
+    assert res1 == "fallback_ok"
+    assert el1 < 0.5  # Returns promptly at timeout, not after full 2.0s sleep
+
+    # Call 2: Times out at 0.1s and trips breaker
+    t0 = time.perf_counter()
+    res2, fb2 = cb.execute(hanging_function, fallback_function, timeout_sec=0.1)
+    el2 = time.perf_counter() - t0
+    assert fb2 is True
+    assert cb.is_open() is True
+
+    # Call 3: Breaker is OPEN -> fast-fails in < 5ms without even touching the thread pool
+    t0 = time.perf_counter()
+    res3, fb3 = cb.execute(hanging_function, fallback_function, timeout_sec=0.1)
+    el3 = time.perf_counter() - t0
+    assert fb3 is True
+    assert res3 == "fallback_ok"
+    assert el3 < 0.01  # Immediate fast-fail
+
+
+def test_opaque_id_regression():
+    """
+    Step 2e regression test:
+    Opaque IDs (svc_node_01, svc_node_02) produce equivalent diagnoses
+    as semantic names when topology and metadata type are identical.
+    """
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    nodes_opaque = [
+        {"id": "svc_node_01", "type": "database"},
+        {"id": "svc_node_02", "type": "service"},
+    ]
+    edges_opaque = [("svc_node_02", "svc_node_01")]
+    topo_opaque = DummyTopology(nodes_opaque, edges_opaque)
+
+    events = [
+        {
+            "event_id": "evt_1",
+            "service": "svc_node_01",
+            "event_time": t0.isoformat(),
+            "source": "cloudwatch",
+            "severity": "CRITICAL",
+            "metric": "WriteThrottleEvents"
+        },
+        {
+            "event_id": "evt_2",
+            "service": "svc_node_02",
+            "event_time": (t0 + timedelta(seconds=3)).isoformat(),
+            "source": "otel",
+            "severity": "HIGH",
+            "metric": "Latency"
+        }
+    ]
+
+    res = diagnose(events, topo_opaque)
+    assert res.top_candidate is not None
+    assert res.top_candidate.service == "svc_node_01"
+    assert res.verdict != Verdict.INSUFFICIENT_EVIDENCE

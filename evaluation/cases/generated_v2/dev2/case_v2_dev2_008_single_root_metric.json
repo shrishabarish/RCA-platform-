@@ -1,0 +1,1724 @@
+{
+  "case_id": "case_v2_dev2_008_single_root_metric",
+  "family_id": "fam_v2_dev2_08",
+  "base_case_id": null,
+  "generator_version": "2.0.0",
+  "seed": 1008,
+  "topology": {
+    "nodes": [
+      {
+        "id": "WorkerHost",
+        "type": "compute",
+        "label": "Worker Host EC2",
+        "criticality": 0.85
+      },
+      {
+        "id": "EventStore",
+        "type": "database",
+        "label": "Event Store DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "MessageQueue",
+        "type": "queue",
+        "label": "SQS Event Queue",
+        "criticality": 0.85
+      },
+      {
+        "id": "ProcessorA",
+        "type": "worker",
+        "label": "Stream Processor A",
+        "criticality": 0.8
+      },
+      {
+        "id": "ProcessorB",
+        "type": "worker",
+        "label": "Stream Processor B",
+        "criticality": 0.75
+      },
+      {
+        "id": "IngressAPI",
+        "type": "api_gateway",
+        "label": "Event Ingress Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "MetricsDashboard",
+        "type": "service",
+        "label": "Monitoring UI",
+        "criticality": 0.5
+      }
+    ],
+    "edges": [
+      [
+        "IngressAPI",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorA",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorA",
+        "EventStore"
+      ],
+      [
+        "ProcessorA",
+        "WorkerHost"
+      ],
+      [
+        "ProcessorB",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorB",
+        "EventStore"
+      ],
+      [
+        "ProcessorB",
+        "WorkerHost"
+      ],
+      [
+        "MetricsDashboard",
+        "IngressAPI"
+      ],
+      [
+        "MetricsDashboard",
+        "ProcessorA"
+      ]
+    ],
+    "topology_version": "v2-topo-7node"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0001",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 24.43,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0006",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 23.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0011",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.007000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 14.64,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0016",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.019000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 15.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0021",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 25.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0026",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.020000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 879.12,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0031",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.019000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 843.38,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0036",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.037000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 14.6,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0041",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.027000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 13.41,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0046",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.008000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 27.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0051",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.044000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 12.23,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0056",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.02,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0076",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.017000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 13.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0096",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.040000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 25.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0116",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 25.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0057",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.014000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 26.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0077",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.050000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 12.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0097",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.009000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 26.81,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0117",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.047000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.89,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0058",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.043000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 25.01,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0078",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.005000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 26.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0098",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.012000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 25.4,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0118",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.006000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.28,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0059",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.005000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 24.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0079",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.038000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 16.44,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0099",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.029000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 14.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0119",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.029000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 16.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0002",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.050000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 15.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0007",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 24.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0012",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 15.92,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0017",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 23.94,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0022",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.047000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 24.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0027",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 849.55,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0032",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.007000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 876.34,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0037",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.045000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 401.16,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0042",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.040000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 493.12,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0047",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.026000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 595.1,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0052",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.011000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 429.06,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0060",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 532.46,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0080",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.005000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 452.36,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0100",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.014000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 24.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0120",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0061",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.033000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 268.62,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0081",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.018000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 256.25,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0101",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.032000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 15.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0121",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.034000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 28.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0062",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.012000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 350.49,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0082",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.030000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 255.43,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0102",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.008000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 14.33,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0122",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.015000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.31,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0063",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.016000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 280.86,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0083",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.032000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 282.35,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0103",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.008000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 19.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0123",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.048000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 13.63,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0003",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 21.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0008",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 15.17,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0013",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 29.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0018",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 16.58,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0023",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.028000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 27.42,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0028",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 541.64,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0033",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.012000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 1122.62,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0038",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.038000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 504.51,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0043",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.018000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 255.3,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0048",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 544.79,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0053",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.049000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 332.6,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0064",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 591.37,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0084",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.008000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 321.83,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0104",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.049000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 24.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0124",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.048000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 25.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0065",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.020000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 587.13,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0085",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.020000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 565.64,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0105",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.019000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 17.73,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0125",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.049000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 16.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0066",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.007000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 522.37,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0086",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.043000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 551.57,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0106",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.046000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 16.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0126",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.030000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 14.61,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0067",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.011000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 444.4,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0087",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.008000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 288.42,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0107",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.044000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 25.34,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0127",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.041000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 22.29,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0004",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.047000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 10.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0009",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 18.09,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0014",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 18.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0019",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 14.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0024",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.031000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 22.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0029",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.033000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 694.22,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0034",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 571.1,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0039",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.015000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 285.46,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0044",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.032000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 569.28,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0049",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.050000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 336.71,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0054",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.018000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 554.61,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0068",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 543.01,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0088",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.032000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 259.09,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0108",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.046000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 22.85,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0128",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.6,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0069",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.014000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 262.12,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0089",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.046000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 568.63,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0109",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.020000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 29.91,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0129",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.030000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 12.31,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0070",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.029000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 429.68,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0090",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.006000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 482.44,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0110",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.036000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 12.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0130",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.035000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 28.45,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0071",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.016000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 425.51,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0091",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.032000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 311.99,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0111",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.034000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 20.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0131",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.042000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 20.51,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0005",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.014000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 20.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0010",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 13.87,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0015",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.019000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 14.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0020",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.034000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 16.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0025",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.008000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 25.65,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0030",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 1039.01,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0035",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.010000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 685.27,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0040",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.031000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 359.96,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0045",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.042000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 506.47,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0050",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.030000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 590.36,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0055",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.038000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 570.24,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0072",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 348.31,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0092",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.030000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 264.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0112",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.020000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 16.56,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0132",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 26.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0073",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.013000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 547.55,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0093",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.038000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 359.75,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0113",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.049000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 15.34,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0133",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.045000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 24.72,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0074",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.043000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 513.97,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0094",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.012000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 457.04,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0114",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.049000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 19.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0134",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.042000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 18.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0075",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.041000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 590.51,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0095",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.047000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 507.4,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0115",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.041000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 18.18,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_008_single_root_metric_0135",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.037000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 19.48,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "application",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "MessageQueue"
+    ],
+    "onset_times": {
+      "MessageQueue": "2026-10-15T10:01:00+00:00"
+    },
+    "symptom_to_cause": {
+      "IngressAPI": "MessageQueue",
+      "ProcessorA": "MessageQueue",
+      "ProcessorB": "MessageQueue"
+    },
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": [
+      [
+        "MessageQueue"
+      ]
+    ]
+  },
+  "perturbations": [],
+  "tags": [
+    "single_root_metric"
+  ],
+  "is_hard": false,
+  "telemetry_policy": {
+    "source_types": {
+      "cloudtrail": "event_driven",
+      "cloudwatch_alarms": "event_driven"
+    },
+    "service_policies": {},
+    "type_policies": {
+      "compute": [
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CPUUsage",
+            "CPUPressure"
+          ]
+        },
+        {
+          "metric": "MemoryUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "MemoryPressure",
+            "MemoryUsage",
+            "OOMKills"
+          ]
+        }
+      ],
+      "database": [
+        {
+          "metric": "WriteThrottleEvents",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ReadThrottleEvents",
+            "ThrottleRequests",
+            "ConnectionTimeout",
+            "WriteThrottles"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        },
+        {
+          "metric": "IOPS",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DiskIOPS",
+            "ReadIOPS",
+            "WriteIOPS"
+          ]
+        }
+      ],
+      "service": [
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "5xxErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "Errors",
+            "ExceptionCount"
+          ]
+        }
+      ],
+      "api_gateway": [
+        {
+          "metric": "5xxErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "5xxErrors",
+            "CheckoutFailures"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        }
+      ],
+      "worker": [
+        {
+          "metric": "QueueDepth",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JobQueueLag",
+            "ApproximateNumberOfMessagesVisible",
+            "QueueLag"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "syslog",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "WorkerFailures",
+            "JobFailures",
+            "Errors"
+          ]
+        }
+      ],
+      "auth": [
+        {
+          "metric": "AuthFailureRate",
+          "source": "cloudtrail",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JWTSignatureFailures",
+            "AuthFailures",
+            "TokenValidationErrors"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "AuthLatency",
+            "ResponseTime"
+          ]
+        }
+      ],
+      "cache": [
+        {
+          "metric": "CacheHitRatio",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CacheMissRate",
+            "HitRatio"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        }
+      ],
+      "queue": [
+        {
+          "metric": "ApproximateNumberOfMessagesVisible",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "QueueDepth",
+            "QueueLag",
+            "JobQueueLag"
+          ]
+        },
+        {
+          "metric": "DeadLetterQueueCount",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DLQCount",
+            "DeadLetterCount"
+          ]
+        }
+      ]
+    }
+  }
+}

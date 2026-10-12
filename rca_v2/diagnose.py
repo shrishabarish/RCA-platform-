@@ -37,7 +37,7 @@ def diagnose(
     - Explicit evidence verification and contradiction detection.
     """
     cfg = config or RCAv2Config()
-    policy = telemetry_policy or TelemetryPolicy()
+    policy = telemetry_policy or TelemetryPolicy.load_live_policy()
 
     # 1. Initialize isolated in-memory components
     health_tracker = SourceHealthTracker(source_health if cfg.enable_source_health else [])

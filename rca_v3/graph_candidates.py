@@ -32,9 +32,16 @@ class GraphCandidateGenerator:
         self,
         topology_nodes: List[Any],
         event_services: Set[str],
-        service_earliest_times: Dict[str, str]
+        service_earliest_times: Dict[str, str],
+        unexplained_symptoms: Optional[Set[str]] = None,
+        min_marginal_coverage: float = 0.15,
+        total_symptoms: int = 1
     ) -> List[CandidateDiagnosis]:
         unobserved: List[CandidateDiagnosis] = []
+
+        # Step 2b Parsimony: If observed candidates already explain all symptoms, do not add unobserved candidates
+        if unexplained_symptoms is not None and len(unexplained_symptoms) == 0:
+            return []
 
         for node in topology_nodes:
             node_id = getattr(node, "id", None) or (node.get("id") if isinstance(node, dict) else str(node))
@@ -65,6 +72,15 @@ class GraphCandidateGenerator:
             symptom_dependents = [d for d in dependents if d in event_services]
             if not symptom_dependents:
                 continue
+
+            # Step 2b Parsimony: Must explain residual symptoms that observed candidates leave unexplained
+            if unexplained_symptoms is not None:
+                newly_explained = [d for d in symptom_dependents if d in unexplained_symptoms]
+                if not newly_explained:
+                    continue
+                marginal_cov = len(newly_explained) / max(1, total_symptoms)
+                if marginal_cov < min_marginal_coverage:
+                    continue
 
             # Impute earliest onset time as the earliest dependent symptom time
             dependent_times = [

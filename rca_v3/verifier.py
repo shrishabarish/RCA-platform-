@@ -114,34 +114,54 @@ class EvidenceVerifierV3:
                 severity="CRITICAL"
             ))
 
-        # Check C: Competing unresolved disjoint roots with early critical onsets
-        if len(candidates) >= 2:
-            c2 = candidates[1]
-            c2_svc = c2.service
-            # Check if both have critical/high onsets at or near incident start, and are not directed-related
-            if not self.graph_v3.are_services_related(top_svc, c2_svc, enable_directed=self.config.enable_directed_relatedness):
-                # Check if second candidate also has high score and early onset
-                try:
-                    t1 = datetime.fromisoformat(top_cand.earliest_event_time)
-                    t2 = datetime.fromisoformat(c2.earliest_event_time)
-                    delta_onset = abs((t1 - t2).total_seconds())
-                except Exception:
-                    delta_onset = 0.0
-
-                # If both started within clock skew tolerance and second candidate is high-scoring (>65)
-                # and neither explains the other's symptoms:
-                top_explains_c2 = self.graph_v3.is_ancestor_cause(top_svc, c2_svc)
-                c2_explains_top = self.graph_v3.is_ancestor_cause(c2_svc, top_svc)
-
-                if (not top_explains_c2) and (not c2_explains_top) and delta_onset <= self.config.clock_skew_tolerance_sec:
-                    if c2.ranking_score >= 65.0 or c2.combined_score >= 60.0:
-                        contradictions.append(Contradiction(
-                            contradiction_type="COMPETING_DISJOINT_ROOTS",
-                            description=(f"Competing independent anomalies on disjoint services '{top_svc}' and '{c2_svc}' "
-                                         f"at identical/near onset (delta={delta_onset:.1f}s) cannot be causally reconciled."),
-                            involved_services=[top_svc, c2_svc],
-                            severity="CRITICAL"
-                        ))
+        # Check C (Step 2a): Contradiction blocks CONFIRMED only when evidence conflicts about the SAME candidate.
+        # Two independent roots reported side by side are NOT a contradiction; they are handled by RootSetSelector as multi-roots.
+        if not self.config.contradiction_same_candidate_only:
+            # Legacy ablation behavior (disabled by default)
+            if len(candidates) >= 2:
+                c2 = candidates[1]
+                c2_svc = c2.service
+                if not self.graph_v3.are_services_related(top_svc, c2_svc, enable_directed=self.config.enable_directed_relatedness):
+                    try:
+                        t1 = datetime.fromisoformat(top_cand.earliest_event_time)
+                        t2 = datetime.fromisoformat(c2.earliest_event_time)
+                        delta_onset = abs((t1 - t2).total_seconds())
+                    except Exception:
+                        delta_onset = 0.0
+                    top_explains_c2 = self.graph_v3.is_ancestor_cause(top_svc, c2_svc)
+                    c2_explains_top = self.graph_v3.is_ancestor_cause(c2_svc, top_svc)
+                    if (not top_explains_c2) and (not c2_explains_top) and delta_onset <= self.config.clock_skew_tolerance_sec:
+                        if c2.ranking_score >= 65.0 or c2.combined_score >= 60.0:
+                            contradictions.append(Contradiction(
+                                contradiction_type="COMPETING_DISJOINT_ROOTS",
+                                description=(f"Competing independent anomalies on disjoint services '{top_svc}' and '{c2_svc}' "
+                                             f"at identical/near onset (delta={delta_onset:.1f}s) cannot be causally reconciled."),
+                                involved_services=[top_svc, c2_svc],
+                                severity="CRITICAL"
+                            ))
+        else:
+            # Principled Step 2a Check: Real contradiction format can represent
+            # (root looks healthy while dependents blame it)
+            # If top candidate has zero anomalies (only healthy baseline/quiet) yet dependents report critical errors blaming it
+            top_has_anomalies = any(
+                (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) == top_svc
+                and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
+                for e in events
+            )
+            dependents = self.graph_v3.get_all_downstream_dependents(top_svc)
+            dependents_blaming = any(
+                (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) in dependents
+                and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH")
+                for e in events
+            )
+            # If top candidate is observed and looks healthy/quiet while dependents blame it:
+            if (not top_cand.is_unobserved) and (not top_has_anomalies) and dependents_blaming and any(ev.state == EvidenceState.QUIET for ev in top_evidence):
+                contradictions.append(Contradiction(
+                    contradiction_type="ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME",
+                    description=f"Contradiction: Candidate '{top_svc}' telemetry indicates healthy/quiet state while downstream dependents report critical failures.",
+                    involved_services=[top_svc],
+                    severity="CRITICAL"
+                ))
 
         # Check D: Ancestor source DOWN
         # "source DOWN for any source that carries signals for the candidate or its ancestors prevents CONFIRMED"

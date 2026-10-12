@@ -48,7 +48,14 @@ class EvidenceEvaluator:
 
         results: List[SignalEvidence] = []
         for exp in expected_signals:
+            # Check primary metric name as well as any configured aliases
             matched_events = event_by_metric.get(exp.metric, [])
+            if not matched_events and exp.aliases:
+                for alias in exp.aliases:
+                    if alias in event_by_metric:
+                        matched_events = event_by_metric[alias]
+                        break
+
             source_status = self.health_tracker.get_source_status(exp.source, as_of=incident_window_end)
 
             if matched_events:
@@ -59,7 +66,7 @@ class EvidenceEvaluator:
                 val = getattr(latest_ev, "value", None) or (latest_ev.get("value") if isinstance(latest_ev, dict) else None)
                 src = getattr(latest_ev, "source", None) or (latest_ev.get("source") if isinstance(latest_ev, dict) else exp.source)
                 
-                # Check for staleness if incident_window_end is defined and event is older than 10m
+                # Check for staleness if incident_window_end is defined and event is older than 15m
                 state = EvidenceState.PRESENT
                 if ts_str and incident_window_end:
                     try:
@@ -79,6 +86,7 @@ class EvidenceEvaluator:
                     event_ref=ev_id,
                     timestamp=ts_str,
                     value=float(val) if val is not None else None,
+                    is_required=exp.is_required,
                     details=f"Signal {exp.metric} confirmed via {src}"
                 ))
             else:
@@ -90,6 +98,7 @@ class EvidenceEvaluator:
                         signal_name=exp.metric,
                         source=exp.source,
                         state=EvidenceState.UNOBSERVED,
+                        is_required=exp.is_required,
                         details=f"Telemetry source {exp.source} is {source_status.value}; signal cannot be observed"
                     ))
                 else:
@@ -101,6 +110,7 @@ class EvidenceEvaluator:
                             signal_name=exp.metric,
                             source=exp.source,
                             state=EvidenceState.QUIET,
+                            is_required=exp.is_required,
                             details=f"Signal quiet as expected on healthy source {exp.source}"
                         ))
                     else:
@@ -110,6 +120,7 @@ class EvidenceEvaluator:
                             signal_name=exp.metric,
                             source=exp.source,
                             state=EvidenceState.MISSING,
+                            is_required=exp.is_required,
                             details=f"Expected telemetry missing from healthy source {exp.source}"
                         ))
 
@@ -119,8 +130,12 @@ class EvidenceEvaluator:
         """
         Returns (observed_count, observable_count, coverage_ratio).
         Signals marked UNOBSERVED (due to DOWN/UNKNOWN sources) are excluded from both numerator and denominator.
+        Step 2c: Coverage is defined over signals marked required in the policy.
         """
-        observable = [e for e in evidence_list if e.state != EvidenceState.UNOBSERVED]
+        required_list = [e for e in evidence_list if getattr(e, "is_required", True)]
+        target_list = required_list if required_list else evidence_list
+
+        observable = [e for e in target_list if e.state != EvidenceState.UNOBSERVED]
         if not observable:
             return 0, 0, 0.0
 

@@ -1,0 +1,1724 @@
+{
+  "case_id": "case_v2_dev2_056_root_healthy_blamed_abstain",
+  "family_id": "fam_v2_dev2_08",
+  "base_case_id": null,
+  "generator_version": "2.0.0",
+  "seed": 1056,
+  "topology": {
+    "nodes": [
+      {
+        "id": "WorkerHost",
+        "type": "compute",
+        "label": "Worker Host EC2",
+        "criticality": 0.85
+      },
+      {
+        "id": "EventStore",
+        "type": "database",
+        "label": "Event Store DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "MessageQueue",
+        "type": "queue",
+        "label": "SQS Event Queue",
+        "criticality": 0.85
+      },
+      {
+        "id": "ProcessorA",
+        "type": "worker",
+        "label": "Stream Processor A",
+        "criticality": 0.8
+      },
+      {
+        "id": "ProcessorB",
+        "type": "worker",
+        "label": "Stream Processor B",
+        "criticality": 0.75
+      },
+      {
+        "id": "IngressAPI",
+        "type": "api_gateway",
+        "label": "Event Ingress Gateway",
+        "criticality": 0.9
+      },
+      {
+        "id": "MetricsDashboard",
+        "type": "service",
+        "label": "Monitoring UI",
+        "criticality": 0.5
+      }
+    ],
+    "edges": [
+      [
+        "IngressAPI",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorA",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorA",
+        "EventStore"
+      ],
+      [
+        "ProcessorA",
+        "WorkerHost"
+      ],
+      [
+        "ProcessorB",
+        "MessageQueue"
+      ],
+      [
+        "ProcessorB",
+        "EventStore"
+      ],
+      [
+        "ProcessorB",
+        "WorkerHost"
+      ],
+      [
+        "MetricsDashboard",
+        "IngressAPI"
+      ],
+      [
+        "MetricsDashboard",
+        "ProcessorA"
+      ]
+    ],
+    "topology_version": "v2-topo-7node"
+  },
+  "events": [
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0001",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.028000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 9.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0006",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.047000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 8.67,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0011",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.025000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 26.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0016",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 12.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0021",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.016000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 14.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0026",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 25.06,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0031",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.039000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 12.82,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0036",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.028000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 24.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0041",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.032000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 28.33,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0046",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 23.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0051",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.027000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 12.27,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0056",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.030000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.81,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0076",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.016000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 29.97,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0096",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.022000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 23.13,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0116",
+      "event_time": "2026-10-15T10:00:00+00:00",
+      "observed_time": "2026-10-15T10:00:00.026000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 28.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0057",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.045000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0077",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.008000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 12.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0097",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.028000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 16.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0117",
+      "event_time": "2026-10-15T10:00:15+00:00",
+      "observed_time": "2026-10-15T10:00:15.043000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 25.7,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0058",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.035000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 16.85,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0078",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.046000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 13.81,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0098",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.040000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 13.62,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0118",
+      "event_time": "2026-10-15T10:00:30+00:00",
+      "observed_time": "2026-10-15T10:00:30.029000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 26.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0059",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.045000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 13.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0079",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.022000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 16.19,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0099",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.011000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 24.5,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0119",
+      "event_time": "2026-10-15T10:00:45+00:00",
+      "observed_time": "2026-10-15T10:00:45.045000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 15.77,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0002",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.027000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 17.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0007",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 12.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0012",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.042000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 28.28,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0017",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 13.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0022",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.019000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 25.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0027",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 18.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0032",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.047000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 24.43,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0037",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.006000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 365.97,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0042",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.034000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 317.56,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0047",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.031000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 521.3,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0052",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.035000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 587.37,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0060",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.040000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 27.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0080",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.033000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 27.25,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0100",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.015000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 28.38,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0120",
+      "event_time": "2026-10-15T10:01:00+00:00",
+      "observed_time": "2026-10-15T10:01:00.018000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 17.7,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0061",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.007000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 15.47,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0081",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.048000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 22.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0101",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.021000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 18.85,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0121",
+      "event_time": "2026-10-15T10:01:15+00:00",
+      "observed_time": "2026-10-15T10:01:15.027000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 24.8,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0062",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.028000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 22.45,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0082",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.026000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 19.08,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0102",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.039000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 27.71,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0122",
+      "event_time": "2026-10-15T10:01:30+00:00",
+      "observed_time": "2026-10-15T10:01:30.005000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 22.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0063",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.046000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 26.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0083",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.031000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 15.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0103",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.027000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 19.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0123",
+      "event_time": "2026-10-15T10:01:45+00:00",
+      "observed_time": "2026-10-15T10:01:45.032000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 28.3,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0003",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.044000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 12.98,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0008",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.031000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 15.15,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0013",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 17.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0018",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.018000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 18.16,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0023",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.005000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 18.05,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0028",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 24.27,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0033",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 28.44,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0038",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 264.69,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0043",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.011000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 595.82,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0048",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 394.5,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0053",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.047000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 258.5,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0064",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.009000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 13.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0084",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.050000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 17.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0104",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.023000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 16.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0124",
+      "event_time": "2026-10-15T10:02:00+00:00",
+      "observed_time": "2026-10-15T10:02:00.044000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 29.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0065",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.036000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 28.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0085",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.024000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 20.78,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0105",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.020000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 21.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0125",
+      "event_time": "2026-10-15T10:02:15+00:00",
+      "observed_time": "2026-10-15T10:02:15.006000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 15.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0066",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.042000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0086",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.007000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 29.94,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0106",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.044000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 12.81,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0126",
+      "event_time": "2026-10-15T10:02:30+00:00",
+      "observed_time": "2026-10-15T10:02:30.050000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 23.85,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0067",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.008000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0087",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.050000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 14.43,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0107",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.048000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 21.21,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0127",
+      "event_time": "2026-10-15T10:02:45+00:00",
+      "observed_time": "2026-10-15T10:02:45.006000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 26.35,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0004",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.043000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 17.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0009",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.049000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 14.75,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0014",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.030000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 16.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0019",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.011000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 14.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0024",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.017000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 25.7,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0029",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.034000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 16.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0034",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.020000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 17.24,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0039",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.036000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 453.75,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0044",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.034000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 590.5,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0049",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 449.25,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0054",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.028000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 344.53,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0068",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.018000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 18.25,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0088",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.018000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 23.12,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0108",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.014000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 25.99,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0128",
+      "event_time": "2026-10-15T10:03:00+00:00",
+      "observed_time": "2026-10-15T10:03:00.035000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 24.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0069",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.046000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 14.99,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0089",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.048000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 16.32,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0109",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.044000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 21.2,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0129",
+      "event_time": "2026-10-15T10:03:15+00:00",
+      "observed_time": "2026-10-15T10:03:15.048000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 22.68,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0070",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.009000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 29.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0090",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.049000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 14.96,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0110",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.036000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 16.83,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0130",
+      "event_time": "2026-10-15T10:03:30+00:00",
+      "observed_time": "2026-10-15T10:03:30.007000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 25.59,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0071",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.023000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 24.1,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0091",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.026000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 29.48,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0111",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.050000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 22.53,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0131",
+      "event_time": "2026-10-15T10:03:45+00:00",
+      "observed_time": "2026-10-15T10:03:45.048000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 18.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0005",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.029000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "CPUUtilization",
+      "value": 15.66,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0010",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.007000+00:00",
+      "source": "cloudwatch",
+      "service": "WorkerHost",
+      "metric": "MemoryUtilization",
+      "value": 12.82,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0015",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "WriteThrottleEvents",
+      "value": 26.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0020",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.024000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "CPUUtilization",
+      "value": 10.69,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0025",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.021000+00:00",
+      "source": "cloudwatch",
+      "service": "EventStore",
+      "metric": "IOPS",
+      "value": 12.57,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0030",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.012000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "value": 27.79,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0035",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.038000+00:00",
+      "source": "cloudwatch",
+      "service": "MessageQueue",
+      "metric": "DeadLetterQueueCount",
+      "value": 20.82,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0040",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.032000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorA",
+      "metric": "QueueDepth",
+      "value": 365.07,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0045",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.033000+00:00",
+      "source": "syslog",
+      "service": "ProcessorA",
+      "metric": "ErrorRate",
+      "value": 445.64,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0050",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.013000+00:00",
+      "source": "cloudwatch",
+      "service": "ProcessorB",
+      "metric": "QueueDepth",
+      "value": 380.3,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0055",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.026000+00:00",
+      "source": "syslog",
+      "service": "ProcessorB",
+      "metric": "ErrorRate",
+      "value": 260.6,
+      "severity": "MEDIUM"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0072",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.041000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 16.07,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0092",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.016000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 28.37,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0112",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.019000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 25.11,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0132",
+      "event_time": "2026-10-15T10:04:00+00:00",
+      "observed_time": "2026-10-15T10:04:00.023000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 28.82,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0073",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.050000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 26.03,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0093",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.042000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 18.84,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0113",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.048000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 14.76,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0133",
+      "event_time": "2026-10-15T10:04:15+00:00",
+      "observed_time": "2026-10-15T10:04:15.018000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 29.55,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0074",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.034000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 15.26,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0094",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.019000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 25.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0114",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.026000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 22.39,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0134",
+      "event_time": "2026-10-15T10:04:30+00:00",
+      "observed_time": "2026-10-15T10:04:30.040000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 13.31,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0075",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.034000+00:00",
+      "source": "cloudwatch",
+      "service": "IngressAPI",
+      "metric": "5xxErrorRate",
+      "value": 14.86,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0095",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.008000+00:00",
+      "source": "otel",
+      "service": "IngressAPI",
+      "metric": "Latency",
+      "value": 13.49,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0115",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.036000+00:00",
+      "source": "otel",
+      "service": "MetricsDashboard",
+      "metric": "Latency",
+      "value": 17.93,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "evt_case_v2_dev2_056_root_healthy_blamed_abstain_0135",
+      "event_time": "2026-10-15T10:04:45+00:00",
+      "observed_time": "2026-10-15T10:04:45.025000+00:00",
+      "source": "cloudwatch",
+      "service": "MetricsDashboard",
+      "metric": "ErrorRate",
+      "value": 15.8,
+      "severity": "LOW"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "application",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "datadog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-15T10:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "WorkerHost"
+    ],
+    "onset_times": {
+      "WorkerHost": "2026-10-15T10:01:00+00:00"
+    },
+    "symptom_to_cause": {},
+    "expected_verdict": "ABSTAIN",
+    "incident_groups": [
+      [
+        "WorkerHost"
+      ]
+    ]
+  },
+  "perturbations": [
+    "contradiction_root_healthy_while_dependents_blame"
+  ],
+  "tags": [
+    "root_healthy_blamed_abstain",
+    "abstain_required",
+    "contradiction"
+  ],
+  "is_hard": false,
+  "telemetry_policy": {
+    "source_types": {
+      "cloudtrail": "event_driven",
+      "cloudwatch_alarms": "event_driven"
+    },
+    "service_policies": {},
+    "type_policies": {
+      "compute": [
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CPUUsage",
+            "CPUPressure"
+          ]
+        },
+        {
+          "metric": "MemoryUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "MemoryPressure",
+            "MemoryUsage",
+            "OOMKills"
+          ]
+        }
+      ],
+      "database": [
+        {
+          "metric": "WriteThrottleEvents",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ReadThrottleEvents",
+            "ThrottleRequests",
+            "ConnectionTimeout",
+            "WriteThrottles"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        },
+        {
+          "metric": "IOPS",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DiskIOPS",
+            "ReadIOPS",
+            "WriteIOPS"
+          ]
+        }
+      ],
+      "service": [
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "5xxErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "Errors",
+            "ExceptionCount"
+          ]
+        }
+      ],
+      "api_gateway": [
+        {
+          "metric": "5xxErrorRate",
+          "source": "cloudwatch",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ErrorRate",
+            "HTTP500Errors",
+            "HTTP500",
+            "5xxErrors",
+            "CheckoutFailures"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 15,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "ResponseTime",
+            "P99Latency"
+          ]
+        }
+      ],
+      "worker": [
+        {
+          "metric": "QueueDepth",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JobQueueLag",
+            "ApproximateNumberOfMessagesVisible",
+            "QueueLag"
+          ]
+        },
+        {
+          "metric": "ErrorRate",
+          "source": "syslog",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "WorkerFailures",
+            "JobFailures",
+            "Errors"
+          ]
+        }
+      ],
+      "auth": [
+        {
+          "metric": "AuthFailureRate",
+          "source": "cloudtrail",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "JWTSignatureFailures",
+            "AuthFailures",
+            "TokenValidationErrors"
+          ]
+        },
+        {
+          "metric": "Latency",
+          "source": "otel",
+          "interval_seconds": 30,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "AuthLatency",
+            "ResponseTime"
+          ]
+        }
+      ],
+      "cache": [
+        {
+          "metric": "CacheHitRatio",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "CacheMissRate",
+            "HitRatio"
+          ]
+        },
+        {
+          "metric": "CPUUtilization",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "CPUUsage"
+          ]
+        }
+      ],
+      "queue": [
+        {
+          "metric": "ApproximateNumberOfMessagesVisible",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": true,
+          "aliases": [
+            "QueueDepth",
+            "QueueLag",
+            "JobQueueLag"
+          ]
+        },
+        {
+          "metric": "DeadLetterQueueCount",
+          "source": "cloudwatch",
+          "interval_seconds": 60,
+          "is_anomaly_only": true,
+          "is_required": false,
+          "aliases": [
+            "DLQCount",
+            "DeadLetterCount"
+          ]
+        }
+      ]
+    }
+  }
+}
