@@ -2,14 +2,14 @@
   "case_id": "indep_018_two_independent_roots_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -140,31 +140,41 @@
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:10+00:00",
       "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "application",
+      "source": "cloudwatch",
       "service": "PaymentService",
-      "metric": "GatewayExceptionRate",
-      "value": 75.0,
+      "metric": "ExternalHTTP500",
+      "value": 95.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:14+00:00",
-      "observed_time": "2026-10-16T14:00:15+00:00",
+      "event_time": "2026-10-16T14:00:13+00:00",
+      "observed_time": "2026-10-16T14:00:14+00:00",
       "source": "cloudwatch",
       "service": "KafkaCluster",
-      "metric": "DiskFullError",
-      "value": 1.0,
+      "metric": "DiskCapacityExhausted",
+      "value": 99.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:22+00:00",
-      "observed_time": "2026-10-16T14:00:23+00:00",
-      "source": "application",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "CheckoutFailureRate",
+      "value": 65.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:26+00:00",
+      "observed_time": "2026-10-16T14:00:27+00:00",
+      "source": "cloudwatch",
       "service": "NotificationService",
-      "metric": "QueueStall",
-      "value": 100.0,
-      "severity": "HIGH"
+      "metric": "TaskExecutionTimeout",
+      "value": 70.0,
+      "severity": "CRITICAL"
     }
   ],
   "source_health": [
@@ -202,8 +212,26 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "PaymentService and KafkaCluster fail on independent subgraphs; engine must extract both as the minimal root set.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "PaymentService",
+          "KafkaCluster"
+        ],
+        "max_level": "CONFIRMED"
+      },
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "KafkaCluster",
+          "PaymentService"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Dual root cause incident: PaymentService external failure plus KafkaCluster broker outage.",
     "incident_groups": []
   },
   "perturbations": [
@@ -215,6 +243,24 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "PaymentService and KafkaCluster fail on independent subgraphs; engine must extract both as the minimal root set.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Dual root cause incident: PaymentService external failure plus KafkaCluster broker outage.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "PaymentService",
+        "KafkaCluster"
+      ],
+      "max_level": "CONFIRMED"
+    },
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "KafkaCluster",
+        "PaymentService"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

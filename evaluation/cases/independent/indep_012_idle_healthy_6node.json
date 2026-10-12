@@ -2,26 +2,26 @@
   "case_id": "indep_012_idle_healthy_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -78,28 +78,28 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
       "source": "cloudwatch",
       "service": "EC2",
-      "metric": "CPUUtilization",
+      "metric": "CPULoadAverage",
       "value": 99.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:18+00:00",
-      "observed_time": "2026-10-16T14:00:19+00:00",
+      "event_time": "2026-10-16T14:00:22+00:00",
+      "observed_time": "2026-10-16T14:00:23+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "QueueBacklog",
-      "value": 450.0,
+      "service": "API",
+      "metric": "UpstreamTimeoutRate",
+      "value": 45.0,
       "severity": "HIGH"
     },
     {
-      "event_id": "hb_dynamo",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
@@ -107,9 +107,19 @@
       "severity": "LOW"
     },
     {
-      "event_id": "hb_auth",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_03",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
@@ -151,8 +161,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "EC2 reports 99% CPU utilization causing Worker job queue stall; DynamoDB and Auth emit verified healthy telemetry.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "EC2"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "EC2 hardware degradation causes critical compute failure; non-roots DynamoDB and Auth are idle with healthy heartbeats.",
     "incident_groups": []
   },
   "perturbations": [
@@ -164,6 +183,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "EC2 reports 99% CPU utilization causing Worker job queue stall; DynamoDB and Auth emit verified healthy telemetry.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "EC2 hardware degradation causes critical compute failure; non-roots DynamoDB and Auth are idle with healthy heartbeats.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "EC2"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

@@ -2,14 +2,14 @@
   "case_id": "indep_028_benign_heartbeats_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -142,26 +142,26 @@
       "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
-      "metric": "ConnectionRefused",
-      "value": 100.0,
+      "metric": "MaxConnectionsReached",
+      "value": 99.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:18+00:00",
-      "observed_time": "2026-10-16T14:00:19+00:00",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "5xxErrorRate",
-      "value": 40.0,
+      "metric": "DatabaseTransactionTimeout",
+      "value": 55.0,
       "severity": "HIGH"
     },
     {
       "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:05+00:00",
       "observed_time": "2026-10-16T14:00:06+00:00",
-      "source": "otel",
-      "service": "APIGateway",
+      "source": "cloudwatch",
+      "service": "RedisCache",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW"
@@ -170,18 +170,8 @@
       "event_id": "hb_02",
       "event_time": "2026-10-16T14:00:05+00:00",
       "observed_time": "2026-10-16T14:00:06+00:00",
-      "source": "otel",
-      "service": "CatalogService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
-    },
-    {
-      "event_id": "hb_03",
-      "event_time": "2026-10-16T14:00:05+00:00",
-      "observed_time": "2026-10-16T14:00:06+00:00",
       "source": "cloudwatch",
-      "service": "RedisCache",
+      "service": "AuthService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW"
@@ -221,8 +211,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "Dense benign heartbeats across 11 services are filtered cleanly and preserve PostgresPrimary ranking.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "PostgresPrimary"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Clear failure on PostgresPrimary with concurrent periodic benign heartbeats on non-roots.",
     "incident_groups": []
   },
   "perturbations": [
@@ -234,6 +233,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Dense benign heartbeats across 11 services are filtered cleanly and preserve PostgresPrimary ranking.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Clear failure on PostgresPrimary with concurrent periodic benign heartbeats on non-roots.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "PostgresPrimary"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

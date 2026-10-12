@@ -2,26 +2,26 @@
   "case_id": "indep_029_no_anomaly_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -170,7 +170,14 @@
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
     "acceptable_verdict_level": "ABSTAIN",
-    "identifiability_note": "Quiet timeline contradiction QUIET_TIMELINE_NO_ANOMALY fires; engine must abstain from hallucinating any root cause.",
+    "acceptable_outcomes": [
+      {
+        "verdict": "ABSTAIN",
+        "roots": [],
+        "max_level": "ABSTAIN"
+      }
+    ],
+    "identifiability_note": "Entire 6-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
     "incident_groups": []
   },
   "perturbations": [
@@ -182,6 +189,13 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Quiet timeline contradiction QUIET_TIMELINE_NO_ANOMALY fires; engine must abstain from hallucinating any root cause.",
-  "acceptable_verdict_level": "ABSTAIN"
+  "identifiability_note": "Entire 6-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
+  "acceptable_verdict_level": "ABSTAIN",
+  "acceptable_outcomes": [
+    {
+      "verdict": "ABSTAIN",
+      "roots": [],
+      "max_level": "ABSTAIN"
+    }
+  ]
 }

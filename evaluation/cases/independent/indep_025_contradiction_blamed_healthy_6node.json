@@ -2,26 +2,26 @@
   "case_id": "indep_025_contradiction_blamed_healthy_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -82,7 +82,7 @@
       "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "application",
       "service": "API",
-      "metric": "DynamoDBFailureBlame",
+      "metric": "ConnectionTimeout",
       "value": 100.0,
       "severity": "CRITICAL"
     },
@@ -142,7 +142,21 @@
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
     "acceptable_verdict_level": "ABSTAIN",
-    "identifiability_note": "Contradiction detector fires ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME; engine must abstain because direct positive health signals contradict caller blame.",
+    "acceptable_outcomes": [
+      {
+        "verdict": "ABSTAIN",
+        "roots": [],
+        "max_level": "ABSTAIN"
+      },
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "API"
+        ],
+        "max_level": "PROBABLE"
+      }
+    ],
+    "identifiability_note": "Contradiction: API reports critical storage connection blame, but DynamoDB emits verified healthy heartbeats. Engine must ABSTAIN or diagnose API at PROBABLE.",
     "incident_groups": []
   },
   "perturbations": [
@@ -154,6 +168,20 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Contradiction detector fires ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME; engine must abstain because direct positive health signals contradict caller blame.",
-  "acceptable_verdict_level": "ABSTAIN"
+  "identifiability_note": "Contradiction: API reports critical storage connection blame, but DynamoDB emits verified healthy heartbeats. Engine must ABSTAIN or diagnose API at PROBABLE.",
+  "acceptable_verdict_level": "ABSTAIN",
+  "acceptable_outcomes": [
+    {
+      "verdict": "ABSTAIN",
+      "roots": [],
+      "max_level": "ABSTAIN"
+    },
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "API"
+      ],
+      "max_level": "PROBABLE"
+    }
+  ]
 }

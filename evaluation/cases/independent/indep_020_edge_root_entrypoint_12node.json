@@ -2,14 +2,14 @@
   "case_id": "indep_020_edge_root_entrypoint_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -140,30 +140,30 @@
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:10+00:00",
       "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "otel",
+      "source": "cloudwatch",
       "service": "APIGateway",
-      "metric": "RoutingTableCorruption",
-      "value": 1.0,
+      "metric": "MalformedHeaderRate",
+      "value": 500.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
-      "source": "otel",
+      "event_time": "2026-10-16T14:00:16+00:00",
+      "observed_time": "2026-10-16T14:00:17+00:00",
+      "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "InvalidPayloadRate",
-      "value": 85.0,
+      "metric": "PayloadDecodeErrors",
+      "value": 120.0,
       "severity": "HIGH"
     },
     {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:00:18+00:00",
       "observed_time": "2026-10-16T14:00:19+00:00",
-      "source": "otel",
+      "source": "cloudwatch",
       "service": "CatalogService",
-      "metric": "InvalidPayloadRate",
-      "value": 60.0,
+      "metric": "PayloadDecodeErrors",
+      "value": 110.0,
       "severity": "HIGH"
     }
   ],
@@ -201,8 +201,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "APIGateway logs routing configuration corruption at t=10s; downstream OrderService and CatalogService report 400 Bad Request surges due to gateway payload mangling.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "APIGateway"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Edge ingress APIGateway misconfiguration routes malformed payload headers causing downstream OrderService and CatalogService crashes.",
     "incident_groups": []
   },
   "perturbations": [
@@ -214,6 +223,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "APIGateway logs routing configuration corruption at t=10s; downstream OrderService and CatalogService report 400 Bad Request surges due to gateway payload mangling.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Edge ingress APIGateway misconfiguration routes malformed payload headers causing downstream OrderService and CatalogService crashes.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "APIGateway"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

@@ -2,26 +2,26 @@
   "case_id": "indep_002_slow_burn_decoy_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -78,43 +78,53 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:08+00:00",
-      "observed_time": "2026-10-16T14:00:09+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "MemoryUtilization",
-      "value": 82.0,
-      "severity": "MEDIUM"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
       "source": "cloudwatch",
       "service": "Worker",
-      "metric": "JobRetrySpike",
-      "value": 18.0,
+      "metric": "BacklogLagSpike",
+      "value": 85.0,
       "severity": "HIGH"
     },
     {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
       "service": "EC2",
-      "metric": "MemoryUtilization",
+      "metric": "PhysicalMemorySaturation",
       "value": 99.2,
       "severity": "CRITICAL"
     },
     {
-      "event_id": "evt_04",
-      "event_time": "2026-10-16T14:00:50+00:00",
-      "observed_time": "2026-10-16T14:00:51+00:00",
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "ErrorRate",
-      "value": 48.0,
+      "service": "API",
+      "metric": "UpstreamTimeoutRate",
+      "value": 45.0,
       "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -151,8 +161,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "EC2 exhibits progressive thread allocation warning at t=8s; Worker errors specifically report EC2 compute node unreachable once EC2 memory breaches 99% at t=45s, while DynamoDB and Auth emit healthy heartbeats.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "EC2"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Worker queue lag spike at t=0s acts as decoy; true root EC2 memory leak triggers OOM killer at t=20s (>10s later).",
     "incident_groups": []
   },
   "perturbations": [
@@ -164,6 +183,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "EC2 exhibits progressive thread allocation warning at t=8s; Worker errors specifically report EC2 compute node unreachable once EC2 memory breaches 99% at t=45s, while DynamoDB and Auth emit healthy heartbeats.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Worker queue lag spike at t=0s acts as decoy; true root EC2 memory leak triggers OOM killer at t=20s (>10s later).",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "EC2"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

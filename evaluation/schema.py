@@ -32,12 +32,19 @@ class SourceHealthRecord(BaseModel):
     status: str  # HEALTHY, DEGRADED, DOWN, UNKNOWN
 
 
+class AcceptableOutcome(BaseModel):
+    verdict: str  # DIAGNOSE or ABSTAIN
+    roots: List[str] = Field(default_factory=list)
+    max_level: Optional[str] = "CONFIRMED"  # CONFIRMED or PROBABLE or ABSTAIN
+
+
 class GroundTruth(BaseModel):
     true_root_causes: List[str]
     onset_times: Dict[str, str] = Field(default_factory=dict)
     symptom_to_cause: Dict[str, str] = Field(default_factory=dict)
-    expected_verdict: str = "DIAGNOSE"  # DIAGNOSE or ABSTAIN
-    acceptable_verdict_level: Optional[str] = "CONFIRMED"  # CONFIRMED or PROBABLE
+    expected_verdict: Optional[str] = "DIAGNOSE"  # Legacy compatibility
+    acceptable_verdict_level: Optional[str] = "CONFIRMED"  # Legacy compatibility
+    acceptable_outcomes: List[AcceptableOutcome] = Field(default_factory=list)
     identifiability_note: Optional[str] = None
     incident_groups: List[List[str]] = Field(default_factory=list)  # Groups of event IDs or services representing distinct true incidents
 
@@ -58,4 +65,5 @@ class EvaluationCase(BaseModel):
     telemetry_policy: Optional[Dict[str, Any]] = None
     identifiability_note: Optional[str] = None
     acceptable_verdict_level: Optional[str] = None
+    acceptable_outcomes: List[AcceptableOutcome] = Field(default_factory=list)
 

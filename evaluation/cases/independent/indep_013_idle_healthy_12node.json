@@ -2,14 +2,14 @@
   "case_id": "indep_013_idle_healthy_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -142,34 +142,34 @@
       "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
-      "metric": "ConnectionPoolExhausted",
-      "value": 100.0,
+      "metric": "MaxConnectionsReached",
+      "value": 98.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "5xxErrorRate",
-      "value": 38.0,
+      "metric": "DatabaseTransactionTimeout",
+      "value": 60.0,
       "severity": "HIGH"
     },
     {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
-      "source": "otel",
-      "service": "CatalogService",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW"
     },
     {
       "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
       "service": "RedisCache",
       "metric": "Heartbeat",
@@ -178,19 +178,9 @@
     },
     {
       "event_id": "hb_03",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
-      "service": "KafkaCluster",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
-    },
-    {
-      "event_id": "hb_04",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
-      "source": "application",
       "service": "NotificationService",
       "metric": "Heartbeat",
       "value": 1.0,
@@ -231,8 +221,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "PostgresPrimary emits critical connection deadlock; CatalogService, RedisCache, KafkaCluster, and NotificationService are unaffected and emit routine heartbeats.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "PostgresPrimary"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "PostgresPrimary lock escalation failure; RedisCache and NotificationService are idle healthy non-roots emitting heartbeats.",
     "incident_groups": []
   },
   "perturbations": [
@@ -244,6 +243,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "PostgresPrimary emits critical connection deadlock; CatalogService, RedisCache, KafkaCluster, and NotificationService are unaffected and emit routine heartbeats.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "PostgresPrimary lock escalation failure; RedisCache and NotificationService are idle healthy non-roots emitting heartbeats.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "PostgresPrimary"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

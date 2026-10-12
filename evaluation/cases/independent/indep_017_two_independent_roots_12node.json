@@ -2,14 +2,14 @@
   "case_id": "indep_017_two_independent_roots_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -142,8 +142,8 @@
       "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
-      "metric": "DeadlockCount",
-      "value": 5.0,
+      "metric": "DiskCapacityExhausted",
+      "value": 100.0,
       "severity": "CRITICAL"
     },
     {
@@ -152,29 +152,29 @@
       "observed_time": "2026-10-16T14:00:13+00:00",
       "source": "cloudwatch",
       "service": "RedisCache",
-      "metric": "OOMKillCount",
-      "value": 1.0,
+      "metric": "KeyEvictionSurge",
+      "value": 96.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "otel",
+      "event_time": "2026-10-16T14:00:22+00:00",
+      "observed_time": "2026-10-16T14:00:23+00:00",
+      "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "5xxErrorRate",
-      "value": 30.0,
-      "severity": "HIGH"
+      "metric": "DatabaseTransactionTimeout",
+      "value": 70.0,
+      "severity": "CRITICAL"
     },
     {
       "event_id": "evt_04",
-      "event_time": "2026-10-16T14:00:22+00:00",
-      "observed_time": "2026-10-16T14:00:23+00:00",
-      "source": "otel",
+      "event_time": "2026-10-16T14:00:24+00:00",
+      "observed_time": "2026-10-16T14:00:25+00:00",
+      "source": "cloudwatch",
       "service": "CatalogService",
-      "metric": "5xxErrorRate",
-      "value": 28.0,
-      "severity": "HIGH"
+      "metric": "LookupLatencyFluctuation",
+      "value": 80.0,
+      "severity": "CRITICAL"
     }
   ],
   "source_health": [
@@ -212,8 +212,26 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "PostgresPrimary deadlocks order checkout while RedisCache OOM crashes product browsing; disjoint root causes.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "PostgresPrimary",
+          "RedisCache"
+        ],
+        "max_level": "CONFIRMED"
+      },
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "RedisCache",
+          "PostgresPrimary"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Dual root cause incident: PostgresPrimary database disk full plus RedisCache out of memory.",
     "incident_groups": []
   },
   "perturbations": [
@@ -225,6 +243,24 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "PostgresPrimary deadlocks order checkout while RedisCache OOM crashes product browsing; disjoint root causes.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Dual root cause incident: PostgresPrimary database disk full plus RedisCache out of memory.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "PostgresPrimary",
+        "RedisCache"
+      ],
+      "max_level": "CONFIRMED"
+    },
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "RedisCache",
+        "PostgresPrimary"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

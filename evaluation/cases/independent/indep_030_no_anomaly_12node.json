@@ -2,14 +2,14 @@
   "case_id": "indep_030_no_anomaly_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -290,7 +290,14 @@
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
     "acceptable_verdict_level": "ABSTAIN",
-    "identifiability_note": "Complete quiet baseline across 12 services forces abstention with zero hallucinated root causes.",
+    "acceptable_outcomes": [
+      {
+        "verdict": "ABSTAIN",
+        "roots": [],
+        "max_level": "ABSTAIN"
+      }
+    ],
+    "identifiability_note": "Entire 12-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
     "incident_groups": []
   },
   "perturbations": [
@@ -302,6 +309,13 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Complete quiet baseline across 12 services forces abstention with zero hallucinated root causes.",
-  "acceptable_verdict_level": "ABSTAIN"
+  "identifiability_note": "Entire 12-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
+  "acceptable_verdict_level": "ABSTAIN",
+  "acceptable_outcomes": [
+    {
+      "verdict": "ABSTAIN",
+      "roots": [],
+      "max_level": "ABSTAIN"
+    }
+  ]
 }

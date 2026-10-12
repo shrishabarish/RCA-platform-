@@ -2,26 +2,26 @@
   "case_id": "indep_016_two_independent_roots_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -78,22 +78,22 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
-      "source": "application",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
       "service": "Auth",
-      "metric": "TokenVerificationFailure",
-      "value": 80.0,
+      "metric": "CertificateExpired",
+      "value": 100.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:16+00:00",
-      "observed_time": "2026-10-16T14:00:17+00:00",
+      "event_time": "2026-10-16T14:00:14+00:00",
+      "observed_time": "2026-10-16T14:00:15+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
-      "metric": "StoragePartitionUnreachable",
-      "value": 1.0,
+      "metric": "StorageThrottleRate",
+      "value": 90.0,
       "severity": "CRITICAL"
     },
     {
@@ -102,9 +102,19 @@
       "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "5xxErrorRate",
-      "value": 50.0,
+      "metric": "InternalServerErrorRate",
+      "value": 85.0,
       "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -142,8 +152,26 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "Auth reports certificate signing error while DynamoDB reports network drop; both are independent causal origins.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "Auth",
+          "DynamoDB"
+        ],
+        "max_level": "CONFIRMED"
+      },
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "DynamoDB",
+          "Auth"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Independent simultaneous outages on Auth microservice and DynamoDB primary table.",
     "incident_groups": []
   },
   "perturbations": [
@@ -155,6 +183,24 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Auth reports certificate signing error while DynamoDB reports network drop; both are independent causal origins.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Independent simultaneous outages on Auth microservice and DynamoDB primary table.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "Auth",
+        "DynamoDB"
+      ],
+      "max_level": "CONFIRMED"
+    },
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "DynamoDB",
+        "Auth"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

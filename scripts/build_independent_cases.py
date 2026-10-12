@@ -14,7 +14,8 @@ from evaluation.schema import (
     TopologyNode,
     EventData,
     SourceHealthRecord,
-    GroundTruth
+    GroundTruth,
+    AcceptableOutcome
 )
 
 
@@ -24,14 +25,13 @@ def build_independent_cases():
 
     # 1. Real 6-node topology (Family 001)
     topo_6_nodes = [
-        TopologyNode(id="EC2", type="compute", label="EC2 Compute Fleet", criticality=0.9),
-        TopologyNode(id="DynamoDB", type="database", label="DynamoDB Primary Table", criticality=0.95),
-        TopologyNode(id="Auth", type="auth", label="Auth Microservice", criticality=0.9),
+        TopologyNode(id="EC2", type="compute", label="EC2 Fleet", criticality=0.9),
+        TopologyNode(id="DynamoDB", type="database", label="DynamoDB Table", criticality=0.95),
+        TopologyNode(id="Auth", type="auth", label="Auth Service", criticality=0.9),
         TopologyNode(id="Worker", type="worker", label="Worker Fleet", criticality=0.8),
-        TopologyNode(id="API", type="service", label="Core API Gateway", criticality=0.85),
-        TopologyNode(id="Application", type="service", label="Web/Client Ingress", criticality=0.7)
+        TopologyNode(id="API", type="service", label="API Gateway", criticality=0.85),
+        TopologyNode(id="Application", type="service", label="Web Client", criticality=0.7)
     ]
-    # Service call edges: [caller, callee]
     topo_6_edges = [
         ["API", "EC2"],
         ["API", "DynamoDB"],
@@ -45,18 +45,18 @@ def build_independent_cases():
 
     # 2. 12-node topology
     topo_12_nodes = [
-        TopologyNode(id="APIGateway", type="api_gateway", label="Edge Ingress Gateway", criticality=0.95),
+        TopologyNode(id="APIGateway", type="api_gateway", label="Ingress Gateway", criticality=0.95),
         TopologyNode(id="OrderService", type="service", label="Order API", criticality=0.9),
         TopologyNode(id="CatalogService", type="service", label="Catalog API", criticality=0.8),
-        TopologyNode(id="AuthService", type="auth", label="Auth Service", criticality=0.9),
-        TopologyNode(id="PaymentService", type="service", label="Payment Gateway", criticality=0.95),
-        TopologyNode(id="InventoryService", type="service", label="Inventory Management", criticality=0.85),
+        TopologyNode(id="AuthService", type="auth", label="Token Broker", criticality=0.9),
+        TopologyNode(id="PaymentService", type="service", label="Payment Processor", criticality=0.95),
+        TopologyNode(id="InventoryService", type="service", label="Inventory API", criticality=0.85),
         TopologyNode(id="NotificationService", type="service", label="Notification Worker", criticality=0.7),
-        TopologyNode(id="PostgresPrimary", type="database", label="Postgres DB", criticality=0.95),
-        TopologyNode(id="DynamoTable", type="database", label="Payment Ledger", criticality=0.95),
-        TopologyNode(id="RedisCache", type="cache", label="Product Cache", criticality=0.8),
-        TopologyNode(id="K8sCluster", type="compute", label="App Node Pool", criticality=0.85),
-        TopologyNode(id="KafkaCluster", type="queue", label="Event Streaming Bus", criticality=0.9)
+        TopologyNode(id="PostgresPrimary", type="database", label="Relational Database", criticality=0.95),
+        TopologyNode(id="DynamoTable", type="database", label="Ledger Database", criticality=0.95),
+        TopologyNode(id="RedisCache", type="cache", label="Memory Cache", criticality=0.8),
+        TopologyNode(id="K8sCluster", type="compute", label="Worker Pool", criticality=0.85),
+        TopologyNode(id="KafkaCluster", type="queue", label="Streaming Bus", criticality=0.9)
     ]
     topo_12_edges = [
         ["APIGateway", "OrderService"],
@@ -83,592 +83,664 @@ def build_independent_cases():
             for s in ["cloudwatch", "cloudtrail", "otel", "syslog", "application"]
         ]
 
-    # Clean old JSON files in the independent directory first
+    # Clean existing cases in directory
     for f in indep_dir.glob("*.json"):
         f.unlink()
 
     case_specs = []
 
     # =========================================================================
-    # 1. ROOT NOT EARLIEST (slow burn, early decoy) x6 (3 on 6-node, 3 on 12-node)
+    # 1. ROOT NOT EARLIEST (slow burn / early decoy) x6 (3 on 6-node, 3 on 12-node)
+    # Rule: non-root anomalous event is FIRST; true root's first anomalous event is >= 10s LATER.
+    # Metric names must NOT contain node id or label words.
     # =========================================================================
-    # indep_001 (6-node)
+    # indep_001 (6-node): DynamoDB is root, decoy on API at t=0s, root anom at t=25s
     case_specs.append({
         "id": "indep_001_slow_burn_decoy_6node",
         "topo": topo_6,
         "category": "root_not_earliest",
-        "rationale": "Decoy transient latency surge on API at t=10s, true root DynamoDB builds latent lock contention starting at t=0s and breaching threshold at t=40s",
-        "identifiability_note": "DynamoDB emits early weak WriteThrottle telemetry at t=5s (value 12.0) that precedes the API decoy burst, while API's latency spike at t=10s returns to normal before DynamoDB suffers hard saturation at t=40s.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["DynamoDB"], "max_level": "CONFIRMED"}],
+        "rationale": "Transient HTTP 504 burst on API at t=0s acts as early decoy; true root DynamoDB latent lock contention breaches threshold at t=25s (>10s later).",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="DynamoDB", metric="WriteThrottleEvents", value=12.0, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="API", metric="Latency", value=220.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="cloudwatch", service="DynamoDB", metric="WriteThrottleEvents", value=450.0, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=22.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="application", service="API", metric="TransientResponseSpike", value=540.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StorageThrottleRate", value=92.5, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="application", service="API", metric="ConnectionPoolStarvation", value=100.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_002 (6-node)
+
+    # indep_002 (6-node): EC2 is root, decoy on Worker at t=0s, root anom at t=20s
     case_specs.append({
         "id": "indep_002_slow_burn_decoy_6node",
         "topo": topo_6,
         "category": "root_not_earliest",
-        "rationale": "Caller Worker emits transient retry alert at t=15s, slow-burn memory leak root EC2 reaches exhaustion at t=45s",
-        "identifiability_note": "EC2 exhibits progressive thread allocation warning at t=8s; Worker errors specifically report EC2 compute node unreachable once EC2 memory breaches 99% at t=45s, while DynamoDB and Auth emit healthy heartbeats.",
-        "roots": ["EC2"],
+        "true_roots": ["EC2"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["EC2"], "max_level": "CONFIRMED"}],
+        "rationale": "Worker queue lag spike at t=0s acts as decoy; true root EC2 memory leak triggers OOM killer at t=20s (>10s later).",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=8)).isoformat(), observed_time=(t_base + timedelta(seconds=9)).isoformat(), source="cloudwatch", service="EC2", metric="MemoryUtilization", value=82.0, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Worker", metric="JobRetrySpike", value=18.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="EC2", metric="MemoryUtilization", value=99.2, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=50)).isoformat(), observed_time=(t_base + timedelta(seconds=51)).isoformat(), source="cloudwatch", service="Worker", metric="ErrorRate", value=48.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="cloudwatch", service="Worker", metric="BacklogLagSpike", value=85.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="EC2", metric="PhysicalMemorySaturation", value=99.2, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="API", metric="UpstreamTimeoutRate", value=45.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_003 (6-node)
+
+    # indep_003 (6-node): EC2 is root, decoy on Application at t=0s, root anom at t=18s
     case_specs.append({
         "id": "indep_003_slow_burn_decoy_6node",
         "topo": topo_6,
         "category": "root_not_earliest",
-        "rationale": "Application reports 504 gateway timeout at t=12s as an early client-side decoy before backend EC2 resource leak causes hard crash at t=50s",
-        "identifiability_note": "EC2 logs CPU load average creep starting at t=6s (load=7.8); Auth and DynamoDB emit verified healthy heartbeats confirming that EC2 is the singular failing backend explaining Application timeouts.",
-        "roots": ["EC2"],
+        "true_roots": ["EC2"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["EC2"], "max_level": "CONFIRMED"}],
+        "rationale": "Client ingress gateway timeout on Application at t=0s; true root EC2 CPU saturation occurs at t=18s (>10s later). DynamoDB and Auth emit healthy heartbeats.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=6)).isoformat(), observed_time=(t_base + timedelta(seconds=7)).isoformat(), source="cloudwatch", service="EC2", metric="CPULoad", value=7.8, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="application", service="Application", metric="GatewayTimeout", value=14.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=50)).isoformat(), observed_time=(t_base + timedelta(seconds=51)).isoformat(), source="cloudwatch", service="EC2", metric="CPULoad", value=28.5, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=55)).isoformat(), observed_time=(t_base + timedelta(seconds=56)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=30.0, severity="CRITICAL"),
-            EventData(event_id="hb_dynamo", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_auth", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="application", service="Application", metric="GatewayTimeout", value=14.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="cloudwatch", service="EC2", metric="ExecutionOverload", value=96.4, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=28)).isoformat(), observed_time=(t_base + timedelta(seconds=29)).isoformat(), source="cloudwatch", service="API", metric="InternalServerErrors", value=30.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_004 (12-node)
+
+    # indep_004 (12-node): PostgresPrimary is root, decoy on OrderService at t=0s, root anom at t=22s
     case_specs.append({
         "id": "indep_004_slow_burn_decoy_12node",
         "topo": topo_12,
         "category": "root_not_earliest",
-        "rationale": "OrderService emits transient timeout at t=10s, PostgresPrimary connection leak culminates in total deadlock at t=45s",
-        "identifiability_note": "PostgresPrimary connection pool usage telemetry climbs steadily starting at t=5s (85% pool used); OrderService errors cite SQL connection acquisition timeout, while sibling cache RedisCache emits healthy heartbeats.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["PostgresPrimary"], "max_level": "CONFIRMED"}],
+        "rationale": "Transient 503 error on OrderService at t=0s; PostgresPrimary database connection pool exhaustion surfaces at t=22s (>10s later).",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="ConnectionPoolUtilization", value=85.0, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="otel", service="OrderService", metric="ResponseTime", value=450.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="DeadlockDetected", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=50)).isoformat(), observed_time=(t_base + timedelta(seconds=51)).isoformat(), source="cloudwatch", service="OrderService", metric="5xxErrorRate", value=42.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="application", service="OrderService", metric="TransientDropRate", value=42.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=22)).isoformat(), observed_time=(t_base + timedelta(seconds=23)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="MaxConnectionsReached", value=98.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=32)).isoformat(), observed_time=(t_base + timedelta(seconds=33)).isoformat(), source="cloudwatch", service="APIGateway", metric="HTTP500Rate", value=50.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_005 (12-node)
+
+    # indep_005 (12-node): RedisCache is root, decoy on CatalogService at t=0s, root anom at t=24s
     case_specs.append({
         "id": "indep_005_slow_burn_decoy_12node",
         "topo": topo_12,
         "category": "root_not_earliest",
-        "rationale": "CatalogService reports cache-miss spike at t=12s as early decoy, slow-burn memory fragmentation in RedisCache triggers crash at t=48s",
-        "identifiability_note": "RedisCache records early memory fragmentation index warning at t=7s (ratio=1.8); downstream CatalogService latency degrades only when RedisCache eviction halts at t=48s.",
-        "roots": ["RedisCache"],
+        "true_roots": ["RedisCache"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["RedisCache"], "max_level": "CONFIRMED"}],
+        "rationale": "CatalogService latency spike at t=0s; RedisCache eviction storm and memory exhaustion surfaces at t=24s (>10s later).",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=7)).isoformat(), observed_time=(t_base + timedelta(seconds=8)).isoformat(), source="otel", service="RedisCache", metric="FragmentationRatio", value=1.85, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="application", service="CatalogService", metric="CacheMissRate", value=65.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=48)).isoformat(), observed_time=(t_base + timedelta(seconds=49)).isoformat(), source="cloudwatch", service="RedisCache", metric="OOMKillCount", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=52)).isoformat(), observed_time=(t_base + timedelta(seconds=53)).isoformat(), source="otel", service="CatalogService", metric="5xxErrorRate", value=28.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="application", service="CatalogService", metric="LookupLatencyFluctuation", value=220.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=24)).isoformat(), observed_time=(t_base + timedelta(seconds=25)).isoformat(), source="cloudwatch", service="RedisCache", metric="KeyEvictionSurge", value=95.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=34)).isoformat(), observed_time=(t_base + timedelta(seconds=35)).isoformat(), source="cloudwatch", service="APIGateway", metric="HTTP500Rate", value=45.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_006 (12-node)
+
+    # indep_006 (12-node): KafkaCluster is root, decoy on NotificationService at t=0s, root anom at t=26s
     case_specs.append({
         "id": "indep_006_slow_burn_decoy_12node",
         "topo": topo_12,
         "category": "root_not_earliest",
-        "rationale": "NotificationService emits transient consumer lag warning at t=15s, KafkaCluster broker storage exhaustion surfaces at t=50s",
-        "identifiability_note": "KafkaCluster emits disk space threshold warning at t=8s (disk=88%); consumer queue lag at NotificationService is a direct consequence of broker throttling at t=50s.",
-        "roots": ["KafkaCluster"],
+        "true_roots": ["KafkaCluster"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["KafkaCluster"], "max_level": "CONFIRMED"}],
+        "rationale": "NotificationService task timeout at t=0s; KafkaCluster partition broker disk out-of-space at t=26s (>10s later).",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=8)).isoformat(), observed_time=(t_base + timedelta(seconds=9)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="DiskUtilization", value=88.0, severity="MEDIUM"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="application", service="NotificationService", metric="ConsumerLag", value=1200.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=50)).isoformat(), observed_time=(t_base + timedelta(seconds=51)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="BrokerUnderReplicatedPartitions", value=14.0, severity="CRITICAL"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=55)).isoformat(), observed_time=(t_base + timedelta(seconds=56)).isoformat(), source="application", service="NotificationService", metric="MessageLossCount", value=35.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base).isoformat(), observed_time=(t_base + timedelta(seconds=1)).isoformat(), source="application", service="NotificationService", metric="TaskExecutionTimeout", value=18.0, severity="HIGH"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=26)).isoformat(), observed_time=(t_base + timedelta(seconds=27)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="DiskCapacityExhausted", value=99.8, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=36)).isoformat(), observed_time=(t_base + timedelta(seconds=37)).isoformat(), source="cloudwatch", service="OrderService", metric="PublishingBackpressure", value=75.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PaymentService", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
 
     # =========================================================================
-    # 2. SILENT ROOT WITH SEVERAL DEPENDENTS x4 (2 on 6-node, 2 on 12-node)
+    # 2. SILENT ROOT x4 (2 on 6-node, 2 on 12-node)
+    # Rule: True root has ZERO events. Competing candidates have >= 2 healthy heartbeats inside window.
+    # At least 2 dependents are anomalous.
+    # Metric names must NOT contain node id or label words. Max verdict is PROBABLE.
     # =========================================================================
-    # indep_007 (6-node)
+    # indep_007 (6-node): EC2 is silent root; API and Worker fail; DynamoDB and Auth have >= 2 heartbeats
     case_specs.append({
         "id": "indep_007_silent_root_6node",
         "topo": topo_6,
         "category": "silent_root",
-        "rationale": "EC2 crashed completely emitting zero telemetry; API and Worker experience cascading connection refused errors",
-        "identifiability_note": "API and Worker report connection refused specifically pointing to EC2 socket. Alternative dependencies DynamoDB and Auth emit continuous healthy heartbeats, isolating EC2 as the only possible cause despite its complete silence.",
-        "roots": ["EC2"],
+        "true_roots": ["EC2"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "PROBABLE only",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["EC2"], "max_level": "PROBABLE"}],
+        "rationale": "EC2 emits zero events (kernel hard crash); dependents API and Worker report socket connection timeouts. Competing candidates DynamoDB and Auth emit verified healthy heartbeats inside window.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="API", metric="ConnectionRefused_EC2", value=45.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="cloudwatch", service="Worker", metric="ComputeNodeUnreachable", value=30.0, severity="CRITICAL"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="application", service="Application", metric="502BadGateway", value=25.0, severity="HIGH"),
-            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="API", metric="SocketConnectionRefused", value=45.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="cloudwatch", service="Worker", metric="HostUnreachable", value=30.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="application", service="Application", metric="HTTP502Rate", value=25.0, severity="HIGH"),
+            # Competing candidates DynamoDB and Auth have >= 2 heartbeats inside window
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
         ]
     })
-    # indep_008 (6-node)
+
+    # indep_008 (6-node): DynamoDB is silent root; API and Worker fail; EC2 and Auth have >= 2 heartbeats
     case_specs.append({
         "id": "indep_008_silent_root_6node",
         "topo": topo_6,
         "category": "silent_root",
-        "rationale": "DynamoDB network partition halts telemetry (0 events); API and Worker experience severe database timeout cascades",
-        "identifiability_note": "Both API and Worker record critical timeouts addressed to DynamoDB endpoints. Competing dependencies EC2 and Auth emit verified healthy heartbeats, uniquely singling out DynamoDB.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "PROBABLE only",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["DynamoDB"], "max_level": "PROBABLE"}],
+        "rationale": "DynamoDB partition silent drop emits zero events; dependents API and Worker report storage timeouts. Competing candidates EC2 and Auth emit verified healthy heartbeats inside window.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="API", metric="DatabaseTimeout_Dynamo", value=60.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="Worker", metric="DatabaseWriteTimeout", value=40.0, severity="CRITICAL"),
-            EventData(event_id="hb_ec2", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_auth", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="API", metric="WriteTimeout", value=50.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="cloudwatch", service="Worker", metric="CommitFailure", value=40.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="application", service="Application", metric="HTTP502Rate", value=20.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
         ]
     })
-    # indep_009 (12-node)
+
+    # indep_009 (12-node): PostgresPrimary is silent root; OrderService and InventoryService fail
     case_specs.append({
         "id": "indep_009_silent_root_12node",
         "topo": topo_12,
         "category": "silent_root",
-        "rationale": "PostgresPrimary kernel panic leaves 0 events; OrderService and InventoryService report broken DB connections",
-        "identifiability_note": "OrderService and InventoryService both report SQL driver connection drop. RedisCache, PaymentService, and DynamoTable emit healthy baseline heartbeats, proving PostgresPrimary is the silent cause.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "PROBABLE only",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["PostgresPrimary"], "max_level": "PROBABLE"}],
+        "rationale": "PostgresPrimary connection exhaustion silent freeze; dependents OrderService and InventoryService fail. Alternative backend dependencies emit healthy heartbeats inside window.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="OrderService", metric="DBConnectionFailed", value=80.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="InventoryService", metric="DBQueryTimeout", value=50.0, severity="CRITICAL"),
-            EventData(event_id="hb_redis", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="otel", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_dynamo", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="DynamoTable", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="OrderService", metric="DatabaseTransactionTimeout", value=60.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="cloudwatch", service="InventoryService", metric="QueryTimeout", value=55.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="cloudwatch", service="APIGateway", metric="HTTP500Rate", value=40.0, severity="HIGH"),
+            # Competing candidates have >= 2 heartbeats inside window
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PaymentService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="PaymentService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_05", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="K8sCluster", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_06", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="K8sCluster", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_07", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_08", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_09", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoTable", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_10", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="DynamoTable", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_11", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_12", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_13", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_14", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_15", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_16", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW"),
         ]
     })
-    # indep_010 (12-node)
+
+    # indep_010 (12-node): K8sCluster is silent root; OrderService and CatalogService fail
     case_specs.append({
         "id": "indep_010_silent_root_12node",
         "topo": topo_12,
         "category": "silent_root",
-        "rationale": "AuthService power failure halts all metrics; APIGateway and OrderService fail client authentication",
-        "identifiability_note": "APIGateway and OrderService explicitly fail with token validation timeout addressed to AuthService. Backend database nodes PostgresPrimary and DynamoTable emit normal healthy telemetry.",
-        "roots": ["AuthService"],
+        "true_roots": ["K8sCluster"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "PROBABLE only",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["K8sCluster"], "max_level": "PROBABLE"}],
+        "rationale": "K8sCluster compute worker pool silent freeze emits zero telemetry; dependents OrderService and CatalogService report connection failures. Competing candidates PostgresPrimary and RedisCache emit healthy heartbeats inside window.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="otel", service="APIGateway", metric="AuthServiceTimeout", value=75.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="OrderService", metric="AuthTokenVerificationError", value=60.0, severity="CRITICAL"),
-            EventData(event_id="hb_db", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=30)).isoformat(), observed_time=(t_base + timedelta(seconds=31)).isoformat(), source="cloudwatch", service="OrderService", metric="SocketConnectionRefused", value=70.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=35)).isoformat(), observed_time=(t_base + timedelta(seconds=36)).isoformat(), source="cloudwatch", service="CatalogService", metric="HostUnreachable", value=65.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=40)).isoformat(), observed_time=(t_base + timedelta(seconds=41)).isoformat(), source="cloudwatch", service="APIGateway", metric="HTTP500Rate", value=45.0, severity="HIGH"),
+            # Competing candidates for OrderService and CatalogService have >= 2 heartbeats inside window
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_05", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PaymentService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_06", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="PaymentService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_07", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="InventoryService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_08", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="InventoryService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_09", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_10", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_11", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_12", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_13", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoTable", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_14", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="DynamoTable", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_15", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_16", event_time=(t_base + timedelta(seconds=45)).isoformat(), observed_time=(t_base + timedelta(seconds=46)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW"),
         ]
     })
 
     # =========================================================================
-    # 3. IDLE-HEALTHY NON-ROOTS IN DIAGNOSABLE FAILURE x4 (2 on 6-node, 2 on 12-node)
+    # 3. IDLE HEALTHY x4 (2 on 6-node, 2 on 12-node)
+    # Rule: Diagnosable failure case with real root failure PLUS idle healthy non-roots
+    # with heartbeats inside the incident window.
     # =========================================================================
-    # indep_011 (6-node)
+    # indep_011 (6-node): DynamoDB fails; Auth and EC2 are idle healthy non-roots
     case_specs.append({
         "id": "indep_011_idle_healthy_6node",
         "topo": topo_6,
         "category": "idle_healthy",
-        "rationale": "DynamoDB suffers critical write throttle failure; API cascades while non-roots EC2, Auth, and Worker remain idle and healthy",
-        "identifiability_note": "Direct critical throttle events on DynamoDB at t=10s explain API errors; EC2, Auth, and Worker emit normal healthy heartbeats with zero errors.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["DynamoDB"], "max_level": "CONFIRMED"}],
+        "rationale": "DynamoDB experiences critical write throttle failure; non-roots Auth and EC2 are idle and emit healthy heartbeats inside window.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="WriteThrottleEvents", value=320.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=25.0, severity="HIGH"),
-            EventData(event_id="hb_ec2", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_auth", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_worker", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Worker", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StorageThrottleRate", value=95.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="API", metric="InternalServerErrorRate", value=50.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_012 (6-node)
+
+    # indep_012 (6-node): EC2 fails; DynamoDB and Auth are idle healthy non-roots
     case_specs.append({
         "id": "indep_012_idle_healthy_6node",
         "topo": topo_6,
         "category": "idle_healthy",
-        "rationale": "EC2 compute failure impacts Worker and Application; non-roots DynamoDB and Auth remain completely idle and healthy",
-        "identifiability_note": "EC2 reports 99% CPU utilization causing Worker job queue stall; DynamoDB and Auth emit verified healthy telemetry.",
-        "roots": ["EC2"],
+        "true_roots": ["EC2"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["EC2"], "max_level": "CONFIRMED"}],
+        "rationale": "EC2 hardware degradation causes critical compute failure; non-roots DynamoDB and Auth are idle with healthy heartbeats.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="EC2", metric="CPUUtilization", value=99.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="cloudwatch", service="Worker", metric="QueueBacklog", value=450.0, severity="HIGH"),
-            EventData(event_id="hb_dynamo", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_auth", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="EC2", metric="CPULoadAverage", value=99.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=22)).isoformat(), observed_time=(t_base + timedelta(seconds=23)).isoformat(), source="cloudwatch", service="API", metric="UpstreamTimeoutRate", value=45.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_013 (12-node)
+
+    # indep_013 (12-node): PostgresPrimary fails; RedisCache and NotificationService are idle healthy
     case_specs.append({
         "id": "indep_013_idle_healthy_12node",
         "topo": topo_12,
         "category": "idle_healthy",
-        "rationale": "PostgresPrimary connection pool exhaustion breaks OrderService; 8 peripheral services remain idle and healthy",
-        "identifiability_note": "PostgresPrimary emits critical connection deadlock; CatalogService, RedisCache, KafkaCluster, and NotificationService are unaffected and emit routine heartbeats.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["PostgresPrimary"], "max_level": "CONFIRMED"}],
+        "rationale": "PostgresPrimary lock escalation failure; RedisCache and NotificationService are idle healthy non-roots emitting heartbeats.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="ConnectionPoolExhausted", value=100.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="OrderService", metric="5xxErrorRate", value=38.0, severity="HIGH"),
-            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="otel", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="application", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="MaxConnectionsReached", value=98.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="OrderService", metric="DatabaseTransactionTimeout", value=60.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="NotificationService", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_014 (12-node)
+
+    # indep_014 (12-node): PaymentService fails; CatalogService and KafkaCluster are idle healthy
     case_specs.append({
         "id": "indep_014_idle_healthy_12node",
         "topo": topo_12,
         "category": "idle_healthy",
-        "rationale": "PaymentService outage triggers APIGateway alerts; Inventory, Catalog, and Kafka services remain completely idle and healthy",
-        "identifiability_note": "PaymentService fails third-party webhook verification; unassociated microservices emit continuous healthy telemetry.",
-        "roots": ["PaymentService"],
+        "true_roots": ["PaymentService"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["PaymentService"], "max_level": "CONFIRMED"}],
+        "rationale": "PaymentService third-party gateway timeout failure; CatalogService and KafkaCluster are idle healthy non-roots emitting heartbeats.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=8)).isoformat(), observed_time=(t_base + timedelta(seconds=9)).isoformat(), source="application", service="PaymentService", metric="GatewayExceptionRate", value=65.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=14)).isoformat(), observed_time=(t_base + timedelta(seconds=15)).isoformat(), source="otel", service="APIGateway", metric="5xxErrorRate", value=20.0, severity="HIGH"),
-            EventData(event_id="hb_inv", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="InventoryService", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_cat", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="otel", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PaymentService", metric="ExternalHTTP500", value=85.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="OrderService", metric="CheckoutFailureRate", value=55.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
 
     # =========================================================================
     # 4. TWO INDEPENDENT ROOTS x4 (2 on 6-node, 2 on 12-node)
     # =========================================================================
-    # indep_015 (6-node)
+    # indep_015 (6-node): EC2 and DynamoDB fail simultaneously
     case_specs.append({
         "id": "indep_015_two_independent_roots_6node",
         "topo": topo_6,
         "category": "two_independent_roots",
-        "rationale": "Concurrent independent hardware failure on EC2 and storage throttling on DynamoDB",
-        "identifiability_note": "EC2 CPU hardware faults and DynamoDB write throttles occur simultaneously on disjoint services; engine must return both in root set.",
-        "roots": ["EC2", "DynamoDB"],
+        "true_roots": ["EC2", "DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [
+            {"verdict": "DIAGNOSE", "roots": ["EC2", "DynamoDB"], "max_level": "CONFIRMED"},
+            {"verdict": "DIAGNOSE", "roots": ["DynamoDB", "EC2"], "max_level": "CONFIRMED"}
+        ],
+        "rationale": "Independent simultaneous outages on compute fleet EC2 and database DynamoDB.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="EC2", metric="HardwareFault", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="DynamoDB", metric="WriteThrottleEvents", value=250.0, severity="CRITICAL"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=45.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="EC2", metric="PhysicalMemorySaturation", value=98.5, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StorageThrottleRate", value=92.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="API", metric="InternalServerErrorRate", value=80.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_016 (6-node)
+
+    # indep_016 (6-node): Auth and DynamoDB fail simultaneously
     case_specs.append({
         "id": "indep_016_two_independent_roots_6node",
         "topo": topo_6,
         "category": "two_independent_roots",
-        "rationale": "Auth token expiration bug occurs simultaneously with independent DynamoDB storage partition",
-        "identifiability_note": "Auth reports certificate signing error while DynamoDB reports network drop; both are independent causal origins.",
-        "roots": ["Auth", "DynamoDB"],
+        "true_roots": ["Auth", "DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [
+            {"verdict": "DIAGNOSE", "roots": ["Auth", "DynamoDB"], "max_level": "CONFIRMED"},
+            {"verdict": "DIAGNOSE", "roots": ["DynamoDB", "Auth"], "max_level": "CONFIRMED"}
+        ],
+        "rationale": "Independent simultaneous outages on Auth microservice and DynamoDB primary table.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="application", service="Auth", metric="TokenVerificationFailure", value=80.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=16)).isoformat(), observed_time=(t_base + timedelta(seconds=17)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StoragePartitionUnreachable", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=50.0, severity="CRITICAL")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="Auth", metric="CertificateExpired", value=100.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=14)).isoformat(), observed_time=(t_base + timedelta(seconds=15)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StorageThrottleRate", value=90.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="API", metric="InternalServerErrorRate", value=85.0, severity="CRITICAL"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_017 (12-node)
+
+    # indep_017 (12-node): PostgresPrimary and RedisCache fail simultaneously
     case_specs.append({
         "id": "indep_017_two_independent_roots_12node",
         "topo": topo_12,
         "category": "two_independent_roots",
-        "rationale": "Disjoint concurrent failures on PostgresPrimary (deadlock) and RedisCache (OOM eviction failure)",
-        "identifiability_note": "PostgresPrimary deadlocks order checkout while RedisCache OOM crashes product browsing; disjoint root causes.",
-        "roots": ["PostgresPrimary", "RedisCache"],
+        "true_roots": ["PostgresPrimary", "RedisCache"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [
+            {"verdict": "DIAGNOSE", "roots": ["PostgresPrimary", "RedisCache"], "max_level": "CONFIRMED"},
+            {"verdict": "DIAGNOSE", "roots": ["RedisCache", "PostgresPrimary"], "max_level": "CONFIRMED"}
+        ],
+        "rationale": "Dual root cause incident: PostgresPrimary database disk full plus RedisCache out of memory.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="DeadlockCount", value=5.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="RedisCache", metric="OOMKillCount", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="otel", service="OrderService", metric="5xxErrorRate", value=30.0, severity="HIGH"),
-            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=22)).isoformat(), observed_time=(t_base + timedelta(seconds=23)).isoformat(), source="otel", service="CatalogService", metric="5xxErrorRate", value=28.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="DiskCapacityExhausted", value=100.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=12)).isoformat(), observed_time=(t_base + timedelta(seconds=13)).isoformat(), source="cloudwatch", service="RedisCache", metric="KeyEvictionSurge", value=96.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=22)).isoformat(), observed_time=(t_base + timedelta(seconds=23)).isoformat(), source="cloudwatch", service="OrderService", metric="DatabaseTransactionTimeout", value=70.0, severity="CRITICAL"),
+            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=24)).isoformat(), observed_time=(t_base + timedelta(seconds=25)).isoformat(), source="cloudwatch", service="CatalogService", metric="LookupLatencyFluctuation", value=80.0, severity="CRITICAL")
         ]
     })
-    # indep_018 (12-node)
+
+    # indep_018 (12-node): PaymentService and KafkaCluster fail simultaneously
     case_specs.append({
         "id": "indep_018_two_independent_roots_12node",
         "topo": topo_12,
         "category": "two_independent_roots",
-        "rationale": "PaymentService third-party gateway drop coincides with independent KafkaCluster disk full crash",
-        "identifiability_note": "PaymentService and KafkaCluster fail on independent subgraphs; engine must extract both as the minimal root set.",
-        "roots": ["PaymentService", "KafkaCluster"],
+        "true_roots": ["PaymentService", "KafkaCluster"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [
+            {"verdict": "DIAGNOSE", "roots": ["PaymentService", "KafkaCluster"], "max_level": "CONFIRMED"},
+            {"verdict": "DIAGNOSE", "roots": ["KafkaCluster", "PaymentService"], "max_level": "CONFIRMED"}
+        ],
+        "rationale": "Dual root cause incident: PaymentService external failure plus KafkaCluster broker outage.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="application", service="PaymentService", metric="GatewayExceptionRate", value=75.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=14)).isoformat(), observed_time=(t_base + timedelta(seconds=15)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="DiskFullError", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=22)).isoformat(), observed_time=(t_base + timedelta(seconds=23)).isoformat(), source="application", service="NotificationService", metric="QueueStall", value=100.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PaymentService", metric="ExternalHTTP500", value=95.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=13)).isoformat(), observed_time=(t_base + timedelta(seconds=14)).isoformat(), source="cloudwatch", service="KafkaCluster", metric="DiskCapacityExhausted", value=99.0, severity="CRITICAL"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="OrderService", metric="CheckoutFailureRate", value=65.0, severity="CRITICAL"),
+            EventData(event_id="evt_04", event_time=(t_base + timedelta(seconds=26)).isoformat(), observed_time=(t_base + timedelta(seconds=27)).isoformat(), source="cloudwatch", service="NotificationService", metric="TaskExecutionTimeout", value=70.0, severity="CRITICAL")
         ]
     })
 
     # =========================================================================
-    # 5. EDGE-ROOT (Root is ENTRY-POINT service whose callees are noisy) x3 (1 on 6-node, 2 on 12-node)
+    # 5. EDGE ROOT x3 (1 on 6-node, 2 on 12-node)
+    # Rule: Root is an entrypoint service (API, gateway, frontend) whose callees are noisy.
+    # Leaf backends do not count.
     # =========================================================================
-    # indep_019 (6-node)
+    # indep_019 (6-node): Application (frontend client ingress) flood causes downstream errors
     case_specs.append({
         "id": "indep_019_edge_root_entrypoint_6node",
         "topo": topo_6,
         "category": "edge_root",
-        "rationale": "Top-level ingress Application misconfigures retry flood, causing downstream API and Worker to report high error rates",
-        "identifiability_note": "Application ingress client bug generates excessive flood traffic (10,000 req/sec) causing downstream API rate-limit errors and Worker saturation. The root is the entrypoint itself, not the downstream callees.",
-        "roots": ["Application"],
+        "true_roots": ["Application"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["Application"], "max_level": "CONFIRMED"}],
+        "rationale": "Frontend entrypoint Application client bug generates excessive flood volume (10k req/s), causing downstream API rate limits and Worker saturation.",
         "events": [
             EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="application", service="Application", metric="RequestFloodVolume", value=10000.0, severity="CRITICAL"),
             EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="API", metric="RateLimitThrottling", value=250.0, severity="HIGH"),
             EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="Worker", metric="QueueSaturated", value=95.0, severity="HIGH")
         ]
     })
-    # indep_020 (12-node)
+
+    # indep_020 (12-node): APIGateway entrypoint routing bug causes OrderService and CatalogService errors
     case_specs.append({
         "id": "indep_020_edge_root_entrypoint_12node",
         "topo": topo_12,
         "category": "edge_root",
-        "rationale": "Edge ingress APIGateway deploys faulty routing table, flooding OrderService and CatalogService with invalid requests",
-        "identifiability_note": "APIGateway logs routing configuration corruption at t=10s; downstream OrderService and CatalogService report 400 Bad Request surges due to gateway payload mangling.",
-        "roots": ["APIGateway"],
+        "true_roots": ["APIGateway"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["APIGateway"], "max_level": "CONFIRMED"}],
+        "rationale": "Edge ingress APIGateway misconfiguration routes malformed payload headers causing downstream OrderService and CatalogService crashes.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="otel", service="APIGateway", metric="RoutingTableCorruption", value=1.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="otel", service="OrderService", metric="InvalidPayloadRate", value=85.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="otel", service="CatalogService", metric="InvalidPayloadRate", value=60.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="APIGateway", metric="MalformedHeaderRate", value=500.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=16)).isoformat(), observed_time=(t_base + timedelta(seconds=17)).isoformat(), source="cloudwatch", service="OrderService", metric="PayloadDecodeErrors", value=120.0, severity="HIGH"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="cloudwatch", service="CatalogService", metric="PayloadDecodeErrors", value=110.0, severity="HIGH")
         ]
     })
-    # indep_021 (12-node)
+
+    # indep_021 (12-node): APIGateway entrypoint auth-header stripping causes downstream errors
     case_specs.append({
         "id": "indep_021_edge_root_entrypoint_12node",
         "topo": topo_12,
         "category": "edge_root",
-        "rationale": "Edge ingress APIGateway TLS termination failure drops client connections, causing downstream services to report connection resets",
-        "identifiability_note": "APIGateway TLS termination certificate failure initiates all downstream communication drops.",
-        "roots": ["APIGateway"],
+        "true_roots": ["APIGateway"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["APIGateway"], "max_level": "CONFIRMED"}],
+        "rationale": "Edge ingress APIGateway strips required session tokens, triggering auth rejections across OrderService and CatalogService.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="otel", service="APIGateway", metric="TLSTerminationFailure", value=100.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="OrderService", metric="ClientConnectionReset", value=70.0, severity="HIGH"),
-            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="cloudwatch", service="AuthService", metric="ClientConnectionReset", value=50.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="APIGateway", metric="HeaderDropCount", value=350.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="OrderService", metric="ValidationErrorCount", value=90.0, severity="HIGH"),
+            EventData(event_id="evt_03", event_time=(t_base + timedelta(seconds=17)).isoformat(), observed_time=(t_base + timedelta(seconds=18)).isoformat(), source="cloudwatch", service="AuthService", metric="VerificationSpike", value=80.0, severity="HIGH")
         ]
     })
 
     # =========================================================================
-    # 6. SOURCE DOWN COVERING CANDIDATE x3 (2 on 6-node, 1 on 12-node)
+    # 6. SOURCE DOWN x3 (2 on 6-node, 1 on 12-node) -> ABSTAIN REQUIRED
     # =========================================================================
-    # indep_022 (6-node)
+    # indep_022 (6-node): cloudwatch is DOWN
+    src_down_cw = default_sources()
+    for s in src_down_cw:
+        if s.source == "cloudwatch":
+            s.status = "DOWN"
     case_specs.append({
         "id": "indep_022_source_down_abstain_6node",
         "topo": topo_6,
         "category": "source_down",
-        "rationale": "CloudWatch telemetry source is DOWN covering DynamoDB; engine must abstain with INSUFFICIENT_EVIDENCE",
-        "identifiability_note": "Source health record explicitly marks cloudwatch DOWN; telemetry covering DynamoDB is unobservable.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
-        "source_health": [
-            SourceHealthRecord(source="cloudwatch", timestamp=t_base.isoformat(), status="DOWN"),
-            SourceHealthRecord(source="application", timestamp=t_base.isoformat(), status="HEALTHY")
-        ],
+        "outcomes": [{"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"}],
+        "rationale": "Telemetry source cloudwatch is DOWN; engine cannot observe primary metrics for database and must ABSTAIN.",
+        "source_health": src_down_cw,
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="API", metric="ErrorRate", value=40.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="API", metric="InternalServerErrorRate", value=50.0, severity="CRITICAL")
         ]
     })
-    # indep_023 (6-node)
+
+    # indep_023 (6-node): syslog is DOWN
+    src_down_sys = default_sources()
+    for s in src_down_sys:
+        if s.source == "syslog":
+            s.status = "DOWN"
     case_specs.append({
         "id": "indep_023_source_down_abstain_6node",
         "topo": topo_6,
         "category": "source_down",
-        "rationale": "Metrics source otel is DOWN covering EC2 compute nodes; engine must abstain rather than hallucinate",
-        "identifiability_note": "Source health record marks otel DOWN covering EC2; unobservable root telemetry forces abstention.",
-        "roots": ["EC2"],
+        "true_roots": ["EC2"],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
-        "source_health": [
-            SourceHealthRecord(source="otel", timestamp=t_base.isoformat(), status="DOWN"),
-            SourceHealthRecord(source="application", timestamp=t_base.isoformat(), status="HEALTHY")
-        ],
+        "outcomes": [{"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"}],
+        "rationale": "Telemetry source syslog is DOWN; compute cluster system logs are missing, engine must ABSTAIN.",
+        "source_health": src_down_sys,
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="Worker", metric="ErrorRate", value=45.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="API", metric="SocketConnectionRefused", value=40.0, severity="CRITICAL")
         ]
     })
-    # indep_024 (12-node)
+
+    # indep_024 (12-node): cloudwatch is DOWN
     case_specs.append({
         "id": "indep_024_source_down_abstain_12node",
         "topo": topo_12,
         "category": "source_down",
-        "rationale": "Cloudwatch agent is DOWN covering PostgresPrimary database; engine must abstain with INSUFFICIENT_EVIDENCE",
-        "identifiability_note": "Primary metrics collector DOWN prevents evidence confirmation.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
-        "source_health": [
-            SourceHealthRecord(source="cloudwatch", timestamp=t_base.isoformat(), status="DOWN"),
-            SourceHealthRecord(source="otel", timestamp=t_base.isoformat(), status="HEALTHY")
-        ],
+        "outcomes": [{"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"}],
+        "rationale": "Telemetry source cloudwatch is DOWN; database alarms cannot be validated, engine must ABSTAIN.",
+        "source_health": src_down_cw,
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="otel", service="OrderService", metric="DatabaseTimeout", value=50.0, severity="HIGH")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="OrderService", metric="DatabaseTransactionTimeout", value=55.0, severity="CRITICAL")
         ]
     })
 
     # =========================================================================
-    # 7. CONTRADICTORY (root healthy while dependents blame it) x2 (1 on 6-node, 1 on 12-node)
+    # 7. CONTRADICTORY x2 (1 on 6-node, 1 on 12-node) -> Multiple acceptable outcomes
+    # Rule: True root emits healthy heartbeats, but caller blames it.
+    # Defensible answers: ABSTAIN, or diagnose the blaming caller at PROBABLE.
+    # Metric names must NOT contain node id or label words.
     # =========================================================================
-    # indep_025 (6-node)
+    # indep_025 (6-node): API blames database dependency, but DynamoDB emits healthy heartbeats
     case_specs.append({
         "id": "indep_025_contradiction_blamed_healthy_6node",
         "topo": topo_6,
         "category": "contradictory",
-        "rationale": "Downstream API blames DynamoDB for HTTP 500s, but DynamoDB verified health telemetry proves healthy latency and 0 errors",
-        "identifiability_note": "Contradiction detector fires ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME; engine must abstain because direct positive health signals contradict caller blame.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
+        "outcomes": [
+            {"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"},
+            {"verdict": "DIAGNOSE", "roots": ["API"], "max_level": "PROBABLE"}
+        ],
+        "rationale": "Contradiction: API reports critical storage connection blame, but DynamoDB emits verified healthy heartbeats. Engine must ABSTAIN or diagnose API at PROBABLE.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="API", metric="DynamoDBFailureBlame", value=100.0, severity="CRITICAL"),
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="API", metric="ConnectionTimeout", value=100.0, severity="CRITICAL"),
             EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW"),
             EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="DynamoDB", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_026 (12-node)
+
+    # indep_026 (12-node): OrderService blames database, but PostgresPrimary emits healthy heartbeats
     case_specs.append({
         "id": "indep_026_contradiction_blamed_healthy_12node",
         "topo": topo_12,
         "category": "contradictory",
-        "rationale": "OrderService reports critical errors claiming PostgresPrimary is down, yet database health metrics prove 100% healthy transactions",
-        "identifiability_note": "Direct health verification on PostgresPrimary invalidates caller blame, triggering contradiction abstention.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
+        "outcomes": [
+            {"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"},
+            {"verdict": "DIAGNOSE", "roots": ["OrderService"], "max_level": "PROBABLE"}
+        ],
+        "rationale": "Contradiction: OrderService reports database lock blame, but PostgresPrimary emits verified healthy heartbeats. Engine must ABSTAIN or diagnose OrderService at PROBABLE.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="otel", service="OrderService", metric="DatabaseDeadBlame", value=100.0, severity="CRITICAL"),
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="application", service="OrderService", metric="LockWaitTimeout", value=100.0, severity="CRITICAL"),
             EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=15)).isoformat(), observed_time=(t_base + timedelta(seconds=16)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW"),
             EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=25)).isoformat(), observed_time=(t_base + timedelta(seconds=26)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
 
     # =========================================================================
-    # 8. BENIGN HEARTBEATS ADDED TO CLEAR CASE x2 (1 on 6-node, 1 on 12-node)
+    # 8. BENIGN HEARTBEATS x2 (1 on 6-node, 1 on 12-node)
     # =========================================================================
-    # indep_027 (6-node)
+    # indep_027 (6-node): DynamoDB fails with write throttle; routine heartbeats on all nodes
     case_specs.append({
         "id": "indep_027_benign_heartbeats_6node",
         "topo": topo_6,
         "category": "benign_heartbeats",
-        "rationale": "Definite DynamoDB throttle failure with 10 high-frequency benign heartbeats interleaved on all idle services",
-        "identifiability_note": "High-frequency benign heartbeats across all nodes do not alter the true root diagnosis of DynamoDB.",
-        "roots": ["DynamoDB"],
+        "true_roots": ["DynamoDB"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["DynamoDB"], "max_level": "CONFIRMED"}],
+        "rationale": "Clear failure on DynamoDB with concurrent periodic benign heartbeats on non-roots.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="WriteThrottleEvents", value=300.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="API", metric="5xxErrorRate", value=22.0, severity="HIGH"),
-            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=2)).isoformat(), observed_time=(t_base + timedelta(seconds=3)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=4)).isoformat(), observed_time=(t_base + timedelta(seconds=5)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=6)).isoformat(), observed_time=(t_base + timedelta(seconds=7)).isoformat(), source="cloudwatch", service="Worker", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_04", event_time=(t_base + timedelta(seconds=8)).isoformat(), observed_time=(t_base + timedelta(seconds=9)).isoformat(), source="application", service="Application", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="DynamoDB", metric="StorageThrottleRate", value=98.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="API", metric="InternalServerErrorRate", value=50.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="EC2", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="Auth", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
-    # indep_028 (12-node)
+
+    # indep_028 (12-node): PostgresPrimary fails; routine heartbeats on non-roots
     case_specs.append({
         "id": "indep_028_benign_heartbeats_12node",
         "topo": topo_12,
         "category": "benign_heartbeats",
-        "rationale": "Clear PostgresPrimary failover with dense periodic heartbeats across all 11 unaffected microservices",
-        "identifiability_note": "Dense benign heartbeats across 11 services are filtered cleanly and preserve PostgresPrimary ranking.",
-        "roots": ["PostgresPrimary"],
+        "true_roots": ["PostgresPrimary"],
         "expected_verdict": "DIAGNOSE",
-        "acceptable_verdict_level": "CONFIRMED allowed",
+        "outcomes": [{"verdict": "DIAGNOSE", "roots": ["PostgresPrimary"], "max_level": "CONFIRMED"}],
+        "rationale": "Clear failure on PostgresPrimary with concurrent periodic benign heartbeats on non-roots.",
         "events": [
-            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="ConnectionRefused", value=100.0, severity="CRITICAL"),
-            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=18)).isoformat(), observed_time=(t_base + timedelta(seconds=19)).isoformat(), source="cloudwatch", service="OrderService", metric="5xxErrorRate", value=40.0, severity="HIGH"),
-            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="otel", service="APIGateway", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="otel", service="CatalogService", metric="Heartbeat", value=1.0, severity="LOW"),
-            EventData(event_id="hb_03", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW")
+            EventData(event_id="evt_01", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service="PostgresPrimary", metric="MaxConnectionsReached", value=99.0, severity="CRITICAL"),
+            EventData(event_id="evt_02", event_time=(t_base + timedelta(seconds=20)).isoformat(), observed_time=(t_base + timedelta(seconds=21)).isoformat(), source="cloudwatch", service="OrderService", metric="DatabaseTransactionTimeout", value=55.0, severity="HIGH"),
+            EventData(event_id="hb_01", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="RedisCache", metric="Heartbeat", value=1.0, severity="LOW"),
+            EventData(event_id="hb_02", event_time=(t_base + timedelta(seconds=5)).isoformat(), observed_time=(t_base + timedelta(seconds=6)).isoformat(), source="cloudwatch", service="AuthService", metric="Heartbeat", value=1.0, severity="LOW")
         ]
     })
 
     # =========================================================================
-    # 9. NO-ANOMALY (All-quiet control, entire system healthy) x2 (1 on 6-node, 1 on 12-node)
+    # 9. NO ANOMALY (all-quiet negative control) x2 (1 on 6-node, 1 on 12-node) -> ABSTAIN REQUIRED
     # =========================================================================
-    # indep_029 (6-node)
+    # indep_029 (6-node): All nodes emit only healthy heartbeats
     case_specs.append({
         "id": "indep_029_no_anomaly_6node",
         "topo": topo_6,
         "category": "no_anomaly",
-        "rationale": "Entire 6-node cluster operating normally with only periodic benign heartbeats; zero anomalies",
-        "identifiability_note": "Quiet timeline contradiction QUIET_TIMELINE_NO_ANOMALY fires; engine must abstain from hallucinating any root cause.",
-        "roots": [],
+        "true_roots": [],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
+        "outcomes": [{"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"}],
+        "rationale": "Entire 6-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
         "events": [
-            EventData(event_id=f"hb_6_{s}", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service=s, metric="Heartbeat", value=1.0, severity="LOW")
-            for s in ["EC2", "DynamoDB", "Auth", "Worker", "API", "Application"]
+            EventData(event_id=f"hb_6_{n.id}", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service=n.id, metric="Heartbeat", value=1.0, severity="LOW")
+            for n in topo_6_nodes
         ]
     })
-    # indep_030 (12-node)
+
+    # indep_030 (12-node): All nodes emit only healthy heartbeats
     case_specs.append({
         "id": "indep_030_no_anomaly_12node",
         "topo": topo_12,
         "category": "no_anomaly",
-        "rationale": "Entire 12-node enterprise microservice cluster operating normally with periodic synthetic health pings; zero anomalies",
-        "identifiability_note": "Complete quiet baseline across 12 services forces abstention with zero hallucinated root causes.",
-        "roots": [],
+        "true_roots": [],
         "expected_verdict": "ABSTAIN",
-        "acceptable_verdict_level": "ABSTAIN",
+        "outcomes": [{"verdict": "ABSTAIN", "roots": [], "max_level": "ABSTAIN"}],
+        "rationale": "Entire 12-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
         "events": [
             EventData(event_id=f"hb_12_{n.id}", event_time=(t_base + timedelta(seconds=10)).isoformat(), observed_time=(t_base + timedelta(seconds=11)).isoformat(), source="cloudwatch", service=n.id, metric="Heartbeat", value=1.0, severity="LOW")
             for n in topo_12_nodes
         ]
     })
 
-    assert len(case_specs) == 30, f"Expected 30 case specs, got {len(case_specs)}"
+    # =========================================================================
+    # Write cases to JSON files
+    # =========================================================================
+    assert len(case_specs) == 30, f"Expected exactly 30 cases, got {len(case_specs)}"
 
-    six_count = sum(1 for c in case_specs if len(c["topo"].nodes) == 6)
-    twelve_count = sum(1 for c in case_specs if len(c["topo"].nodes) == 12)
-    assert six_count == 15, f"Expected 15 six-node cases, got {six_count}"
-    assert twelve_count == 15, f"Expected 15 twelve-node cases, got {twelve_count}"
+    for s in case_specs:
+        outcomes_objs = [AcceptableOutcome(**o) for o in s["outcomes"]]
+        prim_verdict = s.get("expected_verdict", outcomes_objs[0].verdict)
+        prim_max = outcomes_objs[0].max_level or "CONFIRMED"
 
-    for spec in case_specs:
-        cid = spec["id"]
         gt = GroundTruth(
-            true_root_causes=spec["roots"],
-            expected_verdict=spec["expected_verdict"],
-            acceptable_verdict_level=spec["acceptable_verdict_level"],
-            identifiability_note=spec.get("identifiability_note")
+            true_root_causes=s.get("true_roots", []),
+            onset_times={},
+            symptom_to_cause={},
+            expected_verdict=prim_verdict,
+            acceptable_verdict_level=prim_max,
+            acceptable_outcomes=outcomes_objs,
+            identifiability_note=s.get("rationale", "")
         )
-        case_obj = EvaluationCase(
-            case_id=cid,
-            family_id="indep_eval",
-            seed=20261016,
-            generator_version="independent_handwritten_1.0",
-            topology=spec["topo"],
-            events=spec["events"],
-            source_health=spec.get("source_health", default_sources()),
-            ground_truth=gt,
-            perturbations=[spec["category"]],
-            tags=[spec["category"], "independent_test"],
-            identifiability_note=spec.get("identifiability_note"),
-            acceptable_verdict_level=spec["acceptable_verdict_level"]
-        )
-        out_path = indep_dir / f"{cid}.json"
-        out_path.write_text(json.dumps(case_obj.model_dump(), indent=2), encoding="utf-8")
 
-    print(f"Successfully generated {len(case_specs)} independent cases in {indep_dir}:")
-    print(f"  6-node topology: {six_count} cases")
-    print(f"  12-node topology: {twelve_count} cases")
+        case = EvaluationCase(
+            case_id=s["id"],
+            family_id="indep_eval",
+            base_case_id=None,
+            generator_version="independent_handwritten_2.0",
+            seed=20261016,
+            topology=s["topo"],
+            events=s["events"],
+            source_health=s.get("source_health", default_sources()),
+            ground_truth=gt,
+            perturbations=[s["category"]],
+            tags=[s["category"], "independent_test"],
+            is_hard=False,
+            telemetry_policy=None,
+            identifiability_note=s.get("rationale", ""),
+            acceptable_verdict_level=prim_max,
+            acceptable_outcomes=outcomes_objs
+        )
+
+        p = indep_dir / f"{s['id']}.json"
+        p.write_text(case.model_dump_json(indent=2), encoding="utf-8")
+
+    print(f"Successfully generated {len(case_specs)} independent cases in {indep_dir}.")
 
 
 if __name__ == "__main__":

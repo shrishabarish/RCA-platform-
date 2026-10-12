@@ -2,26 +2,26 @@
   "case_id": "indep_007_silent_root_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -82,7 +82,7 @@
       "observed_time": "2026-10-16T14:00:31+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "ConnectionRefused_EC2",
+      "metric": "SocketConnectionRefused",
       "value": 45.0,
       "severity": "CRITICAL"
     },
@@ -92,7 +92,7 @@
       "observed_time": "2026-10-16T14:00:36+00:00",
       "source": "cloudwatch",
       "service": "Worker",
-      "metric": "ComputeNodeUnreachable",
+      "metric": "HostUnreachable",
       "value": 30.0,
       "severity": "CRITICAL"
     },
@@ -102,14 +102,14 @@
       "observed_time": "2026-10-16T14:00:41+00:00",
       "source": "application",
       "service": "Application",
-      "metric": "502BadGateway",
+      "metric": "HTTP502Rate",
       "value": 25.0,
       "severity": "HIGH"
     },
     {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
@@ -118,8 +118,28 @@
     },
     {
       "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_03",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_04",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
@@ -161,8 +181,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "PROBABLE only",
-    "identifiability_note": "API and Worker report connection refused specifically pointing to EC2 socket. Alternative dependencies DynamoDB and Auth emit continuous healthy heartbeats, isolating EC2 as the only possible cause despite its complete silence.",
+    "acceptable_verdict_level": "PROBABLE",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "EC2"
+        ],
+        "max_level": "PROBABLE"
+      }
+    ],
+    "identifiability_note": "EC2 emits zero events (kernel hard crash); dependents API and Worker report socket connection timeouts. Competing candidates DynamoDB and Auth emit verified healthy heartbeats inside window.",
     "incident_groups": []
   },
   "perturbations": [
@@ -174,6 +203,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "API and Worker report connection refused specifically pointing to EC2 socket. Alternative dependencies DynamoDB and Auth emit continuous healthy heartbeats, isolating EC2 as the only possible cause despite its complete silence.",
-  "acceptable_verdict_level": "PROBABLE only"
+  "identifiability_note": "EC2 emits zero events (kernel hard crash); dependents API and Worker report socket connection timeouts. Competing candidates DynamoDB and Auth emit verified healthy heartbeats inside window.",
+  "acceptable_verdict_level": "PROBABLE",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "EC2"
+      ],
+      "max_level": "PROBABLE"
+    }
+  ]
 }

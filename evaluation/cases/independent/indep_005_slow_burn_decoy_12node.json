@@ -2,14 +2,14 @@
   "case_id": "indep_005_slow_burn_decoy_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -138,43 +138,53 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:07+00:00",
-      "observed_time": "2026-10-16T14:00:08+00:00",
-      "source": "otel",
-      "service": "RedisCache",
-      "metric": "FragmentationRatio",
-      "value": 1.85,
-      "severity": "MEDIUM"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
       "source": "application",
       "service": "CatalogService",
-      "metric": "CacheMissRate",
-      "value": 65.0,
+      "metric": "LookupLatencyFluctuation",
+      "value": 220.0,
       "severity": "HIGH"
     },
     {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:48+00:00",
-      "observed_time": "2026-10-16T14:00:49+00:00",
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:24+00:00",
+      "observed_time": "2026-10-16T14:00:25+00:00",
       "source": "cloudwatch",
       "service": "RedisCache",
-      "metric": "OOMKillCount",
-      "value": 1.0,
+      "metric": "KeyEvictionSurge",
+      "value": 95.0,
       "severity": "CRITICAL"
     },
     {
-      "event_id": "evt_04",
-      "event_time": "2026-10-16T14:00:52+00:00",
-      "observed_time": "2026-10-16T14:00:53+00:00",
-      "source": "otel",
-      "service": "CatalogService",
-      "metric": "5xxErrorRate",
-      "value": 28.0,
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:34+00:00",
+      "observed_time": "2026-10-16T14:00:35+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "HTTP500Rate",
+      "value": 45.0,
       "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -211,8 +221,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "RedisCache records early memory fragmentation index warning at t=7s (ratio=1.8); downstream CatalogService latency degrades only when RedisCache eviction halts at t=48s.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "RedisCache"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "CatalogService latency spike at t=0s; RedisCache eviction storm and memory exhaustion surfaces at t=24s (>10s later).",
     "incident_groups": []
   },
   "perturbations": [
@@ -224,6 +243,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "RedisCache records early memory fragmentation index warning at t=7s (ratio=1.8); downstream CatalogService latency degrades only when RedisCache eviction halts at t=48s.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "CatalogService latency spike at t=0s; RedisCache eviction storm and memory exhaustion surfaces at t=24s (>10s later).",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "RedisCache"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

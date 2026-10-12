@@ -2,14 +2,14 @@
   "case_id": "indep_024_source_down_abstain_12node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress Gateway",
+        "label": "Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -27,19 +27,19 @@
       {
         "id": "AuthService",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Token Broker",
         "criticality": 0.9
       },
       {
         "id": "PaymentService",
         "type": "service",
-        "label": "Payment Gateway",
+        "label": "Payment Processor",
         "criticality": 0.95
       },
       {
         "id": "InventoryService",
         "type": "service",
-        "label": "Inventory Management",
+        "label": "Inventory API",
         "criticality": 0.85
       },
       {
@@ -51,31 +51,31 @@
       {
         "id": "PostgresPrimary",
         "type": "database",
-        "label": "Postgres DB",
+        "label": "Relational Database",
         "criticality": 0.95
       },
       {
         "id": "DynamoTable",
         "type": "database",
-        "label": "Payment Ledger",
+        "label": "Ledger Database",
         "criticality": 0.95
       },
       {
         "id": "RedisCache",
         "type": "cache",
-        "label": "Product Cache",
+        "label": "Memory Cache",
         "criticality": 0.8
       },
       {
         "id": "K8sCluster",
         "type": "compute",
-        "label": "App Node Pool",
+        "label": "Worker Pool",
         "criticality": 0.85
       },
       {
         "id": "KafkaCluster",
         "type": "queue",
-        "label": "Event Streaming Bus",
+        "label": "Streaming Bus",
         "criticality": 0.9
       }
     ],
@@ -138,13 +138,13 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:25+00:00",
-      "observed_time": "2026-10-16T14:00:26+00:00",
-      "source": "otel",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "application",
       "service": "OrderService",
-      "metric": "DatabaseTimeout",
-      "value": 50.0,
-      "severity": "HIGH"
+      "metric": "DatabaseTransactionTimeout",
+      "value": 55.0,
+      "severity": "CRITICAL"
     }
   ],
   "source_health": [
@@ -154,7 +154,22 @@
       "status": "DOWN"
     },
     {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
       "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
       "timestamp": "2026-10-16T14:00:00+00:00",
       "status": "HEALTHY"
     }
@@ -167,7 +182,14 @@
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
     "acceptable_verdict_level": "ABSTAIN",
-    "identifiability_note": "Primary metrics collector DOWN prevents evidence confirmation.",
+    "acceptable_outcomes": [
+      {
+        "verdict": "ABSTAIN",
+        "roots": [],
+        "max_level": "ABSTAIN"
+      }
+    ],
+    "identifiability_note": "Telemetry source cloudwatch is DOWN; database alarms cannot be validated, engine must ABSTAIN.",
     "incident_groups": []
   },
   "perturbations": [
@@ -179,6 +201,13 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Primary metrics collector DOWN prevents evidence confirmation.",
-  "acceptable_verdict_level": "ABSTAIN"
+  "identifiability_note": "Telemetry source cloudwatch is DOWN; database alarms cannot be validated, engine must ABSTAIN.",
+  "acceptable_verdict_level": "ABSTAIN",
+  "acceptable_outcomes": [
+    {
+      "verdict": "ABSTAIN",
+      "roots": [],
+      "max_level": "ABSTAIN"
+    }
+  ]
 }

@@ -2,26 +2,26 @@
   "case_id": "indep_011_idle_healthy_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -82,8 +82,8 @@
       "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
-      "metric": "WriteThrottleEvents",
-      "value": 320.0,
+      "metric": "StorageThrottleRate",
+      "value": 95.0,
       "severity": "CRITICAL"
     },
     {
@@ -92,22 +92,12 @@
       "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "5xxErrorRate",
-      "value": 25.0,
+      "metric": "InternalServerErrorRate",
+      "value": 50.0,
       "severity": "HIGH"
     },
     {
-      "event_id": "hb_ec2",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
-    },
-    {
-      "event_id": "hb_auth",
+      "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:15+00:00",
       "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
@@ -117,11 +107,21 @@
       "severity": "LOW"
     },
     {
-      "event_id": "hb_worker",
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_03",
       "event_time": "2026-10-16T14:00:15+00:00",
       "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
+      "service": "EC2",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW"
@@ -161,8 +161,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "Direct critical throttle events on DynamoDB at t=10s explain API errors; EC2, Auth, and Worker emit normal healthy heartbeats with zero errors.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "DynamoDB"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "DynamoDB experiences critical write throttle failure; non-roots Auth and EC2 are idle and emit healthy heartbeats inside window.",
     "incident_groups": []
   },
   "perturbations": [
@@ -174,6 +183,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Direct critical throttle events on DynamoDB at t=10s explain API errors; EC2, Auth, and Worker emit normal healthy heartbeats with zero errors.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "DynamoDB experiences critical write throttle failure; non-roots Auth and EC2 are idle and emit healthy heartbeats inside window.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "DynamoDB"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

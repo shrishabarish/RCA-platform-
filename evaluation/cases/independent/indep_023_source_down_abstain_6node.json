@@ -2,26 +2,26 @@
   "case_id": "indep_023_source_down_abstain_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -81,15 +81,30 @@
       "event_time": "2026-10-16T14:00:20+00:00",
       "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "application",
-      "service": "Worker",
-      "metric": "ErrorRate",
-      "value": 45.0,
-      "severity": "HIGH"
+      "service": "API",
+      "metric": "SocketConnectionRefused",
+      "value": 40.0,
+      "severity": "CRITICAL"
     }
   ],
   "source_health": [
     {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
       "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
       "timestamp": "2026-10-16T14:00:00+00:00",
       "status": "DOWN"
     },
@@ -107,7 +122,14 @@
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
     "acceptable_verdict_level": "ABSTAIN",
-    "identifiability_note": "Source health record marks otel DOWN covering EC2; unobservable root telemetry forces abstention.",
+    "acceptable_outcomes": [
+      {
+        "verdict": "ABSTAIN",
+        "roots": [],
+        "max_level": "ABSTAIN"
+      }
+    ],
+    "identifiability_note": "Telemetry source syslog is DOWN; compute cluster system logs are missing, engine must ABSTAIN.",
     "incident_groups": []
   },
   "perturbations": [
@@ -119,6 +141,13 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Source health record marks otel DOWN covering EC2; unobservable root telemetry forces abstention.",
-  "acceptable_verdict_level": "ABSTAIN"
+  "identifiability_note": "Telemetry source syslog is DOWN; compute cluster system logs are missing, engine must ABSTAIN.",
+  "acceptable_verdict_level": "ABSTAIN",
+  "acceptable_outcomes": [
+    {
+      "verdict": "ABSTAIN",
+      "roots": [],
+      "max_level": "ABSTAIN"
+    }
+  ]
 }

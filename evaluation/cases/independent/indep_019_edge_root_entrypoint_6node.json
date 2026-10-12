@@ -2,26 +2,26 @@
   "case_id": "indep_019_edge_root_entrypoint_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -141,8 +141,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "Application ingress client bug generates excessive flood traffic (10,000 req/sec) causing downstream API rate-limit errors and Worker saturation. The root is the entrypoint itself, not the downstream callees.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "Application"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Frontend entrypoint Application client bug generates excessive flood volume (10k req/s), causing downstream API rate limits and Worker saturation.",
     "incident_groups": []
   },
   "perturbations": [
@@ -154,6 +163,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Application ingress client bug generates excessive flood traffic (10,000 req/sec) causing downstream API rate-limit errors and Worker saturation. The root is the entrypoint itself, not the downstream callees.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Frontend entrypoint Application client bug generates excessive flood volume (10k req/s), causing downstream API rate limits and Worker saturation.",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "Application"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }

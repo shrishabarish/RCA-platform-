@@ -2,26 +2,26 @@
   "case_id": "indep_001_slow_burn_decoy_6node",
   "family_id": "indep_eval",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_1.0",
+  "generator_version": "independent_handwritten_2.0",
   "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Fleet",
+        "label": "EC2 Fleet",
         "criticality": 0.9
       },
       {
         "id": "DynamoDB",
         "type": "database",
-        "label": "DynamoDB Primary Table",
+        "label": "DynamoDB Table",
         "criticality": 0.95
       },
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Microservice",
+        "label": "Auth Service",
         "criticality": 0.9
       },
       {
@@ -33,13 +33,13 @@
       {
         "id": "API",
         "type": "service",
-        "label": "Core API Gateway",
+        "label": "API Gateway",
         "criticality": 0.85
       },
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Client Ingress",
+        "label": "Web Client",
         "criticality": 0.7
       }
     ],
@@ -78,43 +78,53 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:05+00:00",
-      "observed_time": "2026-10-16T14:00:06+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "WriteThrottleEvents",
-      "value": 12.0,
-      "severity": "MEDIUM"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "cloudwatch",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
+      "source": "application",
       "service": "API",
-      "metric": "Latency",
-      "value": 220.0,
+      "metric": "TransientResponseSpike",
+      "value": 540.0,
       "severity": "HIGH"
     },
     {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
-      "metric": "WriteThrottleEvents",
-      "value": 450.0,
+      "metric": "StorageThrottleRate",
+      "value": 92.5,
       "severity": "CRITICAL"
     },
     {
-      "event_id": "evt_04",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
-      "source": "cloudwatch",
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:35+00:00",
+      "observed_time": "2026-10-16T14:00:36+00:00",
+      "source": "application",
       "service": "API",
-      "metric": "5xxErrorRate",
-      "value": 22.0,
+      "metric": "ConnectionPoolStarvation",
+      "value": 100.0,
       "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -151,8 +161,17 @@
     "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED allowed",
-    "identifiability_note": "DynamoDB emits early weak WriteThrottle telemetry at t=5s (value 12.0) that precedes the API decoy burst, while API's latency spike at t=10s returns to normal before DynamoDB suffers hard saturation at t=40s.",
+    "acceptable_verdict_level": "CONFIRMED",
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "DynamoDB"
+        ],
+        "max_level": "CONFIRMED"
+      }
+    ],
+    "identifiability_note": "Transient HTTP 504 burst on API at t=0s acts as early decoy; true root DynamoDB latent lock contention breaches threshold at t=25s (>10s later).",
     "incident_groups": []
   },
   "perturbations": [
@@ -164,6 +183,15 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "DynamoDB emits early weak WriteThrottle telemetry at t=5s (value 12.0) that precedes the API decoy burst, while API's latency spike at t=10s returns to normal before DynamoDB suffers hard saturation at t=40s.",
-  "acceptable_verdict_level": "CONFIRMED allowed"
+  "identifiability_note": "Transient HTTP 504 burst on API at t=0s acts as early decoy; true root DynamoDB latent lock contention breaches threshold at t=25s (>10s later).",
+  "acceptable_verdict_level": "CONFIRMED",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "DynamoDB"
+      ],
+      "max_level": "CONFIRMED"
+    }
+  ]
 }
