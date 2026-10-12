@@ -1,1 +1,2 @@
 {"timestamp": "2026-10-11T13:47:51.650989+00:00", "action": "REPLACED_TEST_SPLIT", "generator_version": "1.1.0", "test_families": 30, "details": "Test split regenerated as v1.1.0 and never executed."}
+{"timestamp": "2026-10-12T08:34:41.939658+00:00", "action": "GENERATED_AND_LOCKED_TEST_SUPPLEMENT", "generator_version": "1.2.0", "seed": 88888, "test_supp_families": 25, "manifest_hash": "7589dcd89a26102ee56d3393f1b4253cede840766d1288114f8756fe92a0dbc0", "details": "Test supplement generated with seed 88888, hashed in manifest_v1_2.json, and strictly blinded."}
