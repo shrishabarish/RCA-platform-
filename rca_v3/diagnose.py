@@ -65,7 +65,7 @@ def diagnose(
 
     # 3. Convert input events to CloudEvent models
     cloud_events: List[CloudEvent] = []
-    valid_sources = {'cloudwatch', 'cloudtrail', 'config', 'application', 'synthetic', 'kubernetes', 'syslog', 'datadog', 'otel'}
+    valid_sources = {'cloudwatch', 'cloudtrail', 'config', 'application', 'synthetic', 'kubernetes'}
     
     event_services: Set[str] = set()
     service_earliest_times: Dict[str, str] = {}
