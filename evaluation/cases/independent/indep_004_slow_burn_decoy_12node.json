@@ -1,0 +1,216 @@
+{
+  "case_id": "indep_004_slow_burn_decoy_12node",
+  "family_id": "fam_independent",
+  "base_case_id": null,
+  "generator_version": "independent_handwritten_1.0",
+  "seed": 42,
+  "topology": {
+    "nodes": [
+      {
+        "id": "APIGateway",
+        "type": "api_gateway",
+        "label": "Edge Ingress",
+        "criticality": 0.95
+      },
+      {
+        "id": "OrderService",
+        "type": "service",
+        "label": "Order API",
+        "criticality": 0.9
+      },
+      {
+        "id": "CatalogService",
+        "type": "service",
+        "label": "Catalog API",
+        "criticality": 0.8
+      },
+      {
+        "id": "AuthService",
+        "type": "auth",
+        "label": "Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "PaymentService",
+        "type": "service",
+        "label": "Payment Gateway",
+        "criticality": 0.95
+      },
+      {
+        "id": "InventoryService",
+        "type": "service",
+        "label": "Inventory Management",
+        "criticality": 0.85
+      },
+      {
+        "id": "NotificationService",
+        "type": "service",
+        "label": "Notification Worker",
+        "criticality": 0.7
+      },
+      {
+        "id": "PostgresPrimary",
+        "type": "database",
+        "label": "Postgres DB",
+        "criticality": 0.95
+      },
+      {
+        "id": "DynamoTable",
+        "type": "database",
+        "label": "Payment Ledger",
+        "criticality": 0.95
+      },
+      {
+        "id": "RedisCache",
+        "type": "cache",
+        "label": "Product Cache",
+        "criticality": 0.8
+      },
+      {
+        "id": "K8sCluster",
+        "type": "compute",
+        "label": "App Node Pool",
+        "criticality": 0.85
+      },
+      {
+        "id": "KafkaCluster",
+        "type": "queue",
+        "label": "Event Streaming Bus",
+        "criticality": 0.9
+      }
+    ],
+    "edges": [
+      [
+        "APIGateway",
+        "OrderService"
+      ],
+      [
+        "APIGateway",
+        "CatalogService"
+      ],
+      [
+        "APIGateway",
+        "AuthService"
+      ],
+      [
+        "OrderService",
+        "PaymentService"
+      ],
+      [
+        "OrderService",
+        "InventoryService"
+      ],
+      [
+        "OrderService",
+        "PostgresPrimary"
+      ],
+      [
+        "CatalogService",
+        "RedisCache"
+      ],
+      [
+        "PaymentService",
+        "DynamoTable"
+      ],
+      [
+        "InventoryService",
+        "PostgresPrimary"
+      ],
+      [
+        "NotificationService",
+        "KafkaCluster"
+      ],
+      [
+        "OrderService",
+        "NotificationService"
+      ],
+      [
+        "OrderService",
+        "K8sCluster"
+      ],
+      [
+        "CatalogService",
+        "K8sCluster"
+      ]
+    ],
+    "topology_version": "enterprise-12node"
+  },
+  "events": [
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:05+00:00",
+      "observed_time": "2026-10-16T14:00:06+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "Latency",
+      "value": 310.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:35+00:00",
+      "observed_time": "2026-10-16T14:00:36+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "WriteThrottleEvents",
+      "value": 450.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "5xxErrorRate",
+      "value": 42.0,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "PostgresPrimary"
+    ],
+    "onset_times": {
+      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
+    },
+    "symptom_to_cause": {},
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": []
+  },
+  "perturbations": [],
+  "tags": [
+    "root_not_earliest",
+    "slow_burn",
+    "decoy"
+  ],
+  "is_hard": false,
+  "telemetry_policy": null
+}

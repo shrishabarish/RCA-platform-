@@ -125,10 +125,9 @@ class SymptomScorer:
                 # Ablation: pure 5-factor ranking_score
                 cand.combined_score = cand.ranking_score
 
-        # 3. Deterministic tie-breaking (Step 2b Parsimony):
-        # Never rank an unobserved candidate above an observed candidate that explains the same symptoms.
-        # Observed candidate strictly precedes unobserved candidate when combined_score ties.
-        candidates.sort(key=lambda c: (-c.combined_score, c.is_unobserved, c.earliest_event_time, c.service))
+        # Step 3a: Deterministic tie-breaking invariant to heartbeat presence:
+        # Sort by (-combined_score, is_unobserved, earliest_anomalous_time or earliest_event_time, service)
+        candidates.sort(key=lambda c: (-c.combined_score, c.is_unobserved, c.earliest_anomalous_time or c.earliest_event_time, c.service))
 
         # Re-assign ranks
         for idx, cand in enumerate(candidates, start=1):

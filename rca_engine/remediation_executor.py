@@ -45,13 +45,34 @@ class CloudRemediationExecutor:
         root_cause: str,
         resource_id: Optional[str] = None,
         dry_run: bool = False,
-        verdict: Optional[str] = None
+        verdict: Optional[str] = None,
+        human_approval_granted: bool = True,
+        auto_remediation_enabled: bool = False,
+        has_unobserved_ancestors: bool = False,
+        source_health_statuses: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Executes safe cloud self-healing actions matching the root cause.
-        Remediation Guard (L6): INSUFFICIENT_EVIDENCE and PROBABLE never trigger automated remediation.
-        Only CONFIRMED may trigger automated remediation.
+        Remediation Guard (Step 3c):
+        - CONFIRMED verdict only.
+        - No unobserved ancestor in causal explanation.
+        - No DEGRADED or DOWN telemetry source.
+        - Human approval required (auto-remediation disabled by default).
         """
+        # Guard 1: Auto-remediation disabled by default without explicit human approval
+        if not auto_remediation_enabled and not human_approval_granted:
+            logger.warning(f"Remediation blocked for incident {incident_id}: human approval required (auto-remediation disabled by default).")
+            return {
+                "status": "BLOCKED_BY_APPROVAL_GUARD",
+                "incident_id": incident_id,
+                "target_service": root_cause,
+                "reason": "Remediation blocked: Human approval required; auto-remediation is disabled by default.",
+                "commands_executed": [],
+                "safety_checks_passed": False,
+                "execution_logs": ["REMEDIATION GUARD: Blocked execution due to missing human approval."]
+            }
+
+        # Guard 2: Verdict must be CONFIRMED
         rca_mode = getattr(config.rca, "mode", "off").lower() if hasattr(config, "rca") else "off"
         if rca_mode == "v2" and verdict is None:
             logger.warning(f"Remediation blocked for incident {incident_id}: in v2 mode, an explicit CONFIRMED verdict is required, but verdict is None.")
@@ -77,6 +98,34 @@ class CloudRemediationExecutor:
                     "commands_executed": [],
                     "safety_checks_passed": False,
                     "execution_logs": [f"REMEDIATION GUARD: Blocked execution due to unconfirmed verdict '{v_clean}'."]
+                }
+
+        # Guard 3: No unobserved ancestor in the explanation
+        if has_unobserved_ancestors:
+            logger.warning(f"Remediation blocked for incident {incident_id}: unobserved ancestor detected in causal explanation.")
+            return {
+                "status": "BLOCKED_BY_OBSERVABILITY_GUARD",
+                "incident_id": incident_id,
+                "target_service": root_cause,
+                "reason": "Remediation blocked: Unobserved ancestor present in explanation.",
+                "commands_executed": [],
+                "safety_checks_passed": False,
+                "execution_logs": ["REMEDIATION GUARD: Blocked execution due to unobserved ancestor."]
+            }
+
+        # Guard 4: No DEGRADED or DOWN telemetry source
+        if source_health_statuses:
+            bad_sources = [s for s in source_health_statuses if str(s).upper() in ("DEGRADED", "DOWN")]
+            if bad_sources:
+                logger.warning(f"Remediation blocked for incident {incident_id}: telemetry sources {bad_sources} are degraded or down.")
+                return {
+                    "status": "BLOCKED_BY_SOURCE_HEALTH_GUARD",
+                    "incident_id": incident_id,
+                    "target_service": root_cause,
+                    "reason": f"Remediation blocked: Telemetry source health check failed ({', '.join(bad_sources)}).",
+                    "commands_executed": [],
+                    "safety_checks_passed": False,
+                    "execution_logs": [f"REMEDIATION GUARD: Blocked execution due to degraded/down sources: {bad_sources}."]
                 }
 
         start_time = datetime.now(timezone.utc)

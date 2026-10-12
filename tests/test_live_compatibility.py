@@ -438,3 +438,61 @@ def test_l7_streaming_case_event_by_event():
         )
         res = bridge.analyze(inc, mode="shadow")
         assert res["rca_shadow"]["rca_v2_top1"] == "EC2"
+
+
+def test_step3c_remediation_guards():
+    """
+    Step 3c: Remediation guard tests:
+    - CONFIRMED only
+    - No unobserved ancestor in explanation
+    - No DEGRADED source
+    - Human approval always (auto-remediation disabled by default)
+    """
+    # 1. Blocks without human approval when auto-remediation disabled
+    res_no_approval = remediation_executor.execute_remediation(
+        incident_id="inc_guard_approval",
+        root_cause="EC2",
+        verdict="CONFIRMED",
+        human_approval_granted=False,
+        auto_remediation_enabled=False
+    )
+    assert res_no_approval["status"] == "BLOCKED_BY_APPROVAL_GUARD"
+    assert res_no_approval["safety_checks_passed"] is False
+
+    # 2. Blocks if unobserved ancestor is present
+    res_unobs = remediation_executor.execute_remediation(
+        incident_id="inc_guard_unobs",
+        root_cause="EC2",
+        verdict="CONFIRMED",
+        human_approval_granted=True,
+        has_unobserved_ancestors=True
+    )
+    assert res_unobs["status"] == "BLOCKED_BY_OBSERVABILITY_GUARD"
+    assert res_unobs["safety_checks_passed"] is False
+
+    # 3. Blocks if source is DEGRADED
+    res_deg = remediation_executor.execute_remediation(
+        incident_id="inc_guard_degraded",
+        root_cause="EC2",
+        verdict="CONFIRMED",
+        human_approval_granted=True,
+        source_health_statuses=["HEALTHY", "DEGRADED"]
+    )
+    assert res_deg["status"] == "BLOCKED_BY_SOURCE_HEALTH_GUARD"
+    assert res_deg["safety_checks_passed"] is False
+
+    # 4. Success when all guards pass with human approval
+    res_pass = remediation_executor.execute_remediation(
+        incident_id="inc_guard_pass",
+        root_cause="EC2",
+        resource_id="i-test123",
+        dry_run=True,
+        verdict="CONFIRMED",
+        human_approval_granted=True,
+        auto_remediation_enabled=False,
+        has_unobserved_ancestors=False,
+        source_health_statuses=["HEALTHY", "HEALTHY"]
+    )
+    assert res_pass["status"] == "SUCCESS"
+    assert res_pass["safety_checks_passed"] is True
+

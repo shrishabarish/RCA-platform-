@@ -48,6 +48,8 @@ class RCAv3Config(BaseModel):
     max_down_sources_allowed: int = 0          # Maximum DOWN sources allowed before abstaining
     block_on_contradiction: bool = True        # Contradictions force INSUFFICIENT_EVIDENCE
     contradiction_same_candidate_only: bool = True # Two independent roots are NOT a contradiction; contradiction blocks CONFIRMED only when evidence conflicts about same candidate
+    enable_silent_upstream_guard: bool = True  # Step 3b (Exploratory): Unobserved or silent upstream dependency caps diagnosis at PROBABLE
+    clean_heartbeats: bool = True              # Step 3a: Clean normal/heartbeat telemetry before scoring and tie-breaking
 
     # Confidence Thresholds
     confidence_high_score: float = 90.0

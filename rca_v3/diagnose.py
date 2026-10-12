@@ -68,14 +68,27 @@ def diagnose(
     # 2. Extract topology nodes
     topo_nodes = getattr(topology, "nodes", []) if hasattr(topology, "nodes") else topology.get("nodes", [])
 
-    # 3. Convert input events to CloudEvent models
+    # 3. Clean-input preprocessing (Step 3a):
+    if cfg.clean_heartbeats:
+        effective_events = [
+            e for e in events
+            if (str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in {"CRITICAL", "HIGH", "MEDIUM"})
+            and (getattr(e, "metric", "") or (e.get("metric") if isinstance(e, dict) else "")).lower() != "heartbeat"
+        ]
+        if not effective_events:
+            effective_events = events
+    else:
+        effective_events = events
+
+    # Convert input events to CloudEvent models
     cloud_events: List[CloudEvent] = []
     valid_sources = {'cloudwatch', 'cloudtrail', 'config', 'application', 'synthetic', 'kubernetes'}
     
     event_services: Set[str] = set()
     service_earliest_times: Dict[str, str] = {}
+    service_earliest_anomalous_times: Dict[str, str] = {}
 
-    for i, e in enumerate(events):
+    for i, e in enumerate(effective_events):
         ev_id = getattr(e, "event_id", None) or (e.get("event_id") if isinstance(e, dict) else f"evt_{i}")
         ts_str = getattr(e, "event_time", None) or (e.get("event_time") if isinstance(e, dict) else None)
         dt = datetime.fromisoformat(ts_str) if ts_str else datetime.now(timezone.utc)
@@ -97,6 +110,12 @@ def diagnose(
             if svc not in service_earliest_times or dt < datetime.fromisoformat(service_earliest_times[svc]):
                 service_earliest_times[svc] = dt.isoformat()
 
+            # Step 3a: Track earliest anomalous time (ignoring benign heartbeats / normal telemetry)
+            is_anomalous = (sev in {Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL}) and (metric != "Heartbeat")
+            if is_anomalous:
+                if svc not in service_earliest_anomalous_times or dt < datetime.fromisoformat(service_earliest_anomalous_times[svc]):
+                    service_earliest_anomalous_times[svc] = dt.isoformat()
+
         cloud_events.append(CloudEvent(
             event_id=ev_id,
             timestamp=dt,
@@ -116,18 +135,20 @@ def diagnose(
         res = score_candidate(svc, cloud_events, graph_engine=graph_v3.engine)
         score = float(res.get("total", 0.0))
         earliest_t = service_earliest_times.get(svc, datetime.max.replace(tzinfo=timezone.utc).isoformat())
+        earliest_anom_t = service_earliest_anomalous_times.get(svc, datetime.max.replace(tzinfo=timezone.utc).isoformat())
 
         observed_candidates.append(CandidateDiagnosis(
             service=svc,
             ranking_score=score,
             combined_score=score,
             earliest_event_time=earliest_t,
+            earliest_anomalous_time=earliest_anom_t,
             rank=0,
             is_unobserved=False
         ))
 
     # Evaluate symptoms explained by observed candidates
-    observed_candidates = symptom_scorer.compute_symptom_coverage(candidates=observed_candidates, events=events)
+    observed_candidates = symptom_scorer.compute_symptom_coverage(candidates=observed_candidates, events=effective_events)
 
     # Step 2b Parsimony:
     # Identify symptoms explained by the best observed candidate(s).
@@ -136,7 +157,7 @@ def diagnose(
     if observed_candidates:
         top_obs = observed_candidates[0]
         top_observed_explained = symptom_scorer.get_explained_symptoms_for_candidate(
-            top_obs.service, top_obs.earliest_event_time, events
+            top_obs.service, top_obs.earliest_event_time, effective_events
         ) & event_services
 
     unexplained_by_top_observed = event_services - top_observed_explained
@@ -159,12 +180,12 @@ def diagnose(
         )
         if unobserved_cands:
             candidates.extend(unobserved_cands)
-            candidates = symptom_scorer.compute_symptom_coverage(candidates=candidates, events=events)
+            candidates = symptom_scorer.compute_symptom_coverage(candidates=candidates, events=effective_events)
 
     # 6. Step 2c: Multi-root separation via candidate set marginal coverage
     predicted_roots, root_hypotheses, residual_symptoms = root_selector.select_root_set(
         candidates=candidates,
-        events=events
+        events=effective_events
     )
 
     # 7. Step 2e: Principled evidence verification & verdict decisions

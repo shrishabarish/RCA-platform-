@@ -50,6 +50,7 @@ class CandidateDiagnosis(BaseModel):
     marginal_symptom_coverage: float = 0.0
     combined_score: float = 0.0           # Tie-break / ranking score
     earliest_event_time: str
+    earliest_anomalous_time: Optional[str] = None # Step 3a: Earliest anomalous event time invariant to benign heartbeats
     rank: int
     is_unobserved: bool = False           # Graph-generated candidate with no events
     expected_signals: int = 0

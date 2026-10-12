@@ -1,0 +1,156 @@
+{
+  "case_id": "indep_003_slow_burn_decoy_6node",
+  "family_id": "fam_independent",
+  "base_case_id": null,
+  "generator_version": "independent_handwritten_1.0",
+  "seed": 42,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Cluster",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Primary Table",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Worker Fleet",
+        "criticality": 0.8
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Core API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "service",
+        "label": "Web/Mobile Client",
+        "criticality": 0.6
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "real-6node"
+  },
+  "events": [
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "Latency",
+      "value": 220.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:40+00:00",
+      "observed_time": "2026-10-16T14:00:41+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "MemoryUtilization",
+      "value": 98.5,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:50+00:00",
+      "observed_time": "2026-10-16T14:00:51+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "5xxErrorRate",
+      "value": 15.0,
+      "severity": "CRITICAL"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "EC2"
+    ],
+    "onset_times": {
+      "EC2": "2026-10-16T14:00:00+00:00"
+    },
+    "symptom_to_cause": {},
+    "expected_verdict": "DIAGNOSE",
+    "incident_groups": []
+  },
+  "perturbations": [],
+  "tags": [
+    "root_not_earliest",
+    "slow_burn",
+    "decoy"
+  ],
+  "is_hard": false,
+  "telemetry_policy": null
+}

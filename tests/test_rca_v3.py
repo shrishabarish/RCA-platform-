@@ -378,3 +378,104 @@ def test_opaque_id_regression():
     assert res.top_candidate is not None
     assert res.top_candidate.service == "svc_node_01"
     assert res.verdict != Verdict.INSUFFICIENT_EVIDENCE
+
+
+def test_step3a_heartbeat_invariant_ordering(base_topology):
+    """
+    Step 3a test:
+    Deterministic ordering that does NOT depend on heartbeat presence.
+    Injecting benign heartbeats into idle services or candidates must preserve candidate rankings.
+    """
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    base_events = [
+        {
+            "event_id": "evt_dynamo_1",
+            "service": "DynamoDB",
+            "event_time": (t0 + timedelta(seconds=10)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "CRITICAL",
+            "metric": "WriteThrottleEvents"
+        },
+        {
+            "event_id": "evt_api_1",
+            "service": "API",
+            "event_time": (t0 + timedelta(seconds=20)).isoformat(),
+            "source": "application",
+            "severity": "HIGH",
+            "metric": "HTTP500"
+        }
+    ]
+
+    res_base = diagnose(base_events, base_topology)
+
+    # Add benign heartbeats earlier in time to idle services and DynamoDB
+    events_with_heartbeats = list(base_events) + [
+        {
+            "event_id": "hb_ec2",
+            "service": "EC2",
+            "event_time": (t0 - timedelta(seconds=60)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "Heartbeat"
+        },
+        {
+            "event_id": "hb_dynamo",
+            "service": "DynamoDB",
+            "event_time": (t0 - timedelta(seconds=30)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "Heartbeat"
+        },
+        {
+            "event_id": "hb_worker",
+            "service": "Worker",
+            "event_time": (t0 - timedelta(seconds=15)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "Heartbeat"
+        }
+    ]
+
+    res_hb = diagnose(events_with_heartbeats, base_topology)
+
+    # Ordering of top candidate must be identical
+    assert res_base.top_candidate.service == res_hb.top_candidate.service == "DynamoDB"
+    assert [c.service for c in res_base.candidate_diagnoses[:2]] == [c.service for c in res_hb.candidate_diagnoses[:2]]
+
+
+def test_step3b_silent_upstream_caps_at_probable(base_topology):
+    """
+    Step 3b test:
+    When a candidate has an unobserved or silent upstream ancestor in the failure propagation graph,
+    or the candidate itself has no anomalous events, the verdict caps at PROBABLE.
+    """
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    # API depends on DynamoDB. If API has errors but DynamoDB is silent/unobserved upstream,
+    # API cannot be CONFIRMED (it must cap at PROBABLE).
+    api_events = [
+        {
+            "event_id": "evt_api_1",
+            "service": "API",
+            "event_time": (t0 + timedelta(seconds=5)).isoformat(),
+            "source": "application",
+            "severity": "CRITICAL",
+            "metric": "HTTP500"
+        },
+        {
+            "event_id": "evt_app_1",
+            "service": "Application",
+            "event_time": (t0 + timedelta(seconds=10)).isoformat(),
+            "source": "application",
+            "severity": "HIGH",
+            "metric": "Latency"
+        }
+    ]
+
+    cfg = RCAv3Config(enable_silent_upstream_guard=True)
+    res = diagnose(api_events, base_topology, config=cfg)
+
+    # API has unobserved upstream dependencies (DynamoDB, Auth, EC2)
+    # Therefore, verdict cannot be CONFIRMED; it caps at PROBABLE
+    assert res.top_candidate.service == "API"
+    assert res.verdict == Verdict.PROBABLE
+    assert "unobserved or silent upstream ancestor" in res.explanation.verdict_reason

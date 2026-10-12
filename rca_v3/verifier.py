@@ -203,8 +203,29 @@ class EvidenceVerifierV3:
             # 3. Margin pass
             margin_pass = (margin >= self.config.min_margin_confirmed or len(candidates) == 1)
 
-            # 4. Observability: top candidate must NOT be unobserved, nor have unobserved ancestors
-            observed_pass = (not top_cand.is_unobserved)
+            # 4. Observability: top candidate must have direct anomalous telemetry and NOT be unobserved
+            top_has_anom = any(
+                (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) == top_svc
+                and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
+                and (getattr(e, "metric", "") or (e.get("metric") if isinstance(e, dict) else "")) != "Heartbeat"
+                for e in events
+            )
+            observed_pass = (not top_cand.is_unobserved) and top_has_anom
+
+            # Step 3b (Exploratory): Unobserved or silent upstream dependency caps diagnosis at PROBABLE
+            unobserved_ancestor_pass = True
+            if self.config.enable_silent_upstream_guard:
+                ancestors = self.graph_v3.get_all_upstream_dependencies(top_svc)
+                for anc in ancestors:
+                    anc_has_anom = any(
+                        (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) == anc
+                        and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
+                        and (getattr(e, "metric", "") or (e.get("metric") if isinstance(e, dict) else "")) != "Heartbeat"
+                        for e in events
+                    )
+                    if not anc_has_anom:
+                        unobserved_ancestor_pass = False
+                        break
 
             # 5. Source DOWN on candidate or ancestors prevents CONFIRMED
             candidate_source_down = any(
@@ -216,7 +237,7 @@ class EvidenceVerifierV3:
             # 6. Contradictions pass
             contra_pass = (len(effective_contradictions) == 0)
 
-            if score_pass and cov_pass and margin_pass and observed_pass and source_down_pass and contra_pass:
+            if score_pass and cov_pass and margin_pass and observed_pass and unobserved_ancestor_pass and source_down_pass and contra_pass:
                 verdict = Verdict.CONFIRMED
                 reason = (f"Confirmed: Candidate '{top_svc}' scored {top_cand.combined_score:.1f} "
                           f"with margin {margin:.1f} and coverage {top_cand.coverage*100:.1f}%.")
@@ -231,6 +252,8 @@ class EvidenceVerifierV3:
                     fail_reasons.append(f"margin {margin:.1f} < {self.config.min_margin_confirmed}")
                 if not observed_pass:
                     fail_reasons.append("candidate is unobserved")
+                if not unobserved_ancestor_pass:
+                    fail_reasons.append("candidate has unobserved or silent upstream ancestor in causal graph")
                 if not source_down_pass:
                     fail_reasons.append("telemetry source for candidate or ancestor is DOWN")
                 if not contra_pass:
