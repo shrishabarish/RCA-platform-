@@ -1,15 +1,15 @@
 {
   "case_id": "indep_005_slow_burn_decoy_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,32 +138,42 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:05+00:00",
-      "observed_time": "2026-10-16T14:00:06+00:00",
+      "event_time": "2026-10-16T14:00:07+00:00",
+      "observed_time": "2026-10-16T14:00:08+00:00",
       "source": "otel",
-      "service": "APIGateway",
-      "metric": "Latency",
-      "value": 310.0,
-      "severity": "HIGH"
+      "service": "RedisCache",
+      "metric": "FragmentationRatio",
+      "value": 1.85,
+      "severity": "MEDIUM"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:35+00:00",
-      "observed_time": "2026-10-16T14:00:36+00:00",
-      "source": "cloudwatch",
-      "service": "PostgresPrimary",
-      "metric": "WriteThrottleEvents",
-      "value": 450.0,
-      "severity": "CRITICAL"
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
+      "source": "application",
+      "service": "CatalogService",
+      "metric": "CacheMissRate",
+      "value": 65.0,
+      "severity": "HIGH"
     },
     {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:00:48+00:00",
+      "observed_time": "2026-10-16T14:00:49+00:00",
       "source": "cloudwatch",
-      "service": "OrderService",
+      "service": "RedisCache",
+      "metric": "OOMKillCount",
+      "value": 1.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:52+00:00",
+      "observed_time": "2026-10-16T14:00:53+00:00",
+      "source": "otel",
+      "service": "CatalogService",
       "metric": "5xxErrorRate",
-      "value": 42.0,
+      "value": 28.0,
       "severity": "CRITICAL"
     }
   ],
@@ -196,21 +206,24 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "PostgresPrimary"
+      "RedisCache"
     ],
-    "onset_times": {
-      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "RedisCache records early memory fragmentation index warning at t=7s (ratio=1.8); downstream CatalogService latency degrades only when RedisCache eviction halts at t=48s.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "root_not_earliest"
+  ],
   "tags": [
     "root_not_earliest",
-    "slow_burn",
-    "decoy"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "RedisCache records early memory fragmentation index warning at t=7s (ratio=1.8); downstream CatalogService latency degrades only when RedisCache eviction halts at t=48s.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

@@ -1,15 +1,15 @@
 {
-  "case_id": "indep_012_idle_healthy_control_6node",
-  "family_id": "fam_independent",
+  "case_id": "indep_023_source_down_abstain_6node",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Cluster",
+        "label": "EC2 Compute Fleet",
         "criticality": 0.9
       },
       {
@@ -21,7 +21,7 @@
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Auth Microservice",
         "criticality": 0.9
       },
       {
@@ -39,8 +39,8 @@
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Mobile Client",
-        "criticality": 0.6
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
       }
     ],
     "edges": [
@@ -80,43 +80,18 @@
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:20+00:00",
       "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "CPUUtilization",
-      "value": 99.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:25+00:00",
-      "observed_time": "2026-10-16T14:00:26+00:00",
-      "source": "cloudwatch",
-      "service": "API",
-      "metric": "Latency",
-      "value": 450.0,
+      "source": "application",
+      "service": "Worker",
+      "metric": "ErrorRate",
+      "value": 45.0,
       "severity": "HIGH"
     }
   ],
   "source_health": [
     {
-      "source": "cloudwatch",
-      "timestamp": "2026-10-16T14:00:00+00:00",
-      "status": "HEALTHY"
-    },
-    {
-      "source": "cloudtrail",
-      "timestamp": "2026-10-16T14:00:00+00:00",
-      "status": "HEALTHY"
-    },
-    {
       "source": "otel",
       "timestamp": "2026-10-16T14:00:00+00:00",
-      "status": "HEALTHY"
-    },
-    {
-      "source": "syslog",
-      "timestamp": "2026-10-16T14:00:00+00:00",
-      "status": "HEALTHY"
+      "status": "DOWN"
     },
     {
       "source": "application",
@@ -128,17 +103,22 @@
     "true_root_causes": [
       "EC2"
     ],
-    "onset_times": {
-      "EC2": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
+    "expected_verdict": "ABSTAIN",
+    "acceptable_verdict_level": "ABSTAIN",
+    "identifiability_note": "Source health record marks otel DOWN covering EC2; unobservable root telemetry forces abstention.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "source_down"
+  ],
   "tags": [
-    "idle_control"
+    "source_down",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Source health record marks otel DOWN covering EC2; unobservable root telemetry forces abstention.",
+  "acceptable_verdict_level": "ABSTAIN"
 }

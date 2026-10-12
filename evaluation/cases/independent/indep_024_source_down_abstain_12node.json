@@ -1,15 +1,15 @@
 {
   "case_id": "indep_024_source_down_abstain_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,12 +138,12 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "otel",
       "service": "OrderService",
-      "metric": "Latency",
-      "value": 350.0,
+      "metric": "DatabaseTimeout",
+      "value": 50.0,
       "severity": "HIGH"
     }
   ],
@@ -163,18 +163,22 @@
     "true_root_causes": [
       "PostgresPrimary"
     ],
-    "onset_times": {
-      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
+    "acceptable_verdict_level": "ABSTAIN",
+    "identifiability_note": "Primary metrics collector DOWN prevents evidence confirmation.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "source_down"
+  ],
   "tags": [
     "source_down",
-    "abstain_required"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Primary metrics collector DOWN prevents evidence confirmation.",
+  "acceptable_verdict_level": "ABSTAIN"
 }

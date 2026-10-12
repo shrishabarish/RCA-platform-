@@ -1,15 +1,15 @@
 {
   "case_id": "indep_026_contradiction_blamed_healthy_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -140,6 +140,16 @@
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:20+00:00",
       "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "DatabaseDeadBlame",
+      "value": 100.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
       "metric": "Heartbeat",
@@ -147,14 +157,14 @@
       "severity": "LOW"
     },
     {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
-      "source": "otel",
-      "service": "OrderService",
-      "metric": "ErrorRate",
-      "value": 50.0,
-      "severity": "CRITICAL"
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -188,18 +198,22 @@
     "true_root_causes": [
       "PostgresPrimary"
     ],
-    "onset_times": {
-      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "ABSTAIN",
+    "acceptable_verdict_level": "ABSTAIN",
+    "identifiability_note": "Direct health verification on PostgresPrimary invalidates caller blame, triggering contradiction abstention.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "contradictory"
+  ],
   "tags": [
-    "contradiction",
-    "abstain_required"
+    "contradictory",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Direct health verification on PostgresPrimary invalidates caller blame, triggering contradiction abstention.",
+  "acceptable_verdict_level": "ABSTAIN"
 }

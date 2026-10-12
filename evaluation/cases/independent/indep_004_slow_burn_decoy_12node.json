@@ -1,15 +1,15 @@
 {
   "case_id": "indep_004_slow_burn_decoy_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -140,26 +140,36 @@
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:05+00:00",
       "observed_time": "2026-10-16T14:00:06+00:00",
-      "source": "otel",
-      "service": "APIGateway",
-      "metric": "Latency",
-      "value": 310.0,
-      "severity": "HIGH"
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "ConnectionPoolUtilization",
+      "value": 85.0,
+      "severity": "MEDIUM"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:35+00:00",
-      "observed_time": "2026-10-16T14:00:36+00:00",
-      "source": "cloudwatch",
-      "service": "PostgresPrimary",
-      "metric": "WriteThrottleEvents",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "otel",
+      "service": "OrderService",
+      "metric": "ResponseTime",
       "value": 450.0,
-      "severity": "CRITICAL"
+      "severity": "HIGH"
     },
     {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:00:45+00:00",
       "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "DeadlockDetected",
+      "value": 1.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:50+00:00",
+      "observed_time": "2026-10-16T14:00:51+00:00",
       "source": "cloudwatch",
       "service": "OrderService",
       "metric": "5xxErrorRate",
@@ -198,19 +208,22 @@
     "true_root_causes": [
       "PostgresPrimary"
     ],
-    "onset_times": {
-      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "PostgresPrimary connection pool usage telemetry climbs steadily starting at t=5s (85% pool used); OrderService errors cite SQL connection acquisition timeout, while sibling cache RedisCache emits healthy heartbeats.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "root_not_earliest"
+  ],
   "tags": [
     "root_not_earliest",
-    "slow_burn",
-    "decoy"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "PostgresPrimary connection pool usage telemetry climbs steadily starting at t=5s (85% pool used); OrderService errors cite SQL connection acquisition timeout, while sibling cache RedisCache emits healthy heartbeats.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

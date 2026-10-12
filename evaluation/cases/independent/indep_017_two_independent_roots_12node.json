@@ -1,15 +1,15 @@
 {
   "case_id": "indep_017_two_independent_roots_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,32 +138,42 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
-      "service": "RedisCache",
-      "metric": "CacheHitRatio",
-      "value": 1.5,
+      "service": "PostgresPrimary",
+      "metric": "DeadlockCount",
+      "value": 5.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:22+00:00",
-      "observed_time": "2026-10-16T14:00:23+00:00",
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
       "source": "cloudwatch",
-      "service": "DynamoTable",
-      "metric": "WriteThrottleEvents",
-      "value": 600.0,
+      "service": "RedisCache",
+      "metric": "OOMKillCount",
+      "value": 1.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
-      "source": "cloudwatch",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "otel",
       "service": "OrderService",
       "metric": "5xxErrorRate",
-      "value": 25.0,
+      "value": 30.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:22+00:00",
+      "observed_time": "2026-10-16T14:00:23+00:00",
+      "source": "otel",
+      "service": "CatalogService",
+      "metric": "5xxErrorRate",
+      "value": 28.0,
       "severity": "HIGH"
     }
   ],
@@ -196,22 +206,25 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "DynamoTable",
+      "PostgresPrimary",
       "RedisCache"
     ],
-    "onset_times": {
-      "DynamoTable": "2026-10-16T14:00:00+00:00",
-      "RedisCache": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "PostgresPrimary deadlocks order checkout while RedisCache OOM crashes product browsing; disjoint root causes.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "two_independent_roots"
+  ],
   "tags": [
-    "multi_root",
-    "independent_roots"
+    "two_independent_roots",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "PostgresPrimary deadlocks order checkout while RedisCache OOM crashes product browsing; disjoint root causes.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

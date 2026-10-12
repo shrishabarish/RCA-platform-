@@ -1,15 +1,15 @@
 {
   "case_id": "indep_008_silent_root_6node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Cluster",
+        "label": "EC2 Compute Fleet",
         "criticality": 0.9
       },
       {
@@ -21,7 +21,7 @@
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Auth Microservice",
         "criticality": 0.9
       },
       {
@@ -39,8 +39,8 @@
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Mobile Client",
-        "criticality": 0.6
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
       }
     ],
     "edges": [
@@ -78,23 +78,43 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "ErrorRate",
-      "value": 35.0,
-      "severity": "HIGH"
+      "metric": "DatabaseTimeout_Dynamo",
+      "value": 60.0,
+      "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:35+00:00",
-      "observed_time": "2026-10-16T14:00:36+00:00",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
       "source": "cloudwatch",
       "service": "Worker",
-      "metric": "ErrorRate",
-      "value": 50.0,
-      "severity": "HIGH"
+      "metric": "DatabaseWriteTimeout",
+      "value": 40.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_ec2",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_auth",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -128,18 +148,22 @@
     "true_root_causes": [
       "DynamoDB"
     ],
-    "onset_times": {
-      "DynamoDB": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "PROBABLE only",
+    "identifiability_note": "Both API and Worker record critical timeouts addressed to DynamoDB endpoints. Competing dependencies EC2 and Auth emit verified healthy heartbeats, uniquely singling out DynamoDB.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "silent_root"
+  ],
   "tags": [
     "silent_root",
-    "unobserved_root"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Both API and Worker record critical timeouts addressed to DynamoDB endpoints. Competing dependencies EC2 and Auth emit verified healthy heartbeats, uniquely singling out DynamoDB.",
+  "acceptable_verdict_level": "PROBABLE only"
 }

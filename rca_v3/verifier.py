@@ -139,29 +139,47 @@ class EvidenceVerifierV3:
                                 involved_services=[top_svc, c2_svc],
                                 severity="CRITICAL"
                             ))
-        else:
-            # Principled Step 2a Check: Real contradiction format can represent
-            # (root looks healthy while dependents blame it)
-            # If top candidate has zero anomalies (only healthy baseline/quiet) yet dependents report critical errors blaming it
-            top_has_anomalies = any(
-                (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) == top_svc
-                and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
-                for e in events
+
+        # Check C2 (Step 3a): Root healthy while dependents blame it
+        # Principled Step 2a / Step 3a Check: Real contradiction format can represent
+        # (root looks healthy while dependents blame it)
+        # If a candidate or upstream service emits healthy baseline telemetry (has events, but zero anomalies)
+        # while downstream dependents report critical failures blaming it:
+        for node in topology_nodes:
+            svc_name = getattr(node, "id", None) or (node.get("id") if isinstance(node, dict) else str(node))
+            node_evs = [
+                e for e in events
+                if (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) == svc_name
+            ]
+            if not node_evs:
+                continue
+            node_has_anomalies = any(
+                str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
+                and (getattr(e, "metric", "") or (e.get("metric") if isinstance(e, dict) else "")).lower() != "heartbeat"
+                for e in node_evs
             )
-            dependents = self.graph_v3.get_all_downstream_dependents(top_svc)
-            dependents_blaming = any(
-                (getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)) in dependents
-                and str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper() in ("CRITICAL", "HIGH")
-                for e in events
-            )
-            # If top candidate is observed and looks healthy/quiet while dependents blame it:
-            if (not top_cand.is_unobserved) and (not top_has_anomalies) and dependents_blaming and any(ev.state == EvidenceState.QUIET for ev in top_evidence):
+            if node_has_anomalies:
+                continue
+
+            dependents = self.graph_v3.get_all_downstream_dependents(svc_name)
+            blamed_by_dependent = False
+            for e in events:
+                e_svc = getattr(e, "service", None) or (e.get("service") if isinstance(e, dict) else None)
+                e_sev = str(getattr(e, "severity", "") or (e.get("severity") if isinstance(e, dict) else "")).upper()
+                e_metric = str(getattr(e, "metric", "") or (e.get("metric") if isinstance(e, dict) else "")).lower()
+                if e_svc in dependents and e_sev in ("CRITICAL", "HIGH"):
+                    if svc_name.lower() in e_metric or svc_name == top_svc:
+                        blamed_by_dependent = True
+                        break
+
+            if blamed_by_dependent:
                 contradictions.append(Contradiction(
                     contradiction_type="ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME",
-                    description=f"Contradiction: Candidate '{top_svc}' telemetry indicates healthy/quiet state while downstream dependents report critical failures.",
-                    involved_services=[top_svc],
+                    description=f"Contradiction: Candidate '{svc_name}' telemetry indicates healthy baseline signals while downstream dependents report critical failures blaming it.",
+                    involved_services=[svc_name],
                     severity="CRITICAL"
                 ))
+                break
 
         # Check D: Ancestor source DOWN
         # "source DOWN for any source that carries signals for the candidate or its ancestors prevents CONFIRMED"

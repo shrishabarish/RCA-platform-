@@ -1,15 +1,15 @@
 {
   "case_id": "indep_003_slow_burn_decoy_6node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Cluster",
+        "label": "EC2 Compute Fleet",
         "criticality": 0.9
       },
       {
@@ -21,7 +21,7 @@
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Auth Microservice",
         "criticality": 0.9
       },
       {
@@ -39,8 +39,8 @@
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Mobile Client",
-        "criticality": 0.6
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
       }
     ],
     "edges": [
@@ -78,33 +78,63 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:00:06+00:00",
+      "observed_time": "2026-10-16T14:00:07+00:00",
       "source": "cloudwatch",
-      "service": "API",
-      "metric": "Latency",
-      "value": 220.0,
-      "severity": "HIGH"
+      "service": "EC2",
+      "metric": "CPULoad",
+      "value": 7.8,
+      "severity": "MEDIUM"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "MemoryUtilization",
-      "value": 98.5,
-      "severity": "CRITICAL"
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
+      "source": "application",
+      "service": "Application",
+      "metric": "GatewayTimeout",
+      "value": 14.0,
+      "severity": "HIGH"
     },
     {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:00:50+00:00",
       "observed_time": "2026-10-16T14:00:51+00:00",
       "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "CPULoad",
+      "value": 28.5,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:55+00:00",
+      "observed_time": "2026-10-16T14:00:56+00:00",
+      "source": "cloudwatch",
       "service": "API",
       "metric": "5xxErrorRate",
-      "value": 15.0,
+      "value": 30.0,
       "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_dynamo",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_auth",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -138,19 +168,22 @@
     "true_root_causes": [
       "EC2"
     ],
-    "onset_times": {
-      "EC2": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "EC2 logs CPU load average creep starting at t=6s (load=7.8); Auth and DynamoDB emit verified healthy heartbeats confirming that EC2 is the singular failing backend explaining Application timeouts.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "root_not_earliest"
+  ],
   "tags": [
     "root_not_earliest",
-    "slow_burn",
-    "decoy"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "EC2 logs CPU load average creep starting at t=6s (load=7.8); Auth and DynamoDB emit verified healthy heartbeats confirming that EC2 is the singular failing backend explaining Application timeouts.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

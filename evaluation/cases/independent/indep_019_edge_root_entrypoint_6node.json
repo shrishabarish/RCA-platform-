@@ -1,0 +1,159 @@
+{
+  "case_id": "indep_019_edge_root_entrypoint_6node",
+  "family_id": "indep_eval",
+  "base_case_id": null,
+  "generator_version": "independent_handwritten_1.0",
+  "seed": 20261016,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Compute Fleet",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Primary Table",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth Microservice",
+        "criticality": 0.9
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Worker Fleet",
+        "criticality": 0.8
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "Core API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "service",
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "real-6node"
+  },
+  "events": [
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "application",
+      "service": "Application",
+      "metric": "RequestFloodVolume",
+      "value": 10000.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "RateLimitThrottling",
+      "value": 250.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "QueueSaturated",
+      "value": 95.0,
+      "severity": "HIGH"
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "Application"
+    ],
+    "onset_times": {},
+    "symptom_to_cause": {},
+    "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "Application ingress client bug generates excessive flood traffic (10,000 req/sec) causing downstream API rate-limit errors and Worker saturation. The root is the entrypoint itself, not the downstream callees.",
+    "incident_groups": []
+  },
+  "perturbations": [
+    "edge_root"
+  ],
+  "tags": [
+    "edge_root",
+    "independent_test"
+  ],
+  "is_hard": false,
+  "telemetry_policy": null,
+  "identifiability_note": "Application ingress client bug generates excessive flood traffic (10,000 req/sec) causing downstream API rate-limit errors and Worker saturation. The root is the entrypoint itself, not the downstream callees.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
+}

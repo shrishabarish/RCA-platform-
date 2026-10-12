@@ -1,15 +1,15 @@
 {
-  "case_id": "indep_023_source_down_abstain_12node",
-  "family_id": "fam_independent",
+  "case_id": "indep_021_edge_root_entrypoint_12node",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,12 +138,32 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "otel",
+      "service": "APIGateway",
+      "metric": "TLSTerminationFailure",
+      "value": 100.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "Latency",
-      "value": 350.0,
+      "metric": "ClientConnectionReset",
+      "value": 70.0,
+      "severity": "HIGH"
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:18+00:00",
+      "observed_time": "2026-10-16T14:00:19+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "ClientConnectionReset",
+      "value": 50.0,
       "severity": "HIGH"
     }
   ],
@@ -151,30 +171,49 @@
     {
       "source": "cloudwatch",
       "timestamp": "2026-10-16T14:00:00+00:00",
-      "status": "DOWN"
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
     },
     {
       "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
       "timestamp": "2026-10-16T14:00:00+00:00",
       "status": "HEALTHY"
     }
   ],
   "ground_truth": {
     "true_root_causes": [
-      "PostgresPrimary"
+      "APIGateway"
     ],
-    "onset_times": {
-      "PostgresPrimary": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "ABSTAIN",
+    "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "APIGateway TLS termination certificate failure initiates all downstream communication drops.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "edge_root"
+  ],
   "tags": [
-    "source_down",
-    "abstain_required"
+    "edge_root",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "APIGateway TLS termination certificate failure initiates all downstream communication drops.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

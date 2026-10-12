@@ -479,3 +479,82 @@ def test_step3b_silent_upstream_caps_at_probable(base_topology):
     assert res.top_candidate.service == "API"
     assert res.verdict == Verdict.PROBABLE
     assert "unobserved or silent upstream ancestor" in res.explanation.verdict_reason
+
+
+def test_step3a_contradiction_blamed_healthy(base_topology):
+    """
+    Step 3a test:
+    Candidate that emits healthy baseline telemetry while downstream dependents report critical failures
+    triggers ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME and abstains with INSUFFICIENT_EVIDENCE.
+    """
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    # DynamoDB emits only healthy LOW baseline signals, but API blames it with critical 500s
+    events = [
+        {
+            "event_id": "hb_dynamo",
+            "service": "DynamoDB",
+            "event_time": t0.isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "RoutineHealthCheck"
+        },
+        {
+            "event_id": "evt_api",
+            "service": "API",
+            "event_time": (t0 + timedelta(seconds=10)).isoformat(),
+            "source": "application",
+            "severity": "CRITICAL",
+            "metric": "DynamoDBConnectionError"
+        }
+    ]
+    res = diagnose(events, base_topology)
+    assert res.verdict == Verdict.INSUFFICIENT_EVIDENCE
+    assert any(c.contradiction_type == "ROOT_HEALTHY_WHILE_DEPENDENTS_BLAME" for c in res.contradictions)
+
+
+def test_step3b_rca_v3h_hybrid(base_topology):
+    """
+    Step 3b test:
+    rca_v3h hybrid engine combines CurrentScorer_Clean ranking with rca_v3 verifier.
+    """
+    from rca_v3.hybrid import diagnose_hybrid
+
+    t0 = datetime(2026, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
+    events = [
+        {
+            "event_id": "evt_dynamo",
+            "service": "DynamoDB",
+            "event_time": t0.isoformat(),
+            "source": "cloudwatch",
+            "severity": "CRITICAL",
+            "metric": "WriteThrottleEvents"
+        },
+        {
+            "event_id": "evt_dynamo_cpu",
+            "service": "DynamoDB",
+            "event_time": t0.isoformat(),
+            "source": "cloudwatch",
+            "severity": "HIGH",
+            "metric": "CPUUtilization"
+        },
+        {
+            "event_id": "evt_api",
+            "service": "API",
+            "event_time": (t0 + timedelta(seconds=10)).isoformat(),
+            "source": "application",
+            "severity": "HIGH",
+            "metric": "HTTP500"
+        },
+        {
+            "event_id": "hb_ec2",
+            "service": "EC2",
+            "event_time": (t0 - timedelta(seconds=30)).isoformat(),
+            "source": "cloudwatch",
+            "severity": "LOW",
+            "metric": "Heartbeat"
+        }
+    ]
+    res = diagnose_hybrid(events, base_topology)
+    assert res.top_candidate is not None
+    assert res.top_candidate.service == "DynamoDB"
+    assert res.verdict == Verdict.CONFIRMED

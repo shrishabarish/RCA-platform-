@@ -28,9 +28,14 @@ class EvidenceEvaluator:
         # Determine node type from topology
         node_type = "service"
         for n in topology_nodes:
-            n_id = getattr(n, "id", None) or (n.get("id") if isinstance(n, dict) else str(n))
+            if isinstance(n, dict):
+                n_id = n.get("id") or n.get("node_id")
+                n_type = n.get("type", "service")
+            else:
+                n_id = getattr(n, "id", None) or getattr(n, "node_id", str(n))
+                n_type = getattr(n, "type", "service")
             if n_id == service:
-                node_type = getattr(n, "type", "service") or (n.get("type", "service") if isinstance(n, dict) else "service")
+                node_type = n_type
                 break
 
         expected_signals = self.policy.get_expected_signals_for_node(service, node_type)

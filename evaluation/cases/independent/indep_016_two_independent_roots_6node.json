@@ -1,15 +1,15 @@
 {
   "case_id": "indep_016_two_independent_roots_6node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Cluster",
+        "label": "EC2 Compute Fleet",
         "criticality": 0.9
       },
       {
@@ -21,7 +21,7 @@
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Auth Microservice",
         "criticality": 0.9
       },
       {
@@ -39,8 +39,8 @@
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Mobile Client",
-        "criticality": 0.6
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
       }
     ],
     "edges": [
@@ -78,22 +78,32 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "WriteThrottleEvents",
-      "value": 310.0,
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "application",
+      "service": "Auth",
+      "metric": "TokenVerificationFailure",
+      "value": 80.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:22+00:00",
-      "observed_time": "2026-10-16T14:00:23+00:00",
+      "event_time": "2026-10-16T14:00:16+00:00",
+      "observed_time": "2026-10-16T14:00:17+00:00",
       "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "MemoryUtilization",
-      "value": 96.0,
+      "service": "DynamoDB",
+      "metric": "StoragePartitionUnreachable",
+      "value": 1.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "5xxErrorRate",
+      "value": 50.0,
       "severity": "CRITICAL"
     }
   ],
@@ -126,22 +136,25 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "DynamoDB",
-      "EC2"
+      "Auth",
+      "DynamoDB"
     ],
-    "onset_times": {
-      "DynamoDB": "2026-10-16T14:00:00+00:00",
-      "EC2": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "CONFIRMED allowed",
+    "identifiability_note": "Auth reports certificate signing error while DynamoDB reports network drop; both are independent causal origins.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "two_independent_roots"
+  ],
   "tags": [
-    "multi_root",
-    "independent_roots"
+    "two_independent_roots",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Auth reports certificate signing error while DynamoDB reports network drop; both are independent causal origins.",
+  "acceptable_verdict_level": "CONFIRMED allowed"
 }

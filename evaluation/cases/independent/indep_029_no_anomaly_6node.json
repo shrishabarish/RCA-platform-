@@ -1,15 +1,15 @@
 {
-  "case_id": "indep_028_clear_with_heartbeats_6node",
-  "family_id": "fam_independent",
+  "case_id": "indep_029_no_anomaly_6node",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "EC2",
         "type": "compute",
-        "label": "EC2 Compute Cluster",
+        "label": "EC2 Compute Fleet",
         "criticality": 0.9
       },
       {
@@ -21,7 +21,7 @@
       {
         "id": "Auth",
         "type": "auth",
-        "label": "Auth Service",
+        "label": "Auth Microservice",
         "criticality": 0.9
       },
       {
@@ -39,8 +39,8 @@
       {
         "id": "Application",
         "type": "service",
-        "label": "Web/Mobile Client",
-        "criticality": 0.6
+        "label": "Web/Client Ingress",
+        "criticality": 0.7
       }
     ],
     "edges": [
@@ -77,9 +77,29 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
+      "event_id": "hb_6_EC2",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_6_DynamoDB",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_6_Auth",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
@@ -87,9 +107,9 @@
       "severity": "LOW"
     },
     {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
+      "event_id": "hb_6_Worker",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "Worker",
       "metric": "Heartbeat",
@@ -97,24 +117,24 @@
       "severity": "LOW"
     },
     {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "CPUUtilization",
-      "value": 99.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_04",
-      "event_time": "2026-10-16T14:00:25+00:00",
-      "observed_time": "2026-10-16T14:00:26+00:00",
+      "event_id": "hb_6_API",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "Latency",
-      "value": 400.0,
-      "severity": "HIGH"
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_6_Application",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -145,20 +165,23 @@
     }
   ],
   "ground_truth": {
-    "true_root_causes": [
-      "EC2"
-    ],
-    "onset_times": {
-      "EC2": "2026-10-16T14:00:00+00:00"
-    },
+    "true_root_causes": [],
+    "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
+    "expected_verdict": "ABSTAIN",
+    "acceptable_verdict_level": "ABSTAIN",
+    "identifiability_note": "Quiet timeline contradiction QUIET_TIMELINE_NO_ANOMALY fires; engine must abstain from hallucinating any root cause.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "no_anomaly"
+  ],
   "tags": [
-    "heartbeat_invariance"
+    "no_anomaly",
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "Quiet timeline contradiction QUIET_TIMELINE_NO_ANOMALY fires; engine must abstain from hallucinating any root cause.",
+  "acceptable_verdict_level": "ABSTAIN"
 }

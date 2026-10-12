@@ -37,6 +37,8 @@ class GroundTruth(BaseModel):
     onset_times: Dict[str, str] = Field(default_factory=dict)
     symptom_to_cause: Dict[str, str] = Field(default_factory=dict)
     expected_verdict: str = "DIAGNOSE"  # DIAGNOSE or ABSTAIN
+    acceptable_verdict_level: Optional[str] = "CONFIRMED"  # CONFIRMED or PROBABLE
+    identifiability_note: Optional[str] = None
     incident_groups: List[List[str]] = Field(default_factory=list)  # Groups of event IDs or services representing distinct true incidents
 
 
@@ -54,4 +56,6 @@ class EvaluationCase(BaseModel):
     tags: List[str] = Field(default_factory=list)
     is_hard: bool = False
     telemetry_policy: Optional[Dict[str, Any]] = None
+    identifiability_note: Optional[str] = None
+    acceptable_verdict_level: Optional[str] = None
 

@@ -1,15 +1,15 @@
 {
   "case_id": "indep_010_silent_root_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,23 +138,33 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
-      "source": "cloudwatch",
-      "service": "NotificationService",
-      "metric": "QueueDepth",
-      "value": 15000.0,
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "otel",
+      "service": "APIGateway",
+      "metric": "AuthServiceTimeout",
+      "value": 75.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
       "service": "OrderService",
-      "metric": "ErrorRate",
-      "value": 12.0,
-      "severity": "HIGH"
+      "metric": "AuthTokenVerificationError",
+      "value": 60.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_db",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -186,20 +196,24 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "KafkaCluster"
+      "AuthService"
     ],
-    "onset_times": {
-      "KafkaCluster": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "PROBABLE only",
+    "identifiability_note": "APIGateway and OrderService explicitly fail with token validation timeout addressed to AuthService. Backend database nodes PostgresPrimary and DynamoTable emit normal healthy telemetry.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "silent_root"
+  ],
   "tags": [
     "silent_root",
-    "unobserved_root"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "APIGateway and OrderService explicitly fail with token validation timeout addressed to AuthService. Backend database nodes PostgresPrimary and DynamoTable emit normal healthy telemetry.",
+  "acceptable_verdict_level": "PROBABLE only"
 }

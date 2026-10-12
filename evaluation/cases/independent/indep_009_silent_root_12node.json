@@ -1,15 +1,15 @@
 {
   "case_id": "indep_009_silent_root_12node",
-  "family_id": "fam_independent",
+  "family_id": "indep_eval",
   "base_case_id": null,
   "generator_version": "independent_handwritten_1.0",
-  "seed": 42,
+  "seed": 20261016,
   "topology": {
     "nodes": [
       {
         "id": "APIGateway",
         "type": "api_gateway",
-        "label": "Edge Ingress",
+        "label": "Edge Ingress Gateway",
         "criticality": 0.95
       },
       {
@@ -138,23 +138,43 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
       "source": "cloudwatch",
-      "service": "NotificationService",
-      "metric": "QueueDepth",
-      "value": 15000.0,
+      "service": "OrderService",
+      "metric": "DBConnectionFailed",
+      "value": 80.0,
       "severity": "CRITICAL"
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
-      "service": "OrderService",
-      "metric": "ErrorRate",
-      "value": 12.0,
-      "severity": "HIGH"
+      "service": "InventoryService",
+      "metric": "DBQueryTimeout",
+      "value": 50.0,
+      "severity": "CRITICAL"
+    },
+    {
+      "event_id": "hb_redis",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "otel",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
+    },
+    {
+      "event_id": "hb_dynamo",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW"
     }
   ],
   "source_health": [
@@ -186,20 +206,24 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "KafkaCluster"
+      "PostgresPrimary"
     ],
-    "onset_times": {
-      "KafkaCluster": "2026-10-16T14:00:00+00:00"
-    },
+    "onset_times": {},
     "symptom_to_cause": {},
     "expected_verdict": "DIAGNOSE",
+    "acceptable_verdict_level": "PROBABLE only",
+    "identifiability_note": "OrderService and InventoryService both report SQL driver connection drop. RedisCache, PaymentService, and DynamoTable emit healthy baseline heartbeats, proving PostgresPrimary is the silent cause.",
     "incident_groups": []
   },
-  "perturbations": [],
+  "perturbations": [
+    "silent_root"
+  ],
   "tags": [
     "silent_root",
-    "unobserved_root"
+    "independent_test"
   ],
   "is_hard": false,
-  "telemetry_policy": null
+  "telemetry_policy": null,
+  "identifiability_note": "OrderService and InventoryService both report SQL driver connection drop. RedisCache, PaymentService, and DynamoTable emit healthy baseline heartbeats, proving PostgresPrimary is the silent cause.",
+  "acceptable_verdict_level": "PROBABLE only"
 }
