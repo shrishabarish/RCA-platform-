@@ -2089,7 +2089,7 @@
                 <span class="kpi-title">Likely cause</span>
                 <div class="kpi-number-row">
                     <span id="kpiRootCause" class="kpi-big-num text-danger">Healthy</span>
-                    <span id="kpiConfidenceBadge" class="kpi-badge-pill">0% confidence</span>
+                    <span id="kpiConfidenceBadge" class="kpi-badge-pill">0% ranking score</span>
                 </div>
             </div>
 
@@ -2150,7 +2150,7 @@
                     <div class="diagnosis-hero-box">
                         <div class="diagnosis-top-line">
                             <span class="eyebrow-tag">MOST LIKELY CAUSE</span>
-                            <span id="diagnosisConfidenceTag" class="confidence-tag">0% CONFIDENCE</span>
+                            <span id="diagnosisConfidenceTag" class="confidence-tag">0% RANKING SCORE</span>
                         </div>
                         <h3 id="diagnosisCauseTitle" class="diagnosis-title">Analyzing Telemetry...</h3>
                         <div id="diagnosisResourceId" class="diagnosis-resource-tag">-</div>
@@ -2615,6 +2615,16 @@
                         <strong>Blinding & Headline Claim Policy:</strong> In strict compliance with evaluation rules, all headline claims reflect committed Dev and Handwritten benchmark runs only. Validation runs (val2, val3) are non-headline exploratory data and are excluded from headline claims.
                     </div>
 
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
+                        <div style="font-size:0.85rem; font-weight:600; color:var(--text-main);">
+                            <span id="evalViewTitle">Latest Frozen Benchmark Runs (One Row per Engine)</span>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button id="btnEvalShowFrozen" class="tab-btn active" style="padding:0.35rem 0.75rem; font-size:0.75rem; border-radius:4px;" onclick="window.setEvalView('frozen')">Latest Frozen Runs</button>
+                            <button id="btnEvalShowAll" class="tab-btn" style="padding:0.35rem 0.75rem; font-size:0.75rem; border-radius:4px;" onclick="window.setEvalView('all')">All Runs (26 CSVs)</button>
+                        </div>
+                    </div>
+
                     <div class="candidate-table-wrap">
                         <table class="candidate-table" style="font-size: 0.82rem;">
                             <thead>
@@ -2622,7 +2632,8 @@
                                     <th>Split Name</th>
                                     <th>Result Artifact File</th>
                                     <th>Engine</th>
-                                    <th>Denominator (Cases)</th>
+                                    <th>Run Status</th>
+                                    <th>Denominator (Cases & Families)</th>
                                     <th>Accuracy (Top-1)</th>
                                     <th>Confident-Wrong</th>
                                     <th>Git Commit Hash</th>
@@ -2630,7 +2641,7 @@
                             </thead>
                             <tbody id="evalSummaryTableBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                                    <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);">
                                         Loading committed evaluation runs from /api/eval/summary...
                                     </td>
                                 </tr>

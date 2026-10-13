@@ -77,6 +77,18 @@
   },
   "events": [
     {
+      "event_id": "hb_bg_init",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:08+00:00",
       "observed_time": "2026-10-16T14:00:09+00:00",
@@ -149,18 +161,6 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_1",
-      "event_time": "2026-10-16T14:00:41.400000+00:00",
-      "observed_time": "2026-10-16T14:00:42.400000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:00:45+00:00",
       "observed_time": "2026-10-16T14:00:46+00:00",
@@ -181,18 +181,6 @@
       "metric": "EndpointFailureRate",
       "value": 90.0,
       "severity": "HIGH",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:01:09.600000+00:00",
-      "observed_time": "2026-10-16T14:01:10.600000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -222,8 +210,8 @@
     },
     {
       "event_id": "evt_05",
-      "event_time": "2026-10-16T14:01:25+00:00",
-      "observed_time": "2026-10-16T14:01:26+00:00",
+      "event_time": "2026-10-16T14:01:20+00:00",
+      "observed_time": "2026-10-16T14:01:21+00:00",
       "source": "application",
       "service": "Application",
       "metric": "NetworkSocketTimeout",
@@ -277,7 +265,7 @@
       }
     ],
     "max_level_by_root": {},
-    "identifiability_note": "API edge entrypoint gateway failure; callees EC2 and DynamoDB have heartbeats. Callee EC2 has 2 CRITICAL events, causing highest-severity heuristic to fail.",
+    "identifiability_note": "API edge entrypoint gateway failure; callee EC2 has 2 CRITICAL events (recovering at t=35s). Caller Application suffers dependent symptom at t=80s (symptom delay = 35s).",
     "incident_groups": []
   },
   "perturbations": [
@@ -290,7 +278,7 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "API edge entrypoint gateway failure; callees EC2 and DynamoDB have heartbeats. Callee EC2 has 2 CRITICAL events, causing highest-severity heuristic to fail.",
+  "identifiability_note": "API edge entrypoint gateway failure; callee EC2 has 2 CRITICAL events (recovering at t=35s). Caller Application suffers dependent symptom at t=80s (symptom delay = 35s).",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",

@@ -78,8 +78,8 @@
   "events": [
     {
       "event_id": "evt_05",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "StorageWriteThrottle",
@@ -101,6 +101,30 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:19.700000+00:00",
+      "observed_time": "2026-10-16T14:00:20.700000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_06",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "StorageLockContention",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:25+00:00",
       "observed_time": "2026-10-16T14:00:26+00:00",
@@ -114,8 +138,8 @@
     },
     {
       "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:29.700000+00:00",
-      "observed_time": "2026-10-16T14:00:30.700000+00:00",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",
@@ -125,23 +149,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "evt_06",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
+      "event_id": "hb_bg_Auth_1",
+      "event_time": "2026-10-16T14:00:30.900000+00:00",
+      "observed_time": "2026-10-16T14:00:31.900000+00:00",
       "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "StorageLockContention",
-      "value": 0.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Worker_1",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
+      "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -161,21 +173,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Auth_1",
-      "event_time": "2026-10-16T14:00:40.200000+00:00",
-      "observed_time": "2026-10-16T14:00:41.200000+00:00",
-      "source": "cloudwatch",
-      "service": "Auth",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:00:55+00:00",
+      "observed_time": "2026-10-16T14:00:56+00:00",
       "source": "application",
       "service": "API",
       "metric": "NetworkSocketTimeout",
@@ -185,11 +185,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:00:51.400000+00:00",
-      "observed_time": "2026-10-16T14:00:52.400000+00:00",
+      "event_id": "hb_bg_Auth_2",
+      "event_time": "2026-10-16T14:01:00.100000+00:00",
+      "observed_time": "2026-10-16T14:01:01.100000+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
+      "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -198,8 +198,8 @@
     },
     {
       "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:00:59.300000+00:00",
-      "observed_time": "2026-10-16T14:01:00.300000+00:00",
+      "event_time": "2026-10-16T14:01:00.600000+00:00",
+      "observed_time": "2026-10-16T14:01:01.600000+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",
@@ -210,8 +210,8 @@
     },
     {
       "event_id": "evt_04",
-      "event_time": "2026-10-16T14:01:08+00:00",
-      "observed_time": "2026-10-16T14:01:09+00:00",
+      "event_time": "2026-10-16T14:01:15+00:00",
+      "observed_time": "2026-10-16T14:01:16+00:00",
       "source": "application",
       "service": "API",
       "metric": "EndpointFailureRate",
@@ -221,11 +221,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Auth_2",
-      "event_time": "2026-10-16T14:01:13+00:00",
-      "observed_time": "2026-10-16T14:01:14+00:00",
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:23.300000+00:00",
+      "observed_time": "2026-10-16T14:01:24.300000+00:00",
       "source": "cloudwatch",
-      "service": "Auth",
+      "service": "Worker",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -234,8 +234,8 @@
     },
     {
       "event_id": "hb_02",
-      "event_time": "2026-10-16T14:01:15+00:00",
-      "observed_time": "2026-10-16T14:01:16+00:00",
+      "event_time": "2026-10-16T14:01:25+00:00",
+      "observed_time": "2026-10-16T14:01:26+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
@@ -293,7 +293,7 @@
       "API": "ABSTAIN",
       "DynamoDB": "ABSTAIN"
     },
-    "identifiability_note": "Misleading blame: API logs timeouts explicitly claiming DynamoDB is failing (target='DynamoDB'), but DynamoDB emits verified healthy metric telemetry (zero write throttle, zero lock contention) and heartbeats. The true root is EC2 starting at t=15s. API symptoms occur at t=45s (>t_root=15s). EC2 has 1 CRITICAL + 1 HIGH, while API has 2 HIGH (root higher severity).",
+    "identifiability_note": "Misleading blame: API logs timeouts explicitly claiming DynamoDB is failing (target='DynamoDB'), but DynamoDB emits verified healthy metric telemetry (zero write throttle, zero lock contention) and heartbeats. The true root is EC2 starting at t=15s. API symptoms occur at t=55s (>t_root=15s, delay=40s). EC2 has 1 CRITICAL + 1 HIGH, while API has 2 HIGH (root higher severity).",
     "incident_groups": []
   },
   "perturbations": [
@@ -306,7 +306,7 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Misleading blame: API logs timeouts explicitly claiming DynamoDB is failing (target='DynamoDB'), but DynamoDB emits verified healthy metric telemetry (zero write throttle, zero lock contention) and heartbeats. The true root is EC2 starting at t=15s. API symptoms occur at t=45s (>t_root=15s). EC2 has 1 CRITICAL + 1 HIGH, while API has 2 HIGH (root higher severity).",
+  "identifiability_note": "Misleading blame: API logs timeouts explicitly claiming DynamoDB is failing (target='DynamoDB'), but DynamoDB emits verified healthy metric telemetry (zero write throttle, zero lock contention) and heartbeats. The true root is EC2 starting at t=15s. API symptoms occur at t=55s (>t_root=15s, delay=40s). EC2 has 1 CRITICAL + 1 HIGH, while API has 2 HIGH (root higher severity).",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",

@@ -1052,7 +1052,7 @@ def compare_rca_case(
     elif len(v3_diag.predicted_root_causes) > 1:
         diff_sentence = f"rca_v3 detected a multi-root incident ({', '.join(v3_diag.predicted_root_causes)}) with {v3_diag.verdict.value} verdict, whereas Current Scorer only isolated single candidate {cs_top}."
     elif cs_top == v3_top:
-        diff_sentence = f"Both engines agreed on root cause '{v3_top}', with rca_v3 qualifying confidence as {v3_diag.verdict.value} based on topological verification."
+        diff_sentence = f"Both engines agreed on root cause '{v3_top}', with rca_v3 qualifying verdict as {v3_diag.verdict.value} based on topological verification."
     else:
         diff_sentence = f"rca_v3 selected '{v3_top}' ({v3_diag.verdict.value}) based on reachability and symptom coverage, whereas Current Scorer selected '{cs_top}'."
 
@@ -1120,6 +1120,13 @@ def get_evaluation_summary() -> List[Dict[str, Any]]:
             split = "dev"
         return engine, split
 
+    # The latest frozen primary runs (one per engine)
+    LATEST_FROZEN_FILES = {
+        "stage3e_dev3_fresh_v3.csv",
+        "stage2_dev.csv",
+        "latest_dev.csv"
+    }
+
     for cp in csv_files:
         try:
             with open(cp, encoding="utf-8") as f:
@@ -1131,6 +1138,24 @@ def get_evaluation_summary() -> List[Dict[str, Any]]:
                 fieldnames = reader.fieldnames or []
 
                 engine, split = infer_meta(cp.name)
+
+                # Count distinct families
+                fam_set = set(
+                    r.get("family_id") or r.get("family") or r.get("scenario_family") or r.get("case_family")
+                    for r in rows
+                    if (r.get("family_id") or r.get("family") or r.get("scenario_family") or r.get("case_family"))
+                )
+                if not fam_set:
+                    # fallback to distinct prefixes if no explicit family column
+                    fam_set = set(
+                        (r.get("case_id") or r.get("case_name") or "fam").split("_")[0]
+                        for r in rows
+                    )
+                family_count = len(fam_set)
+
+                is_latest_frozen = cp.name in LATEST_FROZEN_FILES
+                # Superseded if not latest frozen (Stage 1/1b, val2, val3, older iterations)
+                is_superseded = not is_latest_frozen
 
                 top1_count = 0
                 cw_count = None
@@ -1164,6 +1189,10 @@ def get_evaluation_summary() -> List[Dict[str, Any]]:
                     "engine": engine,
                     "split": split,
                     "denominator": total,
+                    "denominator_cases": total,
+                    "denominator_families": family_count,
+                    "is_superseded": is_superseded,
+                    "is_latest_frozen": is_latest_frozen,
                     "top1_count": top1_count,
                     "top1_accuracy_pct": acc_pct,
                     "confident_wrong_count": cw_count,

@@ -77,21 +77,45 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:25+00:00",
-      "observed_time": "2026-10-16T14:00:26+00:00",
+      "event_id": "hb_bg_init",
+      "event_time": "2026-10-16T14:00:00+00:00",
+      "observed_time": "2026-10-16T14:00:01+00:00",
       "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "HostResourceSaturation",
-      "value": 98.0,
-      "severity": "CRITICAL",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:10.900000+00:00",
+      "observed_time": "2026-10-16T14:00:11.900000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Auth_1",
+      "event_time": "2026-10-16T14:00:17.500000+00:00",
+      "observed_time": "2026-10-16T14:00:18.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
     {
       "event_id": "hb_bg_DynamoDB_1",
-      "event_time": "2026-10-16T14:00:43.300000+00:00",
-      "observed_time": "2026-10-16T14:00:44.300000+00:00",
+      "event_time": "2026-10-16T14:00:20.600000+00:00",
+      "observed_time": "2026-10-16T14:00:21.600000+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
@@ -101,9 +125,21 @@
       "dimensions": {}
     },
     {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:42+00:00",
+      "observed_time": "2026-10-16T14:00:43+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "HostResourceSaturation",
+      "value": 98.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:48+00:00",
-      "observed_time": "2026-10-16T14:00:49+00:00",
+      "event_time": "2026-10-16T14:01:05+00:00",
+      "observed_time": "2026-10-16T14:01:06+00:00",
       "source": "cloudwatch",
       "service": "EC2",
       "metric": "ThreadContextSwitchStorm",
@@ -113,81 +149,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:48.100000+00:00",
-      "observed_time": "2026-10-16T14:00:49.100000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Auth_1",
-      "event_time": "2026-10-16T14:00:48.200000+00:00",
-      "observed_time": "2026-10-16T14:00:49.200000+00:00",
-      "source": "cloudwatch",
-      "service": "Auth",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Worker_1",
-      "event_time": "2026-10-16T14:00:50.800000+00:00",
-      "observed_time": "2026-10-16T14:00:51.800000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Auth_2",
-      "event_time": "2026-10-16T14:01:08.500000+00:00",
-      "observed_time": "2026-10-16T14:01:09.500000+00:00",
-      "source": "cloudwatch",
-      "service": "Auth",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:01:09.300000+00:00",
-      "observed_time": "2026-10-16T14:01:10.300000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:01:09.500000+00:00",
-      "observed_time": "2026-10-16T14:01:10.500000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:01:10+00:00",
-      "observed_time": "2026-10-16T14:01:11+00:00",
+      "event_time": "2026-10-16T14:01:25+00:00",
+      "observed_time": "2026-10-16T14:01:26+00:00",
       "source": "cloudwatch",
       "service": "API",
       "metric": "EndpointFailureRate",
@@ -198,13 +162,49 @@
     },
     {
       "event_id": "hb_bg_DynamoDB_2",
-      "event_time": "2026-10-16T14:01:13.400000+00:00",
-      "observed_time": "2026-10-16T14:01:14.400000+00:00",
+      "event_time": "2026-10-16T14:01:25.600000+00:00",
+      "observed_time": "2026-10-16T14:01:26.600000+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Auth_2",
+      "event_time": "2026-10-16T14:01:40.600000+00:00",
+      "observed_time": "2026-10-16T14:01:41.600000+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:42+00:00",
+      "observed_time": "2026-10-16T14:01:43+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:45+00:00",
+      "observed_time": "2026-10-16T14:01:46+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "NetworkSocketTimeout",
+      "value": 40.0,
+      "severity": "HIGH",
       "target": null,
       "dimensions": {}
     }
@@ -251,7 +251,7 @@
       }
     ],
     "max_level_by_root": {},
-    "identifiability_note": "Tracing source otel is DOWN; cannot verify causal propagation delay; engine must ABSTAIN. Root EC2 starts at t=25s; dependent API symptoms appear at t=70s.",
+    "identifiability_note": "Tracing source otel is DOWN; cannot verify causal propagation delay; engine must ABSTAIN. Root EC2 starts at t=42s; dependent API symptoms appear at t=85s.",
     "incident_groups": []
   },
   "perturbations": [
@@ -264,7 +264,7 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Tracing source otel is DOWN; cannot verify causal propagation delay; engine must ABSTAIN. Root EC2 starts at t=25s; dependent API symptoms appear at t=70s.",
+  "identifiability_note": "Tracing source otel is DOWN; cannot verify causal propagation delay; engine must ABSTAIN. Root EC2 starts at t=42s; dependent API symptoms appear at t=85s.",
   "acceptable_outcomes": [
     {
       "verdict": "ABSTAIN",

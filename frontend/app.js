@@ -947,7 +947,7 @@ function renderDiagnosis(detail) {
     if (!detail) return;
 
     const cause = detail.probable_root_cause || "EC2";
-    const confidence = Math.round(detail.confidence ?? 0);
+    const confidence = Math.round(detail.confidence ?? detail.ranking_score ?? 0);
     const rootEvent = (currentIncident?.events || []).find(e => e.service === cause) || currentIncident?.events?.[0];
     const resource = rootEvent?.resource_id || detail.resource_id || "target-resource";
     const region = rootEvent?.metadata?.aws_region || rootEvent?.metadata?.region || "eu-north-1";
@@ -955,7 +955,7 @@ function renderDiagnosis(detail) {
     // KPIs
     kpiRootCause.textContent = cause;
     kpiRootCause.className = "kpi-big-num text-danger";
-    kpiConfidenceBadge.textContent = `${confidence}% confidence`;
+    kpiConfidenceBadge.textContent = `${confidence}% ranking score`;
     kpiBlastCount.textContent = (detail.affected_services?.length || 0) + 1;
 
     // Headline & Region
@@ -996,7 +996,7 @@ function renderDiagnosis(detail) {
     // Diagnosis Hero Card
     diagnosisCauseTitle.textContent = `${cause} Outage Detected`;
     diagnosisResourceId.textContent = resource;
-    diagnosisConfidenceTag.textContent = `${confidence}% CONFIDENCE`;
+    diagnosisConfidenceTag.textContent = `${confidence}% RANKING SCORE`;
     diagnosisSeverityTag.textContent = `${detail.severity || 'HIGH'} SEVERITY`;
     diagnosisExplanation.textContent = detail.explanation || detail.remediation_suggestion || (detail.reasoning_chain?.[0] ?? "Anomaly detected in telemetry stream.");
 
@@ -1013,7 +1013,7 @@ function renderDiagnosis(detail) {
     const reasoning = detail.reasoning_chain || [
         `Service '${cause}' registered the earliest anomaly in the incident timeline.`,
         `'${cause}' occupies a structural dependency position affecting downstream services.`,
-        `Calibrated Result: '${cause}' determined as Primary Root Cause with ${confidence}% confidence.`
+        `Calibrated Result: '${cause}' determined as Primary Root Cause with ${confidence}% ranking score.`
     ];
 
     reasoningList.innerHTML = reasoning.map((r, i) => `
@@ -1066,7 +1066,7 @@ function renderDiagnosisFromDiagnose(data) {
     diagnosisSeverityTag.textContent = `${verdict} VERDICT`;
     diagnosisExplanation.textContent = (data.explanation?.root_cause_summary) 
         || (data.explanation?.summary) 
-        || `Diagnosed ${cause} as primary root cause with ${verdict} confidence level.`;
+        || `Diagnosed ${cause} as primary root cause with ${verdict} ranking level.`;
 
     // Baseline Engine Box
     const baseBox = document.getElementById("baselineEngineBox");
@@ -1357,7 +1357,7 @@ function updateLifecycleStepper(status) {
 function renderEmptyState() {
     kpiRootCause.textContent = "Healthy";
     kpiRootCause.className = "kpi-big-num text-success";
-    kpiConfidenceBadge.textContent = "0% confidence";
+    kpiConfidenceBadge.textContent = "0% ranking score";
     kpiBlastCount.textContent = "0";
 
     incidentTitle.textContent = "All Cloud Services Healthy";
@@ -1374,7 +1374,7 @@ function renderEmptyState() {
 
     diagnosisCauseTitle.textContent = "No Failures Detected";
     diagnosisResourceId.textContent = "All cloud services nominal";
-    diagnosisConfidenceTag.textContent = "0% CONFIDENCE";
+    diagnosisConfidenceTag.textContent = "0% RANKING SCORE";
     diagnosisExplanation.textContent = "Architecture is operating within healthy performance and error budget thresholds.";
 
     if (causalPathsList) causalPathsList.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted);">No active anomaly propagation.</div>`;
@@ -1990,6 +1990,45 @@ async function loadCompareCase() {
     }
 }
 
+let evalSummaryRows = [];
+let currentEvalView = "frozen"; // "frozen" (default, 1 row per engine) or "all"
+
+function renderEvalSummaryTable() {
+    const tbody = document.getElementById("evalSummaryTableBody");
+    if (!tbody) return;
+
+    if (!evalSummaryRows || evalSummaryRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No committed evaluation runs found.</td></tr>`;
+        return;
+    }
+
+    const rowsToRender = currentEvalView === "frozen"
+        ? evalSummaryRows.filter(r => r.is_latest_frozen)
+        : evalSummaryRows;
+
+    tbody.innerHTML = rowsToRender.map(r => {
+        const accFormatted = `${r.top1_count} / ${r.denominator_cases} (${r.top1_accuracy_pct.toFixed(1)}%)`;
+        const cwFormatted = r.confident_wrong_count !== null 
+            ? `${r.confident_wrong_count} / ${r.denominator_cases} (${r.confident_wrong_pct.toFixed(1)}%)` 
+            : `<span style="color:var(--text-light);">-</span>`;
+
+        const badgeHtml = r.is_superseded
+            ? `<span class="status-tag" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:0.7rem; font-weight:700;">SUPERSEDED</span>`
+            : `<span class="status-tag status-tag-resolved" style="font-size:0.7rem; font-weight:700;">LATEST FROZEN</span>`;
+
+        return `<tr>
+            <td><strong>${escapeHtml(r.split)}</strong></td>
+            <td><code>${escapeHtml(r.filename || r.csv_path)}</code></td>
+            <td><span class="status-tag ${r.engine === 'rca_v3' ? 'status-tag-resolved' : 'status-tag-open'}">${escapeHtml(r.engine)}</span></td>
+            <td>${badgeHtml}</td>
+            <td><strong>${r.denominator_cases} cases</strong> <span style="color:var(--text-muted); font-size:0.75rem;">(${r.denominator_families} families)</span></td>
+            <td><strong style="color:var(--emerald);">${accFormatted}</strong></td>
+            <td>${cwFormatted}</td>
+            <td><code>${escapeHtml(r.commit || 'uncommitted')}</code></td>
+        </tr>`;
+    }).join("");
+}
+
 async function loadEvaluationSummary() {
     const tbody = document.getElementById("evalSummaryTableBody");
     if (!tbody) return;
@@ -1997,33 +2036,31 @@ async function loadEvaluationSummary() {
     try {
         const res = await fetch(`${API_BASE}/eval/summary`);
         if (!res.ok) return;
-        const rows = await res.json();
-
-        if (!rows || rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No committed evaluation runs found.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = rows.map(r => {
-            const accFormatted = `${r.top1_count} / ${r.denominator} (${r.top1_accuracy_pct.toFixed(1)}%)`;
-            const cwFormatted = r.confident_wrong_count !== null 
-                ? `${r.confident_wrong_count} / ${r.denominator} (${r.confident_wrong_pct.toFixed(1)}%)` 
-                : `<span style="color:var(--text-light);">-</span>`;
-
-            return `<tr>
-                <td><strong>${escapeHtml(r.split)}</strong></td>
-                <td><code>${escapeHtml(r.csv_path)}</code></td>
-                <td><span class="status-tag ${r.engine === 'rca_v3' ? 'status-tag-resolved' : 'status-tag-open'}">${escapeHtml(r.engine)}</span></td>
-                <td><strong>${r.denominator}</strong></td>
-                <td><strong style="color:var(--emerald);">${accFormatted}</strong></td>
-                <td>${cwFormatted}</td>
-                <td><code>${escapeHtml(r.commit || 'uncommitted')}</code></td>
-            </tr>`;
-        }).join("");
+        evalSummaryRows = await res.json();
+        renderEvalSummaryTable();
     } catch (e) {
         // Handled cleanly
     }
 }
+
+window.setEvalView = function(view) {
+    currentEvalView = view;
+    const btnFrozen = document.getElementById("btnEvalShowFrozen");
+    const btnAll = document.getElementById("btnEvalShowAll");
+    const title = document.getElementById("evalViewTitle");
+    if (btnFrozen && btnAll) {
+        if (view === "frozen") {
+            btnFrozen.classList.add("active");
+            btnAll.classList.remove("active");
+            if (title) title.textContent = "Latest Frozen Benchmark Runs (One Row per Engine)";
+        } else {
+            btnAll.classList.add("active");
+            btnFrozen.classList.remove("active");
+            if (title) title.textContent = "All Evaluation Runs (26 CSV Artifacts, Superseded Marked)";
+        }
+    }
+    renderEvalSummaryTable();
+};
 
 // Expose globals
 window.loadReplayCase = loadReplayCase;

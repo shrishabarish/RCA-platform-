@@ -245,6 +245,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_APIGateway_1",
+      "event_time": "2026-10-16T14:01:03+00:00",
+      "observed_time": "2026-10-16T14:01:04+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_02",
       "event_time": "2026-10-16T14:01:10+00:00",
       "observed_time": "2026-10-16T14:01:11+00:00",
@@ -253,18 +265,6 @@
       "metric": "InternalExecutionFailure",
       "value": 50.0,
       "severity": "HIGH",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_APIGateway_1",
-      "event_time": "2026-10-16T14:01:11.200000+00:00",
-      "observed_time": "2026-10-16T14:01:12.200000+00:00",
-      "source": "cloudwatch",
-      "service": "APIGateway",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -378,8 +378,8 @@
     },
     {
       "event_id": "hb_bg_APIGateway_2",
-      "event_time": "2026-10-16T14:01:53.100000+00:00",
-      "observed_time": "2026-10-16T14:01:54.100000+00:00",
+      "event_time": "2026-10-16T14:02:02.500000+00:00",
+      "observed_time": "2026-10-16T14:02:03.500000+00:00",
       "source": "cloudwatch",
       "service": "APIGateway",
       "metric": "Heartbeat",

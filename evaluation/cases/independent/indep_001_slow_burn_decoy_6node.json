@@ -77,9 +77,21 @@
   },
   "events": [
     {
-      "event_id": "evt_01a",
+      "event_id": "hb_bg_init",
       "event_time": "2026-10-16T14:00:00+00:00",
       "observed_time": "2026-10-16T14:00:01+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01a",
+      "event_time": "2026-10-16T14:00:05+00:00",
+      "observed_time": "2026-10-16T14:00:06+00:00",
       "source": "application",
       "service": "Auth",
       "metric": "IdentityValidationStall",
@@ -102,25 +114,13 @@
     },
     {
       "event_id": "evt_01b",
-      "event_time": "2026-10-16T14:00:14+00:00",
-      "observed_time": "2026-10-16T14:00:15+00:00",
+      "event_time": "2026-10-16T14:00:19+00:00",
+      "observed_time": "2026-10-16T14:00:20+00:00",
       "source": "application",
       "service": "Auth",
       "metric": "TokenSignatureReject",
       "value": 80.0,
       "severity": "HIGH",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:17.400000+00:00",
-      "observed_time": "2026-10-16T14:00:18.400000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -174,25 +174,13 @@
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:42+00:00",
-      "observed_time": "2026-10-16T14:00:43+00:00",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "StorageWriteThrottle",
       "value": 92.5,
       "severity": "CRITICAL",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:00:53.400000+00:00",
-      "observed_time": "2026-10-16T14:00:54.400000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -210,8 +198,8 @@
     },
     {
       "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:01:02.400000+00:00",
-      "observed_time": "2026-10-16T14:01:03.400000+00:00",
+      "event_time": "2026-10-16T14:01:04.600000+00:00",
+      "observed_time": "2026-10-16T14:01:05.600000+00:00",
       "source": "cloudwatch",
       "service": "Worker",
       "metric": "Heartbeat",
@@ -234,8 +222,8 @@
     },
     {
       "event_id": "hb_bg_EC2_2",
-      "event_time": "2026-10-16T14:01:08.200000+00:00",
-      "observed_time": "2026-10-16T14:01:09.200000+00:00",
+      "event_time": "2026-10-16T14:01:10.600000+00:00",
+      "observed_time": "2026-10-16T14:01:11.600000+00:00",
       "source": "cloudwatch",
       "service": "EC2",
       "metric": "Heartbeat",
@@ -246,8 +234,8 @@
     },
     {
       "event_id": "evt_04",
-      "event_time": "2026-10-16T14:01:25+00:00",
-      "observed_time": "2026-10-16T14:01:26+00:00",
+      "event_time": "2026-10-16T14:01:28+00:00",
+      "observed_time": "2026-10-16T14:01:29+00:00",
       "source": "application",
       "service": "API",
       "metric": "ServiceRequestHang",
@@ -301,7 +289,7 @@
       }
     ],
     "max_level_by_root": {},
-    "identifiability_note": "Early transient identity validation anomaly on Auth at t=0s acts as decoy; true root DynamoDB write throttle surfaces at t=42s (>10s later). Auth emits verified healthy recovery metrics (0.0 LOW) at t=28s and t=35s before API symptom at t=85s. DynamoDB has 1 CRITICAL + 1 HIGH, while Auth has 2 HIGH (root higher severity).",
+    "identifiability_note": "Early transient identity validation anomaly on Auth at t=5s acts as decoy; true root DynamoDB write throttle surfaces at t=45s (>10s later). Auth emits verified healthy recovery metrics (0.0 LOW) at t=28s and t=35s before API symptom at t=88s. DynamoDB has 1 CRITICAL + 1 HIGH, while Auth has 2 HIGH (root higher severity).",
     "incident_groups": []
   },
   "perturbations": [
@@ -314,7 +302,7 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Early transient identity validation anomaly on Auth at t=0s acts as decoy; true root DynamoDB write throttle surfaces at t=42s (>10s later). Auth emits verified healthy recovery metrics (0.0 LOW) at t=28s and t=35s before API symptom at t=85s. DynamoDB has 1 CRITICAL + 1 HIGH, while Auth has 2 HIGH (root higher severity).",
+  "identifiability_note": "Early transient identity validation anomaly on Auth at t=5s acts as decoy; true root DynamoDB write throttle surfaces at t=45s (>10s later). Auth emits verified healthy recovery metrics (0.0 LOW) at t=28s and t=35s before API symptom at t=88s. DynamoDB has 1 CRITICAL + 1 HIGH, while Auth has 2 HIGH (root higher severity).",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",

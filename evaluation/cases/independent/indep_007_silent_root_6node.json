@@ -101,6 +101,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:46.100000+00:00",
+      "observed_time": "2026-10-16T14:00:47.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:00:48+00:00",
       "observed_time": "2026-10-16T14:00:49+00:00",
@@ -118,18 +130,6 @@
       "observed_time": "2026-10-16T14:00:51+00:00",
       "source": "cloudwatch",
       "service": "Auth",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:57.500000+00:00",
-      "observed_time": "2026-10-16T14:00:58.500000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -162,8 +162,8 @@
     },
     {
       "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:01:24.100000+00:00",
-      "observed_time": "2026-10-16T14:01:25.100000+00:00",
+      "event_time": "2026-10-16T14:01:27.300000+00:00",
+      "observed_time": "2026-10-16T14:01:28.300000+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",

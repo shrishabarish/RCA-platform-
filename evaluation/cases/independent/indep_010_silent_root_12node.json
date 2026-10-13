@@ -246,8 +246,8 @@
     },
     {
       "event_id": "hb_bg_APIGateway_1",
-      "event_time": "2026-10-16T14:01:10.600000+00:00",
-      "observed_time": "2026-10-16T14:01:11.600000+00:00",
+      "event_time": "2026-10-16T14:01:12.900000+00:00",
+      "observed_time": "2026-10-16T14:01:13.900000+00:00",
       "source": "cloudwatch",
       "service": "APIGateway",
       "metric": "Heartbeat",
@@ -269,6 +269,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_APIGateway_2",
+      "event_time": "2026-10-16T14:01:50.700000+00:00",
+      "observed_time": "2026-10-16T14:01:51.700000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_02",
       "event_time": "2026-10-16T14:01:55+00:00",
       "observed_time": "2026-10-16T14:01:56+00:00",
@@ -277,18 +289,6 @@
       "metric": "InternalExecutionFailure",
       "value": 45.0,
       "severity": "HIGH",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_APIGateway_2",
-      "event_time": "2026-10-16T14:02:01.600000+00:00",
-      "observed_time": "2026-10-16T14:02:02.600000+00:00",
-      "source": "cloudwatch",
-      "service": "APIGateway",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },

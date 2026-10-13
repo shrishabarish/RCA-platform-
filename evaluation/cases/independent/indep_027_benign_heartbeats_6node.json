@@ -114,8 +114,8 @@
     },
     {
       "event_id": "hb_bg_Worker_1",
-      "event_time": "2026-10-16T14:00:20.100000+00:00",
-      "observed_time": "2026-10-16T14:00:21.100000+00:00",
+      "event_time": "2026-10-16T14:00:21+00:00",
+      "observed_time": "2026-10-16T14:00:22+00:00",
       "source": "cloudwatch",
       "service": "Worker",
       "metric": "Heartbeat",
@@ -126,8 +126,8 @@
     },
     {
       "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:31.200000+00:00",
-      "observed_time": "2026-10-16T14:00:32.200000+00:00",
+      "event_time": "2026-10-16T14:00:25.200000+00:00",
+      "observed_time": "2026-10-16T14:00:26.200000+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",
@@ -149,21 +149,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:00:48.300000+00:00",
-      "observed_time": "2026-10-16T14:00:49.300000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:00:49.500000+00:00",
-      "observed_time": "2026-10-16T14:00:50.500000+00:00",
+      "event_time": "2026-10-16T14:00:48.200000+00:00",
+      "observed_time": "2026-10-16T14:00:49.200000+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",
@@ -181,6 +169,18 @@
       "metric": "EndpointFailureRate",
       "value": 50.0,
       "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:00:57.500000+00:00",
+      "observed_time": "2026-10-16T14:00:58.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
       "target": null,
       "dimensions": {}
     }
