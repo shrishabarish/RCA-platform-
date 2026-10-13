@@ -1,9 +1,9 @@
 {
   "case_id": "indep_027_benign_heartbeats_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1027,
   "topology": {
     "nodes": [
       {
@@ -77,44 +77,112 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "StorageThrottleRate",
-      "value": 98.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "cloudwatch",
-      "service": "API",
-      "metric": "InternalServerErrorRate",
-      "value": 50.0,
-      "severity": "HIGH"
-    },
-    {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:05+00:00",
-      "observed_time": "2026-10-16T14:00:06+00:00",
+      "event_time": "2026-10-16T14:00:08+00:00",
+      "observed_time": "2026-10-16T14:00:09+00:00",
       "source": "cloudwatch",
       "service": "EC2",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:05+00:00",
-      "observed_time": "2026-10-16T14:00:06+00:00",
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:18+00:00",
+      "observed_time": "2026-10-16T14:00:19+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "StorageWriteThrottle",
+      "value": 98.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:20.100000+00:00",
+      "observed_time": "2026-10-16T14:00:21.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:31.200000+00:00",
+      "observed_time": "2026-10-16T14:00:32.200000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:36+00:00",
+      "observed_time": "2026-10-16T14:00:37+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "StorageLockContention",
+      "value": 92.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:00:48.300000+00:00",
+      "observed_time": "2026-10-16T14:00:49.300000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:00:49.500000+00:00",
+      "observed_time": "2026-10-16T14:00:50.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:54+00:00",
+      "observed_time": "2026-10-16T14:00:55+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 50.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -150,17 +218,17 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
         "roots": [
           "DynamoDB"
         ],
-        "max_level": "CONFIRMED"
+        "max_level": "CONFIRMED",
+        "allow_partial": false
       }
     ],
+    "max_level_by_root": {},
     "identifiability_note": "Clear failure on DynamoDB with concurrent periodic benign heartbeats on non-roots.",
     "incident_groups": []
   },
@@ -168,20 +236,22 @@
     "benign_heartbeats"
   ],
   "tags": [
+    "independent",
     "benign_heartbeats",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
   "identifiability_note": "Clear failure on DynamoDB with concurrent periodic benign heartbeats on non-roots.",
-  "acceptable_verdict_level": "CONFIRMED",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
       "roots": [
         "DynamoDB"
       ],
-      "max_level": "CONFIRMED"
+      "max_level": "CONFIRMED",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

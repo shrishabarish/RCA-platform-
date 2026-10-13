@@ -138,6 +138,7 @@ The platform will be live at `http://localhost:8000`.
 
 ## 📚 Presentation Materials & Documentation
 
+- **Live Demonstration & Cockpit Guide:** [docs/DEMO.md](docs/DEMO.md)
 - **Slide Deck & Viva Guide:** [docs/PRESENTATION_SLIDES.md](docs/PRESENTATION_SLIDES.md)
 - **System Architecture Deep Dive:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **Live Demo Speaker Script:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)

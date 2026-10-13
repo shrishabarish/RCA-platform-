@@ -1,9 +1,9 @@
 {
   "case_id": "indep_024_source_down_abstain_12node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1024,
   "topology": {
     "nodes": [
       {
@@ -138,13 +138,291 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "application",
+      "service": "PostgresPrimary",
+      "metric": "StorageLockContention",
+      "value": 98.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_1",
+      "event_time": "2026-10-16T14:00:38.800000+00:00",
+      "observed_time": "2026-10-16T14:00:39.800000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_1",
+      "event_time": "2026-10-16T14:00:38.900000+00:00",
+      "observed_time": "2026-10-16T14:00:39.900000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_1",
+      "event_time": "2026-10-16T14:00:40.900000+00:00",
+      "observed_time": "2026-10-16T14:00:41.900000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_1",
+      "event_time": "2026-10-16T14:00:44.100000+00:00",
+      "observed_time": "2026-10-16T14:00:45.100000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_1",
+      "event_time": "2026-10-16T14:00:46.100000+00:00",
+      "observed_time": "2026-10-16T14:00:47.100000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:48+00:00",
+      "observed_time": "2026-10-16T14:00:49+00:00",
+      "source": "application",
+      "service": "PostgresPrimary",
+      "metric": "TransactionAbortRate",
+      "value": 90.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_1",
+      "event_time": "2026-10-16T14:00:50.500000+00:00",
+      "observed_time": "2026-10-16T14:00:51.500000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_RedisCache_1",
+      "event_time": "2026-10-16T14:00:52.100000+00:00",
+      "observed_time": "2026-10-16T14:00:53.100000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_APIGateway_1",
+      "event_time": "2026-10-16T14:00:53.200000+00:00",
+      "observed_time": "2026-10-16T14:00:54.200000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PaymentService_1",
+      "event_time": "2026-10-16T14:00:55.100000+00:00",
+      "observed_time": "2026-10-16T14:00:56.100000+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_1",
+      "event_time": "2026-10-16T14:00:56.100000+00:00",
+      "observed_time": "2026-10-16T14:00:57.100000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_2",
+      "event_time": "2026-10-16T14:01:10.200000+00:00",
+      "observed_time": "2026-10-16T14:01:11.200000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_2",
+      "event_time": "2026-10-16T14:01:11.900000+00:00",
+      "observed_time": "2026-10-16T14:01:12.900000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PaymentService_2",
+      "event_time": "2026-10-16T14:01:13.400000+00:00",
+      "observed_time": "2026-10-16T14:01:14.400000+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:01:15+00:00",
+      "observed_time": "2026-10-16T14:01:16+00:00",
       "source": "application",
       "service": "OrderService",
-      "metric": "DatabaseTransactionTimeout",
-      "value": 55.0,
-      "severity": "CRITICAL"
+      "metric": "InternalExecutionFailure",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_2",
+      "event_time": "2026-10-16T14:01:15.100000+00:00",
+      "observed_time": "2026-10-16T14:01:16.100000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_2",
+      "event_time": "2026-10-16T14:01:20.100000+00:00",
+      "observed_time": "2026-10-16T14:01:21.100000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_RedisCache_2",
+      "event_time": "2026-10-16T14:01:20.200000+00:00",
+      "observed_time": "2026-10-16T14:01:21.200000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_2",
+      "event_time": "2026-10-16T14:01:22.700000+00:00",
+      "observed_time": "2026-10-16T14:01:23.700000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_2",
+      "event_time": "2026-10-16T14:01:23.600000+00:00",
+      "observed_time": "2026-10-16T14:01:24.600000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_2",
+      "event_time": "2026-10-16T14:01:32.800000+00:00",
+      "observed_time": "2026-10-16T14:01:33.800000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:35+00:00",
+      "observed_time": "2026-10-16T14:01:36+00:00",
+      "source": "application",
+      "service": "OrderService",
+      "metric": "ServiceRequestHang",
+      "value": 80.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_APIGateway_2",
+      "event_time": "2026-10-16T14:01:35+00:00",
+      "observed_time": "2026-10-16T14:01:36+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -180,34 +458,36 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "ABSTAIN",
-    "acceptable_verdict_level": "ABSTAIN",
     "acceptable_outcomes": [
       {
         "verdict": "ABSTAIN",
         "roots": [],
-        "max_level": "ABSTAIN"
+        "max_level": "ABSTAIN",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Telemetry source cloudwatch is DOWN; database alarms cannot be validated, engine must ABSTAIN.",
+    "max_level_by_root": {},
+    "identifiability_note": "Primary metric stream cloudwatch is DOWN on 12-node enterprise cluster; engine must ABSTAIN. Root PostgresPrimary starts at t=25s; dependent OrderService symptoms appear at t=75s.",
     "incident_groups": []
   },
   "perturbations": [
     "source_down"
   ],
   "tags": [
+    "independent",
     "source_down",
-    "independent_test"
+    "12node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Telemetry source cloudwatch is DOWN; database alarms cannot be validated, engine must ABSTAIN.",
-  "acceptable_verdict_level": "ABSTAIN",
+  "identifiability_note": "Primary metric stream cloudwatch is DOWN on 12-node enterprise cluster; engine must ABSTAIN. Root PostgresPrimary starts at t=25s; dependent OrderService symptoms appear at t=75s.",
   "acceptable_outcomes": [
     {
       "verdict": "ABSTAIN",
       "roots": [],
-      "max_level": "ABSTAIN"
+      "max_level": "ABSTAIN",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

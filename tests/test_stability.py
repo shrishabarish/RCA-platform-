@@ -28,7 +28,7 @@ def test_aws_call_failure_resilience(test_client):
         assert len(incidents) > 0
         latest = incidents[0]
         assert latest["probable_root_cause"] is not None
-        assert "confidence" in latest
+        assert "ranking_score" in latest or "confidence" in latest
 
 
 def test_duplicate_events_idempotence(test_client):

@@ -1,0 +1,325 @@
+{
+  "case_id": "indep_033_misleading_blame_third_party_root_6node",
+  "family_id": "independent_eval_v1",
+  "base_case_id": null,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1033,
+  "topology": {
+    "nodes": [
+      {
+        "id": "EC2",
+        "type": "compute",
+        "label": "EC2 Fleet",
+        "criticality": 0.9
+      },
+      {
+        "id": "DynamoDB",
+        "type": "database",
+        "label": "DynamoDB Table",
+        "criticality": 0.95
+      },
+      {
+        "id": "Auth",
+        "type": "auth",
+        "label": "Auth Service",
+        "criticality": 0.9
+      },
+      {
+        "id": "Worker",
+        "type": "worker",
+        "label": "Worker Fleet",
+        "criticality": 0.8
+      },
+      {
+        "id": "API",
+        "type": "service",
+        "label": "API Gateway",
+        "criticality": 0.85
+      },
+      {
+        "id": "Application",
+        "type": "service",
+        "label": "Web Client",
+        "criticality": 0.7
+      }
+    ],
+    "edges": [
+      [
+        "API",
+        "EC2"
+      ],
+      [
+        "API",
+        "DynamoDB"
+      ],
+      [
+        "API",
+        "Auth"
+      ],
+      [
+        "Worker",
+        "DynamoDB"
+      ],
+      [
+        "Worker",
+        "EC2"
+      ],
+      [
+        "Application",
+        "API"
+      ],
+      [
+        "Application",
+        "Worker"
+      ]
+    ],
+    "topology_version": "real-6node"
+  },
+  "events": [
+    {
+      "event_id": "evt_05",
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "HostResourceSaturation",
+      "value": 5.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "application",
+      "service": "Auth",
+      "metric": "IdentityValidationStall",
+      "value": 92.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_01",
+      "event_time": "2026-10-16T14:00:25+00:00",
+      "observed_time": "2026-10-16T14:00:26+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:26.800000+00:00",
+      "observed_time": "2026-10-16T14:00:27.800000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:27.300000+00:00",
+      "observed_time": "2026-10-16T14:00:28.300000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_06",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "ThreadContextSwitchStorm",
+      "value": 2.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoDB_1",
+      "event_time": "2026-10-16T14:00:31.700000+00:00",
+      "observed_time": "2026-10-16T14:00:32.700000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:35+00:00",
+      "observed_time": "2026-10-16T14:00:36+00:00",
+      "source": "application",
+      "service": "Auth",
+      "metric": "TokenSignatureReject",
+      "value": 86.0,
+      "severity": "MEDIUM",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "application",
+      "service": "API",
+      "metric": "NetworkSocketTimeout",
+      "value": 100.0,
+      "severity": "CRITICAL",
+      "target": "EC2",
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoDB_2",
+      "event_time": "2026-10-16T14:01:02.600000+00:00",
+      "observed_time": "2026-10-16T14:01:03.600000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:10+00:00",
+      "observed_time": "2026-10-16T14:01:11+00:00",
+      "source": "application",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": "EC2",
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:12.800000+00:00",
+      "observed_time": "2026-10-16T14:01:13.800000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:01:18.800000+00:00",
+      "observed_time": "2026-10-16T14:01:19.800000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:01:20+00:00",
+      "observed_time": "2026-10-16T14:01:21+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    }
+  ],
+  "source_health": [
+    {
+      "source": "cloudwatch",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "cloudtrail",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "otel",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "syslog",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    },
+    {
+      "source": "application",
+      "timestamp": "2026-10-16T14:00:00+00:00",
+      "status": "HEALTHY"
+    }
+  ],
+  "ground_truth": {
+    "true_root_causes": [
+      "Auth"
+    ],
+    "onset_times": {},
+    "symptom_to_cause": {},
+    "acceptable_outcomes": [
+      {
+        "verdict": "DIAGNOSE",
+        "roots": [
+          "Auth"
+        ],
+        "max_level": "CONFIRMED",
+        "allow_partial": false
+      }
+    ],
+    "max_level_by_root": {
+      "Auth": "CONFIRMED",
+      "API": "ABSTAIN",
+      "EC2": "ABSTAIN"
+    },
+    "identifiability_note": "Misleading blame: API reports critical errors claiming EC2 host failure (target='EC2'), but EC2 emits verified healthy metric telemetry and heartbeats. The true root is Auth service starting at t=15s. API symptoms occur at t=45s (>t_root=15s). Auth has 1 HIGH + 1 MEDIUM, while API has 2 CRITICAL (root lower severity).",
+    "incident_groups": []
+  },
+  "perturbations": [
+    "misleading_blame"
+  ],
+  "tags": [
+    "independent",
+    "misleading_blame",
+    "6node"
+  ],
+  "is_hard": false,
+  "telemetry_policy": null,
+  "identifiability_note": "Misleading blame: API reports critical errors claiming EC2 host failure (target='EC2'), but EC2 emits verified healthy metric telemetry and heartbeats. The true root is Auth service starting at t=15s. API symptoms occur at t=45s (>t_root=15s). Auth has 1 HIGH + 1 MEDIUM, while API has 2 CRITICAL (root lower severity).",
+  "acceptable_outcomes": [
+    {
+      "verdict": "DIAGNOSE",
+      "roots": [
+        "Auth"
+      ],
+      "max_level": "CONFIRMED",
+      "allow_partial": false
+    }
+  ],
+  "max_level_by_root": {
+    "Auth": "CONFIRMED",
+    "API": "ABSTAIN",
+    "EC2": "ABSTAIN"
+  }
+}

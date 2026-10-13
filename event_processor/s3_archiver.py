@@ -225,7 +225,7 @@ class AWSS3Archiver:
                 "archived_at": meta.get("archived_at"),
                 "s3_uri": f"s3://{self.bucket_name}/incidents/{inc_id}/post_mortem.json",
                 "probable_root_cause": summ.get("probable_root_cause"),
-                "confidence": summ.get("confidence_score"),
+                "ranking_score": summ.get("ranking_score") or summ.get("confidence_score"),
                 "severity": summ.get("severity")
             })
         return summaries

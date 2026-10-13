@@ -1,9 +1,9 @@
 {
   "case_id": "indep_029_no_anomaly_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1029,
   "topology": {
     "nodes": [
       {
@@ -77,64 +77,76 @@
   },
   "events": [
     {
-      "event_id": "hb_6_EC2",
+      "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:10+00:00",
       "observed_time": "2026-10-16T14:00:11+00:00",
       "source": "cloudwatch",
       "service": "EC2",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_6_DynamoDB",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:18+00:00",
+      "observed_time": "2026-10-16T14:00:19+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_6_Auth",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_03",
+      "event_time": "2026-10-16T14:00:26+00:00",
+      "observed_time": "2026-10-16T14:00:27+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_6_Worker",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_04",
+      "event_time": "2026-10-16T14:00:34+00:00",
+      "observed_time": "2026-10-16T14:00:35+00:00",
       "source": "cloudwatch",
       "service": "Worker",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_6_API",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_05",
+      "event_time": "2026-10-16T14:00:42+00:00",
+      "observed_time": "2026-10-16T14:00:43+00:00",
       "source": "cloudwatch",
       "service": "API",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_6_Application",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_06",
+      "event_time": "2026-10-16T14:00:50+00:00",
+      "observed_time": "2026-10-16T14:00:51+00:00",
       "source": "cloudwatch",
       "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -168,34 +180,36 @@
     "true_root_causes": [],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "ABSTAIN",
-    "acceptable_verdict_level": "ABSTAIN",
     "acceptable_outcomes": [
       {
         "verdict": "ABSTAIN",
         "roots": [],
-        "max_level": "ABSTAIN"
+        "max_level": "ABSTAIN",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Entire 6-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
+    "max_level_by_root": {},
+    "identifiability_note": "Entire 6-node cluster is completely healthy; zero anomalies observed; engine must ABSTAIN.",
     "incident_groups": []
   },
   "perturbations": [
     "no_anomaly"
   ],
   "tags": [
+    "independent",
     "no_anomaly",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Entire 6-node system is completely healthy; zero anomalies observed; engine must ABSTAIN.",
-  "acceptable_verdict_level": "ABSTAIN",
+  "identifiability_note": "Entire 6-node cluster is completely healthy; zero anomalies observed; engine must ABSTAIN.",
   "acceptable_outcomes": [
     {
       "verdict": "ABSTAIN",
       "roots": [],
-      "max_level": "ABSTAIN"
+      "max_level": "ABSTAIN",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

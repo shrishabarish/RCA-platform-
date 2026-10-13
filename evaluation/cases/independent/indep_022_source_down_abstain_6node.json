@@ -1,9 +1,9 @@
 {
   "case_id": "indep_022_source_down_abstain_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1022,
   "topology": {
     "nodes": [
       {
@@ -78,13 +78,147 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:12+00:00",
+      "observed_time": "2026-10-16T14:00:13+00:00",
+      "source": "application",
+      "service": "DynamoDB",
+      "metric": "StorageLockContention",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_EC2_1",
+      "event_time": "2026-10-16T14:00:22.100000+00:00",
+      "observed_time": "2026-10-16T14:00:23.100000+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:28+00:00",
+      "observed_time": "2026-10-16T14:00:29+00:00",
+      "source": "application",
+      "service": "DynamoDB",
+      "metric": "StorageWriteThrottle",
+      "value": 90.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:28.700000+00:00",
+      "observed_time": "2026-10-16T14:00:29.700000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Auth_1",
+      "event_time": "2026-10-16T14:00:31.100000+00:00",
+      "observed_time": "2026-10-16T14:00:32.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:32.300000+00:00",
+      "observed_time": "2026-10-16T14:00:33.300000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
       "source": "application",
       "service": "API",
-      "metric": "InternalServerErrorRate",
-      "value": 50.0,
-      "severity": "CRITICAL"
+      "metric": "NetworkSocketTimeout",
+      "value": 100.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:00:46.100000+00:00",
+      "observed_time": "2026-10-16T14:00:47.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_EC2_2",
+      "event_time": "2026-10-16T14:00:54.900000+00:00",
+      "observed_time": "2026-10-16T14:00:55.900000+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:00:56.500000+00:00",
+      "observed_time": "2026-10-16T14:00:57.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Auth_2",
+      "event_time": "2026-10-16T14:01:00.600000+00:00",
+      "observed_time": "2026-10-16T14:01:01.600000+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:05+00:00",
+      "observed_time": "2026-10-16T14:01:06+00:00",
+      "source": "application",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 85.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -120,34 +254,36 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "ABSTAIN",
-    "acceptable_verdict_level": "ABSTAIN",
     "acceptable_outcomes": [
       {
         "verdict": "ABSTAIN",
         "roots": [],
-        "max_level": "ABSTAIN"
+        "max_level": "ABSTAIN",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Telemetry source cloudwatch is DOWN; engine cannot observe primary metrics for database and must ABSTAIN.",
+    "max_level_by_root": {},
+    "identifiability_note": "Primary telemetry source cloudwatch is DOWN; engine cannot confirm unobserved dependencies; engine must ABSTAIN. Root DynamoDB starts at t=12s; dependent API symptoms appear at t=45s.",
     "incident_groups": []
   },
   "perturbations": [
     "source_down"
   ],
   "tags": [
+    "independent",
     "source_down",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Telemetry source cloudwatch is DOWN; engine cannot observe primary metrics for database and must ABSTAIN.",
-  "acceptable_verdict_level": "ABSTAIN",
+  "identifiability_note": "Primary telemetry source cloudwatch is DOWN; engine cannot confirm unobserved dependencies; engine must ABSTAIN. Root DynamoDB starts at t=12s; dependent API symptoms appear at t=45s.",
   "acceptable_outcomes": [
     {
       "verdict": "ABSTAIN",
       "roots": [],
-      "max_level": "ABSTAIN"
+      "max_level": "ABSTAIN",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

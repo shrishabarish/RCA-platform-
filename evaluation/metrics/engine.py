@@ -99,9 +99,19 @@ def bootstrap_ci(data: List[float], n_bootstrap: int = 1000, alpha: float = 0.05
 
 def compute_top_k_accuracy(predictions: List[Tuple[EvaluationCase, BaselineResult]], k: int = 1) -> MetricSummary:
     """Computes Top-K accuracy on single-root cases requiring DIAGNOSE with family-clustered bootstrap."""
+    def _is_single_root_diagnose(c: EvaluationCase) -> bool:
+        if not c.ground_truth or len(c.ground_truth.true_root_causes) != 1:
+            return False
+        outcomes = getattr(c, "acceptable_outcomes", []) or (getattr(c.ground_truth, "acceptable_outcomes", []) if c.ground_truth else [])
+        if outcomes:
+            return any(o.verdict == "DIAGNOSE" for o in outcomes)
+        if hasattr(c.ground_truth, "expected_verdict"):
+            return getattr(c.ground_truth, "expected_verdict") == "DIAGNOSE"
+        return True
+
     single_root_cases = [
         (c, p) for c, p in predictions
-        if len(c.ground_truth.true_root_causes) == 1 and c.ground_truth.expected_verdict == "DIAGNOSE"
+        if _is_single_root_diagnose(c)
     ]
     n = len(single_root_cases)
     if n == 0:
@@ -155,9 +165,19 @@ def extract_predicted_root_set(pred: BaselineResult, alpha: float = 0.85, max_k:
 
 def compute_multiroot_f1(predictions: List[Tuple[EvaluationCase, BaselineResult]], alpha: float = 0.85) -> MetricSummary:
     """Computes set-based multi-root Precision, Recall, and F1 across multi-root cases."""
+    def _is_multi_root_diagnose(c: EvaluationCase) -> bool:
+        if not c.ground_truth or len(c.ground_truth.true_root_causes) < 2:
+            return False
+        outcomes = getattr(c, "acceptable_outcomes", []) or (getattr(c.ground_truth, "acceptable_outcomes", []) if c.ground_truth else [])
+        if outcomes:
+            return any(o.verdict == "DIAGNOSE" for o in outcomes)
+        if hasattr(c.ground_truth, "expected_verdict"):
+            return getattr(c.ground_truth, "expected_verdict") == "DIAGNOSE"
+        return True
+
     multi_cases = [
         (c, p) for c, p in predictions
-        if len(c.ground_truth.true_root_causes) >= 2 and c.ground_truth.expected_verdict == "DIAGNOSE"
+        if _is_multi_root_diagnose(c)
     ]
     n = len(multi_cases)
     if n == 0:
@@ -195,14 +215,22 @@ def compute_abstention_metrics(predictions: List[Tuple[EvaluationCase, BaselineR
     Abstention Precision = correct abstentions / all abstentions
     Abstention Recall = correct abstentions / all cases requiring abstention
     """
+    def _requires_abstention(c: EvaluationCase) -> bool:
+        outcomes = getattr(c, "acceptable_outcomes", []) or (getattr(c.ground_truth, "acceptable_outcomes", []) if c.ground_truth else [])
+        if outcomes:
+            return any(o.verdict == "ABSTAIN" and not o.roots for o in outcomes)
+        if hasattr(c.ground_truth, "expected_verdict"):
+            return getattr(c.ground_truth, "expected_verdict") == "ABSTAIN"
+        return len(c.ground_truth.true_root_causes) == 0 if c.ground_truth else False
+
     all_abstentions = sum(1 for _, p in predictions if p.verdict == "ABSTAIN")
-    cases_requiring_abstention = sum(1 for c, _ in predictions if c.ground_truth.expected_verdict == "ABSTAIN")
-    correct_abstentions = sum(1 for c, p in predictions if p.verdict == "ABSTAIN" and c.ground_truth.expected_verdict == "ABSTAIN")
+    cases_requiring_abstention = sum(1 for c, _ in predictions if _requires_abstention(c))
+    correct_abstentions = sum(1 for c, p in predictions if p.verdict == "ABSTAIN" and _requires_abstention(c))
 
     prec_fam = defaultdict(list)
     for c, p in predictions:
         if p.verdict == "ABSTAIN":
-            prec_fam[c.family_id].append(1.0 if c.ground_truth.expected_verdict == "ABSTAIN" else 0.0)
+            prec_fam[c.family_id].append(1.0 if _requires_abstention(c) else 0.0)
 
     if all_abstentions == 0:
         prec_summary = MetricSummary(metric_name="Abstention_Precision", value=0.0, sample_size=0, count_k=0, is_na=True, flag_low_sample=True)
@@ -221,7 +249,7 @@ def compute_abstention_metrics(predictions: List[Tuple[EvaluationCase, BaselineR
 
     rec_fam = defaultdict(list)
     for c, p in predictions:
-        if c.ground_truth.expected_verdict == "ABSTAIN":
+        if _requires_abstention(c):
             rec_fam[c.family_id].append(1.0 if p.verdict == "ABSTAIN" else 0.0)
 
     if cases_requiring_abstention == 0:
@@ -242,12 +270,122 @@ def compute_abstention_metrics(predictions: List[Tuple[EvaluationCase, BaselineR
     return prec_summary, rec_summary
 
 
+def is_outcome_acceptable(
+    case: EvaluationCase,
+    pred: BaselineResult,
+    confidence_threshold: float = 75.0
+) -> Tuple[bool, bool]:
+    """
+    Evaluates whether an engine prediction is acceptable according to the ground truth.
+    Returns (is_acceptable, is_confident_wrong).
+
+    SCORER SPECIFICATION & CONTRACT:
+    - Scorer must use ground_truth.acceptable_outcomes and ground_truth.max_level_by_root ONLY.
+    - The legacy field ground_truth.acceptable_verdict_level is explicitly IGNORED.
+    - If acceptable_outcomes is defined:
+        1. An ABSTAIN prediction is acceptable if any AcceptableOutcome in acceptable_outcomes
+           has verdict == "ABSTAIN".
+        2. A DIAGNOSE prediction is acceptable if there exists an AcceptableOutcome where:
+           - outcome.verdict == "DIAGNOSE"
+           - The predicted root causes match outcome.roots (or top predicted root in outcome.roots)
+           - For all predicted roots, if root in max_level_by_root:
+               - If max_level_by_root[root] == "PROBABLE", confidence must be < confidence_threshold.
+                 A diagnosis with confidence >= confidence_threshold on a PROBABLE-capped root is confident-wrong.
+               - If max_level_by_root[root] == "ABSTAIN", diagnosing this root is wrong.
+    - If acceptable_outcomes is not populated, falls back to expected_verdict and true_root_causes.
+    """
+    gt = case.ground_truth
+    acceptable_outcomes = getattr(gt, "acceptable_outcomes", []) or getattr(case, "acceptable_outcomes", [])
+    max_level_by_root = getattr(gt, "max_level_by_root", {}) or getattr(case, "max_level_by_root", {})
+
+    if acceptable_outcomes:
+        # Check against acceptable_outcomes
+        if pred.verdict == "ABSTAIN":
+            has_abstain_outcome = any(o.verdict == "ABSTAIN" for o in acceptable_outcomes)
+            return has_abstain_outcome, False
+
+        # pred.verdict == "DIAGNOSE"
+        top_pred = pred.predicted_root_causes[0] if pred.predicted_root_causes else None
+        if not top_pred:
+            # Predicted DIAGNOSE with no roots
+            return False, False
+
+        # Check if top_pred is allowed by any acceptable outcome
+        matching_outcomes = [
+            o for o in acceptable_outcomes
+            if o.verdict == "DIAGNOSE" and top_pred in o.roots
+        ]
+
+        if not matching_outcomes:
+            # Blamed a service not in acceptable outcomes (e.g., blamed DynamoDB in contradictory case)
+            is_cw = (pred.confidence >= confidence_threshold)
+            return False, is_cw
+
+        # In multi-root cases (where an outcome requires > 1 root):
+        # Full root set is the only fully correct outcome; single-root answers are scored as "incomplete" (not correct)
+        pred_root_set = set(extract_predicted_root_set(pred, alpha=0.85, oracle_len=None) or (pred.predicted_root_causes or []))
+
+        # Check if there is an exact multi-root match
+        exact_multi_matches = [
+            o for o in matching_outcomes
+            if len(o.roots) > 1 and set(o.roots) == pred_root_set
+        ]
+        if exact_multi_matches:
+            # Full root set correctly predicted!
+            for r in pred_root_set:
+                allowed_max_level = max_level_by_root.get(r)
+                if allowed_max_level == "ABSTAIN":
+                    return False, (pred.confidence >= confidence_threshold)
+                elif allowed_max_level == "PROBABLE" and pred.confidence >= confidence_threshold:
+                    return False, True
+            return True, False
+
+        # If matching outcome requires multiple roots, but prediction is partial (e.g. single root):
+        if any(len(o.roots) > 1 and not getattr(o, "allow_partial", False) for o in matching_outcomes):
+            if not any(len(o.roots) == 1 for o in matching_outcomes):
+                # Single-root or incomplete answer on multi-root case: NOT correct (incomplete), NOT confident-wrong
+                return False, False
+
+        # Single-root outcome match
+        single_matches = [o for o in matching_outcomes if len(o.roots) == 1]
+        if single_matches:
+            allowed_max_level = max_level_by_root.get(top_pred)
+            if allowed_max_level == "ABSTAIN":
+                is_cw = (pred.confidence >= confidence_threshold)
+                return False, is_cw
+            elif allowed_max_level == "PROBABLE":
+                if pred.confidence >= confidence_threshold:
+                    return False, True
+                return True, False
+            else:
+                return True, False
+
+        return False, False
+
+    # Fallback to standard true_root_causes
+    is_wrong = False
+    exp_verdict = getattr(gt, "expected_verdict", None)
+    if exp_verdict == "ABSTAIN" or (exp_verdict is None and len(gt.true_root_causes) == 0):
+        if pred.verdict != "ABSTAIN":
+            is_wrong = True
+    else:
+        true_roots = gt.true_root_causes
+        top_pred = pred.predicted_root_causes[0] if pred.predicted_root_causes else None
+        if top_pred not in true_roots:
+            is_wrong = True
+
+    is_cw = (is_wrong and pred.confidence >= confidence_threshold)
+    return not is_wrong, is_cw
+
+
 def compute_confident_wrong_rate(
     predictions: List[Tuple[EvaluationCase, BaselineResult]],
     confidence_threshold: float = 75.0
 ) -> MetricSummary:
     """
     Confident-wrong rate = incorrect diagnoses with score >= threshold / all cases.
+    Evaluates correctness strictly using acceptable_outcomes and max_level_by_root,
+    ignoring legacy acceptable_verdict_level.
     """
     n = len(predictions)
     if n == 0:
@@ -256,17 +394,8 @@ def compute_confident_wrong_rate(
     family_map = defaultdict(list)
     cw_count = 0
     for c, p in predictions:
-        is_wrong = False
-        if c.ground_truth.expected_verdict == "ABSTAIN":
-            if p.verdict != "ABSTAIN":
-                is_wrong = True
-        else:
-            true_roots = c.ground_truth.true_root_causes
-            top_pred = p.predicted_root_causes[0] if p.predicted_root_causes else None
-            if top_pred not in true_roots:
-                is_wrong = True
-
-        ind = 1.0 if (is_wrong and p.confidence >= confidence_threshold) else 0.0
+        _, is_cw = is_outcome_acceptable(c, p, confidence_threshold=confidence_threshold)
+        ind = 1.0 if is_cw else 0.0
         if ind == 1.0:
             cw_count += 1
         family_map[c.family_id].append(ind)

@@ -1,9 +1,9 @@
 {
   "case_id": "indep_019_edge_root_entrypoint_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1019,
   "topology": {
     "nodes": [
       {
@@ -78,33 +78,159 @@
   "events": [
     {
       "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:08+00:00",
+      "observed_time": "2026-10-16T14:00:09+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "HostResourceSaturation",
+      "value": 98.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:10+00:00",
       "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "application",
-      "service": "Application",
-      "metric": "RequestFloodVolume",
-      "value": 10000.0,
-      "severity": "CRITICAL"
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:00:10+00:00",
+      "observed_time": "2026-10-16T14:00:11+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
+      "event_time": "2026-10-16T14:00:24+00:00",
+      "observed_time": "2026-10-16T14:00:25+00:00",
       "source": "cloudwatch",
-      "service": "API",
-      "metric": "RateLimitThrottling",
-      "value": 250.0,
-      "severity": "HIGH"
+      "service": "EC2",
+      "metric": "ThreadContextSwitchStorm",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "rec_ec2_01",
+      "event_time": "2026-10-16T14:00:35+00:00",
+      "observed_time": "2026-10-16T14:00:36+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "HostResourceSaturation",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_ec2_01",
+      "event_time": "2026-10-16T14:00:40+00:00",
+      "observed_time": "2026-10-16T14:00:41+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:41.400000+00:00",
+      "observed_time": "2026-10-16T14:00:42.400000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "ServiceRequestHang",
+      "value": 99.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:05+00:00",
+      "observed_time": "2026-10-16T14:01:06+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 90.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:09.600000+00:00",
+      "observed_time": "2026-10-16T14:01:10.600000+00:00",
       "source": "cloudwatch",
       "service": "Worker",
-      "metric": "QueueSaturated",
-      "value": 95.0,
-      "severity": "HIGH"
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "rec_ec2_02",
+      "event_time": "2026-10-16T14:01:10+00:00",
+      "observed_time": "2026-10-16T14:01:11+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "ThreadContextSwitchStorm",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_ec2_02",
+      "event_time": "2026-10-16T14:01:15+00:00",
+      "observed_time": "2026-10-16T14:01:16+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_05",
+      "event_time": "2026-10-16T14:01:25+00:00",
+      "observed_time": "2026-10-16T14:01:26+00:00",
+      "source": "application",
+      "service": "Application",
+      "metric": "NetworkSocketTimeout",
+      "value": 45.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -136,42 +262,44 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "Application"
+      "API"
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
         "roots": [
-          "Application"
+          "API"
         ],
-        "max_level": "CONFIRMED"
+        "max_level": "CONFIRMED",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Frontend entrypoint Application client bug generates excessive flood volume (10k req/s), causing downstream API rate limits and Worker saturation.",
+    "max_level_by_root": {},
+    "identifiability_note": "API edge entrypoint gateway failure; callees EC2 and DynamoDB have heartbeats. Callee EC2 has 2 CRITICAL events, causing highest-severity heuristic to fail.",
     "incident_groups": []
   },
   "perturbations": [
     "edge_root"
   ],
   "tags": [
+    "independent",
     "edge_root",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Frontend entrypoint Application client bug generates excessive flood volume (10k req/s), causing downstream API rate limits and Worker saturation.",
-  "acceptable_verdict_level": "CONFIRMED",
+  "identifiability_note": "API edge entrypoint gateway failure; callees EC2 and DynamoDB have heartbeats. Callee EC2 has 2 CRITICAL events, causing highest-severity heuristic to fail.",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
       "roots": [
-        "Application"
+        "API"
       ],
-      "max_level": "CONFIRMED"
+      "max_level": "CONFIRMED",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

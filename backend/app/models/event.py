@@ -60,7 +60,7 @@ class Incident(BaseModel):
     created_at: datetime
     updated_at: datetime
     probable_root_cause: Optional[str] = None
-    confidence: Optional[float] = None
+    ranking_score: Optional[float] = None
     affected_services: List[str] = Field(default_factory=list)
     score_breakdown: Dict[str, Any] = Field(default_factory=dict)
     remediation_suggestion: Optional[str] = None
@@ -69,6 +69,14 @@ class Incident(BaseModel):
     delivery_error: Optional[str] = None
     analysis_status: str = "PENDING"
     analyzed_at: Optional[datetime] = None
+
+    @property
+    def confidence(self) -> Optional[float]:
+        return self.ranking_score
+
+    @confidence.setter
+    def confidence(self, val: Optional[float]) -> None:
+        self.ranking_score = val
 
 
 class RemediationPlan(BaseModel):

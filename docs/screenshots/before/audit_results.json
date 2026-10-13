@@ -1,0 +1,8 @@
+{
+  "load_time_ms": 374.5821999909822,
+  "status": 200,
+  "console_messages": [
+    "[log] WebSocket connected for real-time live telemetry streaming."
+  ],
+  "page_errors": []
+}

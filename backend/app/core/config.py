@@ -133,6 +133,15 @@ class RCAConfig(BaseModel):
     timeout_seconds: float = 2.0
 
 
+class RemediationConfig(BaseModel):
+    auto_remediation_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTO_REMEDIATION_ENABLED", "false").lower() in ("true", "1", "yes")
+    )
+    human_approval_secret: str = Field(
+        default_factory=lambda: os.getenv("HUMAN_APPROVAL_SECRET", "HUMAN_APPROVED_ROOT_CONFIRMED")
+    )
+
+
 class AppConfig(BaseModel):
     env: str = Field(default_factory=lambda: os.getenv("APP_ENV", "development"))
     host: str = Field(default_factory=lambda: os.getenv("HOST", "0.0.0.0"))
@@ -148,6 +157,7 @@ class AppConfig(BaseModel):
     topology: TopologyConfig = Field(default_factory=TopologyConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     rca: RCAConfig = Field(default_factory=RCAConfig)
+    remediation: RemediationConfig = Field(default_factory=RemediationConfig)
 
     service_aliases: Dict[str, str] = {
         "codereview-backend": "API",

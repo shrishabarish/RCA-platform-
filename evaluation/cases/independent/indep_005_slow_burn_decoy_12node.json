@@ -1,9 +1,9 @@
 {
   "case_id": "indep_005_slow_burn_decoy_12node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1005,
   "topology": {
     "nodes": [
       {
@@ -137,54 +137,328 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
+      "event_id": "evt_01a",
       "event_time": "2026-10-16T14:00:00+00:00",
       "observed_time": "2026-10-16T14:00:01+00:00",
       "source": "application",
-      "service": "CatalogService",
-      "metric": "LookupLatencyFluctuation",
-      "value": 220.0,
-      "severity": "HIGH"
+      "service": "PaymentService",
+      "metric": "DownstreamCallTimeout",
+      "value": 92.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:24+00:00",
-      "observed_time": "2026-10-16T14:00:25+00:00",
+      "event_id": "hb_bg_RedisCache_1",
+      "event_time": "2026-10-16T14:00:13+00:00",
+      "observed_time": "2026-10-16T14:00:14+00:00",
       "source": "cloudwatch",
       "service": "RedisCache",
-      "metric": "KeyEvictionSurge",
-      "value": 95.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:34+00:00",
-      "observed_time": "2026-10-16T14:00:35+00:00",
-      "source": "cloudwatch",
-      "service": "APIGateway",
-      "metric": "HTTP500Rate",
-      "value": 45.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "cloudwatch",
-      "service": "PostgresPrimary",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_id": "hb_bg_AuthService_1",
+      "event_time": "2026-10-16T14:00:16.300000+00:00",
+      "observed_time": "2026-10-16T14:00:17.300000+00:00",
       "source": "cloudwatch",
       "service": "AuthService",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_1",
+      "event_time": "2026-10-16T14:00:17.100000+00:00",
+      "observed_time": "2026-10-16T14:00:18.100000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PostgresPrimary_1",
+      "event_time": "2026-10-16T14:00:20.100000+00:00",
+      "observed_time": "2026-10-16T14:00:21.100000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_1",
+      "event_time": "2026-10-16T14:00:21.600000+00:00",
+      "observed_time": "2026-10-16T14:00:22.600000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_1",
+      "event_time": "2026-10-16T14:00:23.500000+00:00",
+      "observed_time": "2026-10-16T14:00:24.500000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_1",
+      "event_time": "2026-10-16T14:00:25.800000+00:00",
+      "observed_time": "2026-10-16T14:00:26.800000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_1",
+      "event_time": "2026-10-16T14:00:29+00:00",
+      "observed_time": "2026-10-16T14:00:30+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01b",
+      "event_time": "2026-10-16T14:00:30+00:00",
+      "observed_time": "2026-10-16T14:00:31+00:00",
+      "source": "application",
+      "service": "PaymentService",
+      "metric": "ExecutionLatencySpike",
+      "value": 96.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_1",
+      "event_time": "2026-10-16T14:00:32.200000+00:00",
+      "observed_time": "2026-10-16T14:00:33.200000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "rec_pay_01",
+      "event_time": "2026-10-16T14:01:00+00:00",
+      "observed_time": "2026-10-16T14:01:01+00:00",
+      "source": "application",
+      "service": "PaymentService",
+      "metric": "DownstreamCallTimeout",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "rec_pay_02",
+      "event_time": "2026-10-16T14:01:15+00:00",
+      "observed_time": "2026-10-16T14:01:16+00:00",
+      "source": "application",
+      "service": "PaymentService",
+      "metric": "ExecutionLatencySpike",
+      "value": 12.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_pay_01",
+      "event_time": "2026-10-16T14:01:25+00:00",
+      "observed_time": "2026-10-16T14:01:26+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_pay_02",
+      "event_time": "2026-10-16T14:01:50+00:00",
+      "observed_time": "2026-10-16T14:01:51+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_2",
+      "event_time": "2026-10-16T14:01:50.100000+00:00",
+      "observed_time": "2026-10-16T14:01:51.100000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:02:10+00:00",
+      "observed_time": "2026-10-16T14:02:11+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "ServiceRequestHang",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PostgresPrimary_2",
+      "event_time": "2026-10-16T14:02:17.400000+00:00",
+      "observed_time": "2026-10-16T14:02:18.400000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_2",
+      "event_time": "2026-10-16T14:02:27.400000+00:00",
+      "observed_time": "2026-10-16T14:02:28.400000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_2",
+      "event_time": "2026-10-16T14:02:29.900000+00:00",
+      "observed_time": "2026-10-16T14:02:30.900000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:02:35+00:00",
+      "observed_time": "2026-10-16T14:02:36+00:00",
+      "source": "cloudwatch",
+      "service": "OrderService",
+      "metric": "EndpointFailureRate",
+      "value": 92.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_2",
+      "event_time": "2026-10-16T14:02:40.600000+00:00",
+      "observed_time": "2026-10-16T14:02:41.600000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_RedisCache_2",
+      "event_time": "2026-10-16T14:02:40.800000+00:00",
+      "observed_time": "2026-10-16T14:02:41.800000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_2",
+      "event_time": "2026-10-16T14:02:40.900000+00:00",
+      "observed_time": "2026-10-16T14:02:41.900000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_2",
+      "event_time": "2026-10-16T14:02:42.700000+00:00",
+      "observed_time": "2026-10-16T14:02:43.700000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_2",
+      "event_time": "2026-10-16T14:02:48.400000+00:00",
+      "observed_time": "2026-10-16T14:02:49.400000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:03:00+00:00",
+      "observed_time": "2026-10-16T14:03:01+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "NetworkSocketTimeout",
+      "value": 45.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -216,42 +490,44 @@
   ],
   "ground_truth": {
     "true_root_causes": [
-      "RedisCache"
+      "OrderService"
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
         "roots": [
-          "RedisCache"
+          "OrderService"
         ],
-        "max_level": "CONFIRMED"
+        "max_level": "CONFIRMED",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "CatalogService latency spike at t=0s; RedisCache eviction storm and memory exhaustion surfaces at t=24s (>10s later).",
+    "max_level_by_root": {},
+    "identifiability_note": "Early payment stall on PaymentService at t=0s; OrderService execution hang triggers at t=130s (>10s later). PaymentService emits healthy recovery metrics (0.0 LOW) at t=60s and t=75s before APIGateway symptom at t=180s. Both OrderService and PaymentService have 2 CRITICAL events (equal severity).",
     "incident_groups": []
   },
   "perturbations": [
     "root_not_earliest"
   ],
   "tags": [
+    "independent",
     "root_not_earliest",
-    "independent_test"
+    "12node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "CatalogService latency spike at t=0s; RedisCache eviction storm and memory exhaustion surfaces at t=24s (>10s later).",
-  "acceptable_verdict_level": "CONFIRMED",
+  "identifiability_note": "Early payment stall on PaymentService at t=0s; OrderService execution hang triggers at t=130s (>10s later). PaymentService emits healthy recovery metrics (0.0 LOW) at t=60s and t=75s before APIGateway symptom at t=180s. Both OrderService and PaymentService have 2 CRITICAL events (equal severity).",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
       "roots": [
-        "RedisCache"
+        "OrderService"
       ],
-      "max_level": "CONFIRMED"
+      "max_level": "CONFIRMED",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

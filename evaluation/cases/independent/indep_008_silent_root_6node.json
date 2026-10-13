@@ -1,9 +1,9 @@
 {
   "case_id": "indep_008_silent_root_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1008,
   "topology": {
     "nodes": [
       {
@@ -78,73 +78,123 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
       "source": "cloudwatch",
       "service": "API",
-      "metric": "WriteTimeout",
+      "metric": "NetworkSocketTimeout",
       "value": 50.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:35+00:00",
-      "observed_time": "2026-10-16T14:00:36+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "CommitFailure",
-      "value": 40.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
-      "source": "application",
-      "service": "Application",
-      "metric": "HTTP502Rate",
-      "value": 20.0,
-      "severity": "HIGH"
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:00:52+00:00",
+      "observed_time": "2026-10-16T14:00:53+00:00",
       "source": "cloudwatch",
       "service": "EC2",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:58+00:00",
+      "observed_time": "2026-10-16T14:00:59+00:00",
       "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
+      "service": "Worker",
+      "metric": "ProcessThreadSaturation",
+      "value": 40.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_03",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:01:00+00:00",
+      "observed_time": "2026-10-16T14:01:01+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:01:08.100000+00:00",
+      "observed_time": "2026-10-16T14:01:09.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:01:28+00:00",
+      "observed_time": "2026-10-16T14:01:29+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 45.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:01:30+00:00",
+      "observed_time": "2026-10-16T14:01:31+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:01:38+00:00",
+      "observed_time": "2026-10-16T14:01:39+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_04",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:01:45+00:00",
+      "observed_time": "2026-10-16T14:01:46+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:55+00:00",
+      "observed_time": "2026-10-16T14:01:56+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "TaskExecutionStall",
+      "value": 35.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -180,38 +230,40 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "PROBABLE",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
         "roots": [
           "DynamoDB"
         ],
-        "max_level": "PROBABLE"
+        "max_level": "PROBABLE",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "DynamoDB partition silent drop emits zero events; dependents API and Worker report storage timeouts. Competing candidates EC2 and Auth emit verified healthy heartbeats inside window.",
+    "max_level_by_root": {},
+    "identifiability_note": "DynamoDB partition silent drop emits zero events; dependents API and Worker fail between t+45s and t+115s. Competing candidates EC2 and Auth emit verified healthy heartbeats inside [t+45s, t+115s]. Worker uses neutral metrics ProcessThreadSaturation and TaskExecutionStall.",
     "incident_groups": []
   },
   "perturbations": [
     "silent_root"
   ],
   "tags": [
+    "independent",
     "silent_root",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "DynamoDB partition silent drop emits zero events; dependents API and Worker report storage timeouts. Competing candidates EC2 and Auth emit verified healthy heartbeats inside window.",
-  "acceptable_verdict_level": "PROBABLE",
+  "identifiability_note": "DynamoDB partition silent drop emits zero events; dependents API and Worker fail between t+45s and t+115s. Competing candidates EC2 and Auth emit verified healthy heartbeats inside [t+45s, t+115s]. Worker uses neutral metrics ProcessThreadSaturation and TaskExecutionStall.",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
       "roots": [
         "DynamoDB"
       ],
-      "max_level": "PROBABLE"
+      "max_level": "PROBABLE",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

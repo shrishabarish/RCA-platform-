@@ -24,6 +24,8 @@ class EventData(BaseModel):
     metric: str
     value: float
     severity: str  # LOW, MEDIUM, HIGH, CRITICAL
+    target: Optional[str] = None
+    dimensions: Dict[str, Any] = Field(default_factory=dict)
 
 
 class SourceHealthRecord(BaseModel):
@@ -36,17 +38,33 @@ class AcceptableOutcome(BaseModel):
     verdict: str  # DIAGNOSE or ABSTAIN
     roots: List[str] = Field(default_factory=list)
     max_level: Optional[str] = "CONFIRMED"  # CONFIRMED or PROBABLE or ABSTAIN
+    allow_partial: bool = False  # False means incomplete root sets are not acceptable
+
+
+from pydantic import BaseModel, Field, model_validator
 
 
 class GroundTruth(BaseModel):
     true_root_causes: List[str]
     onset_times: Dict[str, str] = Field(default_factory=dict)
     symptom_to_cause: Dict[str, str] = Field(default_factory=dict)
-    expected_verdict: Optional[str] = "DIAGNOSE"  # Legacy compatibility
-    acceptable_verdict_level: Optional[str] = "CONFIRMED"  # Legacy compatibility
     acceptable_outcomes: List[AcceptableOutcome] = Field(default_factory=list)
+    max_level_by_root: Dict[str, str] = Field(default_factory=dict)
     identifiability_note: Optional[str] = None
     incident_groups: List[List[str]] = Field(default_factory=list)  # Groups of event IDs or services representing distinct true incidents
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_acceptable_outcomes(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if not data.get("acceptable_outcomes"):
+                exp = data.get("expected_verdict")
+                if exp == "ABSTAIN":
+                    data["acceptable_outcomes"] = [AcceptableOutcome(verdict="ABSTAIN", roots=[])]
+                elif exp == "DIAGNOSE":
+                    roots = data.get("true_root_causes", [])
+                    data["acceptable_outcomes"] = [AcceptableOutcome(verdict="DIAGNOSE", roots=roots)]
+        return data
 
 
 class EvaluationCase(BaseModel):
@@ -64,6 +82,6 @@ class EvaluationCase(BaseModel):
     is_hard: bool = False
     telemetry_policy: Optional[Dict[str, Any]] = None
     identifiability_note: Optional[str] = None
-    acceptable_verdict_level: Optional[str] = None
     acceptable_outcomes: List[AcceptableOutcome] = Field(default_factory=list)
+    max_level_by_root: Dict[str, str] = Field(default_factory=dict)
 

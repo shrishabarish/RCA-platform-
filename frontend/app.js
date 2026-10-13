@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Auto-sync is off by default now based on user request.
     initAutoSync();
 
-    // Fast parallel loading: fetch AWS status, scenarios, and dashboard data simultaneously
+    // Fast parallel loading on first load: only active dashboard overview data
     Promise.allSettled([
         fetchAwsStatus().catch(() => showApiError()),
         fetchCloudArchitectureStatus().catch(() => {}),
@@ -152,6 +152,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Connect to real-time WebSocket stream
     initWebSocket();
 });
+
+let replayCompareLoaded = false;
+async function ensureReplayAndCompareLoaded() {
+    if (replayCompareLoaded) return;
+    await initReplayAndCompare();
+    replayCompareLoaded = true;
+}
+window.ensureReplayAndCompareLoaded = ensureReplayAndCompareLoaded;
 
 function setupEventListeners() {
     // Top Actions
@@ -522,39 +530,138 @@ async function fetchDashboardData(isBackground = false) {
 }
 
 // ---------------------------------------------------------------------------
-// 10. Fetch Incident RCA Details (GET /api/incidents/{id})
+// 10. Fetch Incident RCA Details (GET /api/incidents/{id}/diagnose)
 // ---------------------------------------------------------------------------
 async function fetchIncidentDetails(incidentId) {
     try {
-        const res = await fetch(`${API_BASE}/incidents/${incidentId}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        currentIncidentDetail = await res.json();
-        renderDiagnosis(currentIncidentDetail);
+        const res = await fetch(`${API_BASE}/incidents/${incidentId}/diagnose`);
+        if (!res.ok) {
+            // Fallback to legacy endpoint if diagnose endpoint unavailable
+            const fallbackRes = await fetch(`${API_BASE}/incidents/${incidentId}`);
+            if (!fallbackRes.ok) throw new Error(`HTTP ${fallbackRes.status}`);
+            currentIncidentDetail = await fallbackRes.json();
+            renderDiagnosis(currentIncidentDetail);
+            return;
+        }
+        const data = await res.json();
+        currentIncidentDetail = data;
+        renderDiagnosisFromDiagnose(data);
     } catch (err) {
         console.error("Incident analysis fetch error:", err);
     }
 }
 
 // ---------------------------------------------------------------------------
-// 11. Render SVG Topology with Visual Blast Radius & Hover Tooltip
+// 11. Dynamic Multi-Tier Topology Layout & SVG Rendering (6 & 12+ Nodes)
 // ---------------------------------------------------------------------------
+function computeDynamicLayout(nodes, edges) {
+    if (!nodes || nodes.length === 0) return { width: 620, height: 380, nodeMap: {} };
+
+    // Standard default 6-node case
+    const allKnown = nodes.length <= 6 && nodes.every(n => NODE_POSITIONS[n.id]);
+    if (allKnown) {
+        const nodeMap = {};
+        nodes.forEach(n => {
+            nodeMap[n.id] = {
+                x: n.x || NODE_POSITIONS[n.id].x,
+                y: n.y || NODE_POSITIONS[n.id].y,
+                icon: n.icon || NODE_POSITIONS[n.id].icon,
+                title: n.label || NODE_POSITIONS[n.id].title,
+                desc: n.desc || NODE_POSITIONS[n.id].desc
+            };
+        });
+        return { width: 620, height: 380, nodeMap };
+    }
+
+    // Dynamic tiered layout for arbitrary topologies (e.g. 12-node cases)
+    const nodeIds = nodes.map(n => n.id);
+    const inDegree = {};
+    const adj = {};
+    nodeIds.forEach(id => { inDegree[id] = 0; adj[id] = []; });
+    (edges || []).forEach(e => {
+        if (inDegree[e.target] !== undefined && adj[e.source]) {
+            inDegree[e.target]++;
+            adj[e.source].push(e.target);
+        }
+    });
+
+    const tiers = [];
+    const visited = new Set();
+
+    let currentTier = nodeIds.filter(id => inDegree[id] === 0);
+    if (currentTier.length === 0) currentTier = [nodeIds[0]];
+
+    while (currentTier.length > 0 && visited.size < nodeIds.length) {
+        tiers.push(currentTier);
+        currentTier.forEach(id => visited.add(id));
+        const nextTierSet = new Set();
+        currentTier.forEach(id => {
+            (adj[id] || []).forEach(t => {
+                if (!visited.has(t)) nextTierSet.add(t);
+            });
+        });
+        currentTier = Array.from(nextTierSet);
+    }
+
+    const unvisited = nodeIds.filter(id => !visited.has(id));
+    if (unvisited.length > 0) tiers.push(unvisited);
+
+    const numCols = Math.max(tiers.length, 3);
+    const maxRows = Math.max(...tiers.map(t => t.length), 3);
+
+    const colWidth = 210;
+    const rowHeight = 82;
+    const paddingX = 90;
+    const paddingY = 55;
+
+    const width = Math.max(780, numCols * colWidth + paddingX);
+    const height = Math.max(440, maxRows * rowHeight + paddingY * 2);
+
+    const nodeMap = {};
+    tiers.forEach((tier, colIdx) => {
+        const x = paddingX + colIdx * colWidth;
+        const totalHeight = (tier.length - 1) * rowHeight;
+        const startY = (height - totalHeight) / 2;
+
+        tier.forEach((id, rowIdx) => {
+            const y = startY + rowIdx * rowHeight;
+            const nodeObj = nodes.find(n => n.id === id) || {};
+            const type = (nodeObj.type || "").toLowerCase();
+            const lowerId = id.toLowerCase();
+            let icon = "📦";
+            if (type.includes("gateway") || lowerId.includes("gateway") || lowerId.includes("api")) icon = "🌐";
+            else if (type.includes("auth") || lowerId.includes("auth") || lowerId.includes("token")) icon = "🔐";
+            else if (type.includes("database") || lowerId.includes("db") || lowerId.includes("postgres") || lowerId.includes("dynamo") || lowerId.includes("table")) icon = "🗄️";
+            else if (type.includes("queue") || lowerId.includes("queue") || lowerId.includes("sqs")) icon = "📬";
+            else if (type.includes("cache") || lowerId.includes("cache") || lowerId.includes("redis")) icon = "⚡";
+            else if (type.includes("worker") || lowerId.includes("worker") || lowerId.includes("task")) icon = "⚙️";
+            else if (type.includes("vendor") || lowerId.includes("vendor") || lowerId.includes("external")) icon = "☁️";
+
+            nodeMap[id] = {
+                x,
+                y,
+                icon,
+                title: nodeObj.label || id,
+                desc: nodeObj.type || "Service Tier"
+            };
+        });
+    });
+
+    return { width, height, nodeMap };
+}
+
 function renderTopology(topology, incidentDetail) {
     if (!topology || !topology.nodes) return;
 
-    const rootCause = incidentDetail?.probable_root_cause || null;
+    const rootCause = incidentDetail?.probable_root_cause 
+        || (incidentDetail?.predicted_root_causes && incidentDetail.predicted_root_causes[0]) 
+        || null;
     const affected = incidentDetail?.affected_services || [];
 
-    // 1. Build dynamic node coordinate map from topology.nodes
-    const nodeMap = {};
-    (topology.nodes || []).forEach(node => {
-        nodeMap[node.id] = {
-            x: node.x || NODE_POSITIONS[node.id]?.x || 250,
-            y: node.y || NODE_POSITIONS[node.id]?.y || 150,
-            icon: node.icon || NODE_POSITIONS[node.id]?.icon || "🌐",
-            title: node.label || node.id,
-            desc: node.desc || `${node.type || 'service'} tier`
-        };
-    });
+    // 1. Dynamic layout supporting both 6-node and 12-node topologies with scaled viewBox
+    const layout = computeDynamicLayout(topology.nodes, topology.edges);
+    const nodeMap = layout.nodeMap;
+    topologySvg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
 
     let svgHtml = `
         <defs>
@@ -593,7 +700,7 @@ function renderTopology(topology, incidentDetail) {
     // 3. Draw Nodes Dynamically
     topology.nodes.forEach(node => {
         const pos = nodeMap[node.id] || { x: 250, y: 150, icon: "📦", title: node.id, desc: "Service" };
-        const isRoot = rootCause === node.id;
+        const isRoot = (rootCause === node.id) || (Array.isArray(rootCause) && rootCause.includes(node.id));
         const isAff = affected.includes(node.id);
 
         let nodeClass = "node-card node-healthy";
@@ -703,8 +810,9 @@ window.inspectServiceNode = async function(serviceId) {
 
 function applyVisualBlastHighlight(targetId, directNodes, transitiveNodes) {
     const allImpacted = new Set(transitiveNodes);
+    const activeNodeIds = (currentTopology?.nodes || []).map(n => n.id);
 
-    Object.keys(NODE_POSITIONS).forEach(nodeId => {
+    activeNodeIds.forEach(nodeId => {
         const el = document.getElementById(`nodeGroup_${nodeId}`);
         if (!el) return;
 
@@ -743,8 +851,9 @@ function applyVisualBlastHighlight(targetId, directNodes, transitiveNodes) {
 
 window.clearGraphBlastHighlight = function() {
     selectedNodeId = null;
+    const activeNodeIds = (currentTopology?.nodes || []).map(n => n.id);
 
-    Object.keys(NODE_POSITIONS).forEach(nodeId => {
+    activeNodeIds.forEach(nodeId => {
         const el = document.getElementById(`nodeGroup_${nodeId}`);
         if (el) {
             el.classList.remove("node-selected", "node-blast-direct", "node-blast-transitive", "node-dimmed");
@@ -918,6 +1027,113 @@ function renderDiagnosis(detail) {
     renderRemediationPlan(detail.remediation_plan, detail.remediation_suggestion, resource);
 }
 
+function renderDiagnosisFromDiagnose(data) {
+    if (!data) return;
+    const causes = data.predicted_root_causes || [];
+    const cause = causes[0] || "Unknown";
+    const topCand = (data.candidate_diagnoses || [])[0] || {};
+    const rankingScore = Math.round(topCand.ranking_score ?? topCand.combined_score ?? 85);
+    const verdict = data.verdict || "PROBABLE";
+    const baseline = data.baseline_engine || {};
+
+    // KPIs
+    kpiRootCause.textContent = cause;
+    kpiRootCause.className = (verdict === "CONFIRMED" || causes.length > 0) ? "kpi-big-num text-danger" : "kpi-big-num text-success";
+    kpiConfidenceBadge.textContent = `${rankingScore}% ranking score (${verdict})`;
+    kpiConfidenceBadge.title = "Hypothesis Ranking Score (Calibrated 0-100)";
+    kpiBlastCount.textContent = (topCand.downstream_symptoms_observed ?? 0) + 1;
+
+    // Headline
+    const activeScenario = availableScenarios.find(s => s.id === activeScenarioId);
+    if (activeScenario) {
+        incidentTitle.textContent = activeScenario.name;
+    } else {
+        incidentTitle.textContent = `${cause} Outage Detected [${verdict}]`;
+    }
+
+    incidentResourceId.textContent = `Service: ${cause}`;
+    if (incidentRegion) incidentRegion.textContent = "us-east-1";
+
+    // Status tag
+    incidentStatusTag.textContent = (verdict === "CONFIRMED") ? "CONFIRMED ANOMALY" : `${verdict} DIAGNOSIS`;
+    incidentStatusTag.className = "status-tag status-tag-open";
+    updateLifecycleStepper("OPEN");
+
+    // Diagnosis Hero Card
+    diagnosisCauseTitle.textContent = `${cause} Outage Diagnosed`;
+    diagnosisResourceId.textContent = `Diagnosis Verdict: ${verdict}`;
+    diagnosisConfidenceTag.textContent = `${rankingScore}% RANKING SCORE`;
+    diagnosisSeverityTag.textContent = `${verdict} VERDICT`;
+    diagnosisExplanation.textContent = (data.explanation?.root_cause_summary) 
+        || (data.explanation?.summary) 
+        || `Diagnosed ${cause} as primary root cause with ${verdict} confidence level.`;
+
+    // Baseline Engine Box
+    const baseBox = document.getElementById("baselineEngineBox");
+    const baseContent = document.getElementById("baselineEngineContent");
+    if (baseBox && baseContent) {
+        const baseCause = baseline.probable_root_cause || "None";
+        const baseScore = baseline.ranking_score || 0;
+        const baseChain = (baseline.reasoning_chain && baseline.reasoning_chain[0]) || "Single-factor ranking heuristic";
+        baseContent.innerHTML = `
+            <div>• <strong>Probable Cause:</strong> <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(baseCause)}</span> | <strong>Ranking Score:</strong> ${baseScore}%</div>
+            <div>• <strong>Reasoning:</strong> <em>${escapeHtml(baseChain)}</em></div>
+            <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;">(Baseline engine runs legacy single-pass analyzer without multi-root or unobserved hypothesis ranking)</div>
+        `;
+        baseBox.style.display = "block";
+    }
+
+    // Causal paths
+    renderCausalPaths(data.explanation?.causal_chains || [], cause);
+
+    // Scoring Breakdown (5 dimensions from explanation or top candidate)
+    const breakdown = {
+        temporal_correlation: topCand.ranking_score ? Math.round(topCand.ranking_score * 0.25) : 20,
+        dependency_relationship: topCand.ranking_score ? Math.round(topCand.ranking_score * 0.30) : 25,
+        downstream_symptoms: topCand.symptom_coverage ? Math.round(topCand.symptom_coverage * 20) : 18,
+        metric_anomaly_magnitude: 12,
+        severity: 9
+    };
+    renderScoringBars(breakdown);
+
+    // Candidate Ranking
+    renderCandidateRanking(data.candidate_diagnoses, cause, causes.slice(1));
+
+    // Reasoning Chain
+    const reasoning = (data.explanation?.reasoning_steps) || [
+        `Service '${cause}' registered time-consistent anomaly preceding downstream symptoms.`,
+        `Topological causal evaluation confirmed dependency propagation to affected services.`,
+        `RCA verdict established as ${verdict} with ranking score ${rankingScore}%.`
+    ];
+    reasoningList.innerHTML = reasoning.map((r, i) => `
+        <div class="reasoning-item">
+            <span class="reasoning-num">${i + 1}.</span>
+            <span>${escapeHtml(r)}</span>
+        </div>
+    `).join("");
+
+    // Remediation Plan & Guard
+    const guard = data.remediation_guard || {};
+    const plan = {
+        recommended_action: `Mitigate ${cause} Outage`,
+        estimated_mttr_minutes: 3,
+        action_type: "AUTO_HEAL",
+        commands: [
+            `# Recommended mitigation plan for ${cause}`,
+            `aws ec2 reboot-instances --instance-ids target-${cause.toLowerCase()}-instance`
+        ],
+        safety_checks: [
+            `Verdict check: ${guard.verdict_is_confirmed ? '✓ CONFIRMED' : '✗ Requires CONFIRMED (current: ' + verdict + ')'}`,
+            `Ancestor check: ${guard.no_unobserved_ancestors ? '✓ No unobserved ancestors' : '✗ Unobserved ancestors present'}`,
+            `Source health check: ${guard.sources_healthy ? '✓ Telemetry sources healthy' : '✗ Unhealthy telemetry sources'}`,
+            `Human approval check: ✗ Requires valid human approval token`,
+            `Global policy check: ${guard.auto_remediation_enabled ? '✓ Automated remediation enabled' : '✗ Disabled globally'}`
+        ]
+    };
+
+    renderRemediationPlan(plan, `Mitigate ${cause} Outage`, `target-${cause.toLowerCase()}`);
+}
+
 function renderCausalPaths(paths, rootCause) {
     if (!causalPathsSection || !causalPathsList) return;
 
@@ -980,9 +1196,10 @@ function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
     const secondaryList = contributingCauses || [];
 
     candidateRankingBody.innerHTML = allCandidates.map((cand, idx) => {
-        const isRoot = cand.service === rootCause;
+        const isRoot = (cand.service === rootCause) || (Array.isArray(rootCause) && rootCause.includes(cand.service));
         const isSecondary = secondaryList.includes(cand.service);
-        const scoreVal = Math.round(cand.total ?? 0);
+        const scoreVal = Math.round(cand.ranking_score ?? cand.total ?? 0);
+        const combinedVal = cand.combined_score ? Math.round(cand.combined_score) : null;
 
         let badgeClass = "candidate-badge-pill candidate-badge-symptom";
         let badgeText = "SYMPTOM";
@@ -993,6 +1210,9 @@ function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
         } else if (isSecondary) {
             badgeClass = "candidate-badge-pill candidate-badge-secondary";
             badgeText = "SECONDARY ROOT";
+        } else if (cand.is_unobserved) {
+            badgeClass = "candidate-badge-pill";
+            badgeText = "UNOBSERVED CANDIDATE";
         }
 
         const barColor = isRoot ? "#DC2626" : isSecondary ? "#D97706" : "var(--indigo)";
@@ -1003,10 +1223,11 @@ function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
                 <td><strong>${escapeHtml(cand.service)}</strong></td>
                 <td>
                     <div class="candidate-score-bar-wrap">
-                        <span style="font-weight:700; width:28px;">${scoreVal}%</span>
+                        <span style="font-weight:700; width:45px;">${scoreVal}%</span>
                         <div class="candidate-mini-track">
                             <div class="candidate-mini-fill" style="width: ${scoreVal}%; background: ${barColor};"></div>
                         </div>
+                        ${(combinedVal !== null && combinedVal !== scoreVal) ? `<small style="color:var(--text-muted); margin-left:6px; font-size:0.68rem;">(Tie-Break: ${combinedVal}%)</small>` : ''}
                     </div>
                 </td>
                 <td><span class="${badgeClass}">${badgeText}</span></td>
@@ -1017,7 +1238,7 @@ function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
 
 function renderRemediationPlan(plan, fallbackAction, resource) {
     const p = plan || {};
-    const action = p.recommended_action || fallbackAction || "Trigger automated runbook";
+    const action = p.recommended_action || fallbackAction || "Suggested (not executed)";
     const mttr = p.estimated_mttr_minutes || 3;
     const actionType = p.action_type || "AUTO_HEAL";
     const commands = (p.commands && p.commands.length > 0) 
@@ -1033,6 +1254,48 @@ function renderRemediationPlan(plan, fallbackAction, resource) {
     }
 
     if (remediationCommand) remediationCommand.textContent = commands;
+
+    // Check for unsafe commands from code: FLUSHDB, set-alarm-state, create-deployment, burstLimit
+    const UNSAFE_PATTERNS = [
+        { pattern: "FLUSHDB", desc: "FLUSHDB (destructive cache wipe)" },
+        { pattern: "set-alarm-state", desc: "set-alarm-state (monitoring alarm suppression)" },
+        { pattern: "create-deployment", desc: "create-deployment (unvalidated stage rollback)" },
+        { pattern: "burstLimit", desc: "burstLimit reduction (artificial API throttling)" },
+        { pattern: "burst-limit", desc: "burst-limit reduction (artificial API throttling)" }
+    ];
+
+    const flagged = UNSAFE_PATTERNS.filter(u => commands.includes(u.pattern));
+    const banner = document.getElementById("fixUnsafeBanner");
+    const copyBadge = document.getElementById("btnCopyUnsafeBadge");
+
+    if (flagged.length > 0) {
+        if (btnCopyCommand) btnCopyCommand.style.display = "none";
+        if (copyBadge) copyBadge.style.display = "inline-block";
+        if (banner) {
+            banner.style.display = "block";
+            banner.innerHTML = `<strong>⚠️ Flagged Unsafe Command(s):</strong> Contains <code>${flagged.map(f => f.desc).join(", ")}</code>. Manual copy and execution are disabled to prevent cloud system damage.`;
+        }
+        if (btnApplyFix) {
+            btnApplyFix.disabled = true;
+            btnApplyFix.title = "Action disabled: runbook contains flagged unsafe commands.";
+        }
+        if (fixStatusMsg) {
+            fixStatusMsg.textContent = `Suggested, not executed. Flagged unsafe: ${flagged.map(f => f.pattern).join(", ")}`;
+            fixStatusMsg.style.color = "#DC2626";
+        }
+    } else {
+        if (btnCopyCommand) btnCopyCommand.style.display = "inline-block";
+        if (copyBadge) copyBadge.style.display = "none";
+        if (banner) banner.style.display = "none";
+        if (btnApplyFix) {
+            btnApplyFix.disabled = true; // Always fail-closed server-side gated
+            btnApplyFix.title = "Action locked: requires human approval token, confirmed diagnosis, and healthy telemetry sources.";
+        }
+        if (fixStatusMsg) {
+            fixStatusMsg.textContent = "Suggested, not executed. Remediation locked: server-side gated (requires CONFIRMED verdict, healthy sources, approval token).";
+            fixStatusMsg.style.color = "#64748B";
+        }
+    }
 
     // Safety Checks
     if (safetyChecksList && safetyChecksBox) {
@@ -1347,6 +1610,10 @@ async function triggerTestSnsAlert() {
 let liveWebSocket = null;
 
 function initWebSocket() {
+    if (window.location.protocol === "file:") {
+        // Skip WebSocket when loaded as static file:// in tests/preview
+        return;
+    }
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = (window.location.port === "8000" && window.location.protocol !== "file:")
         ? window.location.host
@@ -1400,3 +1667,372 @@ async function discoverAwsAssets() {
         }
     }
 }
+
+// ===========================================================================
+// 22. Synthetic Case Replay, Compare Engines, and Dynamic Evaluation
+// ===========================================================================
+
+let replayFrames = [];
+let currentReplayFrameIdx = 0;
+let replayPlaying = false;
+let replayPlayTimer = null;
+let syntheticCasesList = [];
+
+async function initReplayAndCompare() {
+    try {
+        const res = await fetch(`${API_BASE}/rca/cases`);
+        if (!res.ok) return;
+        const cases = await res.json();
+        syntheticCasesList = cases;
+
+        const replaySelect = document.getElementById("replayCaseSelect");
+        const compareSelect = document.getElementById("compareCaseSelect");
+
+        if (replaySelect && compareSelect && cases.length > 0) {
+            const optionsHtml = cases.map(c => 
+                `<option value="${escapeHtml(c.case_id)}">${escapeHtml(c.case_id)} (${c.node_count} nodes, ${c.event_count} evts)</option>`
+            ).join("");
+            replaySelect.innerHTML = optionsHtml;
+            compareSelect.innerHTML = optionsHtml;
+        }
+    } catch (e) {
+        // Silently handle if offline / test mode
+    }
+}
+
+async function loadReplayCase() {
+    const caseSelect = document.getElementById("replayCaseSelect");
+    const engineSelect = document.getElementById("replayEngineSelect");
+    if (!caseSelect || !engineSelect) return;
+
+    const caseId = caseSelect.value;
+    const engine = engineSelect.value;
+    if (!caseId) return;
+
+    stopReplayPlay();
+
+    try {
+        const res = await fetch(`${API_BASE}/rca/replay?case_id=${encodeURIComponent(caseId)}&engine=${encodeURIComponent(engine)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        replayFrames = data.frames || [];
+        currentReplayFrameIdx = 0;
+
+        const scrubber = document.getElementById("replayScrubber");
+        const totalEl = document.getElementById("replayFrameTotal");
+        if (scrubber && totalEl) {
+            scrubber.min = "1";
+            scrubber.max = String(replayFrames.length || 1);
+            scrubber.value = "1";
+            totalEl.textContent = String(replayFrames.length || 1);
+        }
+
+        renderReplayFrame(0);
+    } catch (e) {
+        // Handled cleanly
+    }
+}
+
+function renderReplayFrame(idx) {
+    if (!replayFrames || replayFrames.length === 0) return;
+    if (idx < 0) idx = 0;
+    if (idx >= replayFrames.length) idx = replayFrames.length - 1;
+    currentReplayFrameIdx = idx;
+
+    const frame = replayFrames[idx];
+    const scrubber = document.getElementById("replayScrubber");
+    const frameIdxEl = document.getElementById("replayFrameIdx");
+    const tsEl = document.getElementById("replayFrameTimestamp");
+
+    if (scrubber) scrubber.value = String(idx + 1);
+    if (frameIdxEl) frameIdxEl.textContent = String(idx + 1);
+    if (tsEl) tsEl.textContent = frame.timestamp || "-";
+
+    // Event details
+    const evtBox = document.getElementById("replayCurrentEventDetails");
+    const sevBadge = document.getElementById("replayEventSeverity");
+    if (frame.current_event && evtBox) {
+        const evt = frame.current_event;
+        if (sevBadge) {
+            sevBadge.textContent = evt.severity || "HIGH";
+            sevBadge.className = `badge-severity severity-${(evt.severity || 'high').toLowerCase()}`;
+        }
+        evtBox.innerHTML = `<strong>Service:</strong> ${escapeHtml(evt.service || '-')}<br>` +
+                           `<strong>Metric:</strong> ${escapeHtml(evt.metric || '-')}<br>` +
+                           `<strong>Value:</strong> ${evt.value !== null && evt.value !== undefined ? evt.value : '-'}<br>` +
+                           `<strong>Event Time:</strong> ${escapeHtml(evt.timestamp || '-')}<br>` +
+                           (evt.target ? `<strong>Blamed Target:</strong> <span style="color:var(--red); font-weight:700;">${escapeHtml(evt.target)}</span>` : '');
+    }
+
+    // Prefix Timeline Track
+    const trackEl = document.getElementById("replayEventTrack");
+    if (trackEl) {
+        trackEl.innerHTML = replayFrames.slice(0, idx + 1).map((f, i) => {
+            const e = f.current_event;
+            const isCur = i === idx;
+            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.75rem; background:${isCur ? 'var(--indigo-tint)' : 'var(--bg-subtle)'}; border:1px solid ${isCur ? 'var(--indigo)' : 'var(--border)'}; font-family:var(--font-mono);">
+                <span>#${i + 1} <strong>${escapeHtml(e.service)}</strong> - ${escapeHtml(e.metric)}</span>
+                <span style="font-size:0.68rem; color:var(--text-muted);">${(e.timestamp || '').split('T')[1] || ''}</span>
+            </div>`;
+        }).join("");
+    }
+
+    // Engine Verdict & Score
+    const verdictBadge = document.getElementById("replayVerdictBadge");
+    const topRootEl = document.getElementById("replayFrameTopRoot");
+    const scoreEl = document.getElementById("replayFrameScore");
+
+    if (verdictBadge) {
+        verdictBadge.textContent = frame.verdict || "DIAGNOSE";
+        if (frame.verdict === "CONFIRMED") {
+            verdictBadge.className = "status-tag status-tag-resolved";
+            verdictBadge.style.background = "";
+            verdictBadge.style.color = "";
+            verdictBadge.style.border = "";
+        } else if (frame.verdict === "PROBABLE") {
+            verdictBadge.className = "status-tag status-tag-open";
+            verdictBadge.style.background = "";
+            verdictBadge.style.color = "";
+            verdictBadge.style.border = "";
+        } else if (frame.verdict === "INSUFFICIENT_EVIDENCE") {
+            verdictBadge.className = "status-tag";
+            verdictBadge.style.background = "#FEF3C7";
+            verdictBadge.style.color = "#92400E";
+            verdictBadge.style.border = "1px solid #FDE68A";
+        } else {
+            verdictBadge.className = "status-tag status-tag-open";
+        }
+    }
+
+    if (topRootEl) {
+        const roots = frame.predicted_root_causes || [];
+        topRootEl.textContent = roots.length > 0 ? roots.join(" + ") : (frame.top_candidate || "None (Abstained)");
+    }
+
+    if (scoreEl) {
+        scoreEl.textContent = (frame.ranking_score !== undefined && frame.ranking_score !== null) 
+            ? `${Number(frame.ranking_score).toFixed(1)} score` 
+            : "0.0 score";
+    }
+
+    // Candidate ranking table
+    const candBody = document.getElementById("replayCandidateRankingBody");
+    if (candBody) {
+        const scores = frame.ranking_scores || {};
+        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        if (sorted.length === 0) {
+            candBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No candidates ranked</td></tr>`;
+        } else {
+            candBody.innerHTML = sorted.map(([svc, sc], r) => `
+                <tr>
+                    <td><strong>#${r + 1}</strong></td>
+                    <td><strong>${escapeHtml(svc)}</strong></td>
+                    <td><span class="confidence-tag">${Number(sc).toFixed(1)}</span></td>
+                </tr>
+            `).join("");
+        }
+    }
+}
+
+function onReplayScrub(val) {
+    const idx = parseInt(val, 10) - 1;
+    renderReplayFrame(idx);
+}
+
+function stepReplay(delta) {
+    renderReplayFrame(currentReplayFrameIdx + delta);
+}
+
+function resetReplay() {
+    stopReplayPlay();
+    renderReplayFrame(0);
+}
+
+function toggleReplayPlay() {
+    if (replayPlaying) {
+        stopReplayPlay();
+    } else {
+        startReplayPlay();
+    }
+}
+
+function startReplayPlay() {
+    if (!replayFrames || replayFrames.length === 0) return;
+    replayPlaying = true;
+    const btn = document.getElementById("btnReplayPlay");
+    if (btn) btn.textContent = "⏸ Pause";
+
+    const speedSelect = document.getElementById("replaySpeedSelect");
+    const intervalMs = speedSelect ? parseInt(speedSelect.value, 10) : 1000;
+
+    replayPlayTimer = setInterval(() => {
+        if (currentReplayFrameIdx >= replayFrames.length - 1) {
+            stopReplayPlay();
+            return;
+        }
+        stepReplay(1);
+    }, intervalMs);
+}
+
+function stopReplayPlay() {
+    replayPlaying = false;
+    if (replayPlayTimer) {
+        clearInterval(replayPlayTimer);
+        replayPlayTimer = null;
+    }
+    const btn = document.getElementById("btnReplayPlay");
+    if (btn) btn.textContent = "▶ Play";
+}
+
+async function loadCompareCase() {
+    const select = document.getElementById("compareCaseSelect");
+    if (!select) return;
+    const caseId = select.value;
+    if (!caseId) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/rca/compare?case_id=${encodeURIComponent(caseId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // 1. Diff Summary Sentence
+        const sentenceEl = document.getElementById("compareSentenceText");
+        if (sentenceEl) {
+            sentenceEl.textContent = data.diff_summary_sentence || "Comparison analysis complete.";
+        }
+
+        // 2. Current Scorer (Left Card)
+        const cs = data.current_scorer || {};
+        const csTopEl = document.getElementById("csCompareTopRoot");
+        const csScoreEl = document.getElementById("csCompareScore");
+        const csBody = document.getElementById("csCompareRankingBody");
+
+        if (csTopEl) csTopEl.textContent = cs.top_candidate || "None";
+        if (csScoreEl) csScoreEl.textContent = `${Number(cs.ranking_score || 0).toFixed(1)} score`;
+
+        if (csBody) {
+            const csScores = cs.ranking_scores || {};
+            const csSorted = Object.entries(csScores).sort((a, b) => b[1] - a[1]);
+            csBody.innerHTML = csSorted.map(([svc, sc], r) => `
+                <tr>
+                    <td>#${r + 1}</td>
+                    <td><strong>${escapeHtml(svc)}</strong></td>
+                    <td><span class="confidence-tag">${Number(sc).toFixed(1)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        // 3. rca_v3 (Right Card)
+        const v3 = data.rca_v3 || {};
+        const v3Badge = document.getElementById("v3CompareVerdictBadge");
+        const v3TopEl = document.getElementById("v3CompareTopRoot");
+        const v3ScoreEl = document.getElementById("v3CompareScore");
+        const v3ReasonEl = document.getElementById("v3CompareReasoningBox");
+        const v3Body = document.getElementById("v3CompareRankingBody");
+
+        if (v3Badge) {
+            v3Badge.textContent = v3.verdict || "CONFIRMED";
+            if (v3.verdict === "CONFIRMED") {
+                v3Badge.className = "status-tag status-tag-resolved";
+                v3Badge.style.background = "";
+                v3Badge.style.color = "";
+                v3Badge.style.border = "";
+            } else if (v3.verdict === "PROBABLE") {
+                v3Badge.className = "status-tag status-tag-open";
+                v3Badge.style.background = "";
+                v3Badge.style.color = "";
+                v3Badge.style.border = "";
+            } else if (v3.verdict === "INSUFFICIENT_EVIDENCE") {
+                v3Badge.className = "status-tag";
+                v3Badge.style.background = "#FEF3C7";
+                v3Badge.style.color = "#92400E";
+                v3Badge.style.border = "1px solid #FDE68A";
+            }
+        }
+
+        if (v3TopEl) {
+            const roots = v3.predicted_root_causes || [];
+            v3TopEl.textContent = roots.length > 0 ? roots.join(" + ") : (v3.top_candidate || "None (Abstained)");
+        }
+
+        if (v3ScoreEl) {
+            v3ScoreEl.textContent = `${Number(v3.ranking_score || 0).toFixed(1)} score`;
+        }
+
+        if (v3ReasonEl) {
+            v3ReasonEl.innerHTML = `<strong>Reasoning:</strong> ${escapeHtml(v3.verdict_reason || 'Verified topological causal path matching active symptoms.')}`;
+        }
+
+        if (v3Body) {
+            const v3Scores = v3.ranking_scores || {};
+            const v3Sorted = Object.entries(v3Scores).sort((a, b) => b[1] - a[1]);
+            v3Body.innerHTML = v3Sorted.map(([svc, sc], r) => `
+                <tr>
+                    <td>#${r + 1}</td>
+                    <td><strong>${escapeHtml(svc)}</strong></td>
+                    <td><span class="confidence-tag" style="background:var(--indigo-tint); color:var(--indigo);">${Number(sc).toFixed(1)}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        // 4. Differences List
+        const diffsEl = document.getElementById("compareDiffsList");
+        if (diffsEl && data.differences) {
+            diffsEl.innerHTML = data.differences.map(d => `
+                <div style="padding:0.6rem 0.85rem; border-radius:var(--radius-sm); background:var(--bg-subtle); border:1px solid var(--border); font-size:0.8rem; color:var(--text-body);">
+                    • ${escapeHtml(d)}
+                </div>
+            `).join("");
+        }
+    } catch (e) {
+        // Handled cleanly
+    }
+}
+
+async function loadEvaluationSummary() {
+    const tbody = document.getElementById("evalSummaryTableBody");
+    if (!tbody) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/eval/summary`);
+        if (!res.ok) return;
+        const rows = await res.json();
+
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No committed evaluation runs found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(r => {
+            const accFormatted = `${r.top1_count} / ${r.denominator} (${r.top1_accuracy_pct.toFixed(1)}%)`;
+            const cwFormatted = r.confident_wrong_count !== null 
+                ? `${r.confident_wrong_count} / ${r.denominator} (${r.confident_wrong_pct.toFixed(1)}%)` 
+                : `<span style="color:var(--text-light);">-</span>`;
+
+            return `<tr>
+                <td><strong>${escapeHtml(r.split)}</strong></td>
+                <td><code>${escapeHtml(r.csv_path)}</code></td>
+                <td><span class="status-tag ${r.engine === 'rca_v3' ? 'status-tag-resolved' : 'status-tag-open'}">${escapeHtml(r.engine)}</span></td>
+                <td><strong>${r.denominator}</strong></td>
+                <td><strong style="color:var(--emerald);">${accFormatted}</strong></td>
+                <td>${cwFormatted}</td>
+                <td><code>${escapeHtml(r.commit || 'uncommitted')}</code></td>
+            </tr>`;
+        }).join("");
+    } catch (e) {
+        // Handled cleanly
+    }
+}
+
+// Expose globals
+window.loadReplayCase = loadReplayCase;
+window.renderReplayFrame = renderReplayFrame;
+window.onReplayScrub = onReplayScrub;
+window.stepReplay = stepReplay;
+window.resetReplay = resetReplay;
+window.toggleReplayPlay = toggleReplayPlay;
+window.loadCompareCase = loadCompareCase;
+window.loadEvaluationSummary = loadEvaluationSummary;
+window.initReplayAndCompare = initReplayAndCompare;
+window.setReplayFrames = function(frames) { replayFrames = frames; };

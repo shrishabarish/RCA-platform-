@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query, Request, status
-from typing import List, Dict, Any, Optional
+import os
+import secrets
+from fastapi import APIRouter, HTTPException, Query, Request, status, Header
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional, Tuple
+from backend.app.core.config import config
 from backend.app.models.event import (
     CloudEvent,
     Incident,
@@ -226,7 +230,7 @@ async def receive_external_webhook(request: Request) -> Dict[str, Any]:
         "active_incidents": len(incidents),
         "latest_rca": {
             "root_cause": latest_analysis.get("probable_root_cause") if latest_analysis else None,
-            "confidence": latest_analysis.get("confidence") if latest_analysis else None,
+            "ranking_score": latest_analysis.get("ranking_score") or latest_analysis.get("confidence") if latest_analysis else None,
             "affected_services": latest_analysis.get("affected_services") if latest_analysis else [],
         } if latest_analysis else None
     }
@@ -461,9 +465,122 @@ def recompute_incident_rca(incident_id: str) -> Dict[str, Any]:
     return {"status": "recomputed", "analysis": analysis}
 
 
+UNSAFE_RUNBOOK_COMMANDS = {
+    "FLUSHDB": "Destructive in-memory database wipe; risks database thundering herd cascade",
+    "set-alarm-state": "Artificial suppression of active monitoring alarm without resolving root cause",
+    "create-deployment": "Blind API Gateway stage rollback without change verification",
+    "burstLimit": "Severe ingress rate reduction that risks dropping valid client traffic"
+}
+
+AUTO_REMEDIATION_ENABLED = config.remediation.auto_remediation_enabled
+
+
+class MitigationPayload(BaseModel):
+    human_approval_token: Optional[str] = None
+
+
+@router.get("/incidents/{incident_id}/diagnose", tags=["Incidents"])
+def diagnose_incident_rca(incident_id: str) -> Dict[str, Any]:
+    """
+    Diagnoses an incident using the modern RCA v3 engine with graph reasoning,
+    symptom coverage, and counter-evidence verification.
+    Displays legacy analyzer results as 'Baseline engine' for clear comparison.
+    """
+    incident = incident_service.get_incident(incident_id)
+    if not incident:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Incident '{incident_id}' not found")
+
+    # 1. Run modern RCA v3 engine
+    from rca_v3.diagnose import diagnose as diagnose_v3
+    from rca_v3.config import RCAv3Config
+
+    topo_data = incident_service.get_topology(incident_id)
+    if isinstance(topo_data, dict):
+        class TopologyWrapper:
+            def __init__(self, nodes, edges):
+                self.nodes = nodes
+                self.edges = [
+                    [e["source"], e["target"]] if isinstance(e, dict) and "source" in e and "target" in e else e
+                    for e in edges
+                ]
+        topo_data = TopologyWrapper(topo_data.get("nodes", []), topo_data.get("edges", []))
+    source_health_records = incident_service.get_source_health()
+
+    v3_result = diagnose_v3(
+        events=incident.events,
+        topology=topo_data,
+        source_health=source_health_records,
+        config=RCAv3Config()
+    )
+
+    # 2. Run legacy baseline analyzer
+    from rca_engine.analyzer import analyze_incident
+    legacy_res = analyze_incident(incident)
+
+    # 3. Format candidate diagnoses (suppressing experimental reachable_coverage)
+    candidates_formatted = []
+    for cand in v3_result.candidate_diagnoses:
+        cand_dict = cand.model_dump()
+        # Per audit instruction: reachable_coverage is uncalibrated and omitted from UI
+        cand_dict.pop("reachable_coverage", None)
+        cand_dict["ranking_score_label"] = "Ranking Score"
+        cand_dict["combined_score_label"] = "Combined Score (Tie-Break)"
+        candidates_formatted.append(cand_dict)
+
+    # 4. Check mitigation guard eligibility server-side
+    sources_healthy = all(
+        getattr(s, "status", getattr(s, "get", lambda k, d=None: d)("status")) == "HEALTHY"
+        for s in (source_health_records or [])
+    )
+    is_confirmed = (v3_result.verdict.value == "CONFIRMED")
+    has_unobserved_ancestors = any(
+        getattr(cand, "is_unobserved", False)
+        for cand in v3_result.candidate_diagnoses
+        if cand.service in v3_result.predicted_root_causes
+    )
+
+    can_mitigate = (
+        is_confirmed
+        and not has_unobserved_ancestors
+        and sources_healthy
+        and AUTO_REMEDIATION_ENABLED
+    )
+
+    return {
+        "incident_id": incident_id,
+        "engine_version": "rca_v3",
+        "verdict": v3_result.verdict.value,
+        "predicted_root_causes": v3_result.predicted_root_causes,
+        "candidate_diagnoses": candidates_formatted,
+        "root_hypotheses": [h.model_dump() for h in v3_result.root_hypotheses],
+        "explanation": v3_result.explanation.model_dump(),
+        "contradictions": [c.model_dump() for c in v3_result.contradictions],
+        "evidence_table": v3_result.explanation.evidence_table,
+        "baseline_engine": {
+            "name": "Baseline engine (Legacy v1)",
+            "probable_root_cause": legacy_res.get("probable_root_cause"),
+            "ranking_score": legacy_res.get("confidence"),
+            "affected_services": legacy_res.get("affected_services", []),
+            "reasoning_chain": legacy_res.get("reasoning_chain", []),
+            "analysis_status": legacy_res.get("status", "COMPLETED")
+        },
+        "remediation_guard": {
+            "can_mitigate": can_mitigate,
+            "verdict_is_confirmed": is_confirmed,
+            "no_unobserved_ancestors": not has_unobserved_ancestors,
+            "sources_healthy": sources_healthy,
+            "auto_remediation_enabled": AUTO_REMEDIATION_ENABLED,
+            "reason": (
+                "Automated remediation is safely guarded. Requires CONFIRMED verdict, "
+                "healthy telemetry sources, valid human approval token, and global auto-remediation enablement."
+            ) if not can_mitigate else "All safety conditions met. Human approval token required to execute."
+        }
+    }
+
+
 @router.get("/incidents/{incident_id}/remediation", response_model=RemediationPlan, tags=["Incidents"])
 def get_incident_remediation(incident_id: str) -> RemediationPlan:
-    """Retrieves the automated remediation runbook for an incident."""
+    """Retrieves the automated remediation runbook for an incident with safety flags."""
     remediation = incident_service.get_remediation(incident_id)
     if not remediation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Remediation for '{incident_id}' not found")
@@ -471,8 +588,86 @@ def get_incident_remediation(incident_id: str) -> RemediationPlan:
 
 
 @router.post("/incidents/{incident_id}/mitigate", tags=["Incidents"])
-def mitigate_incident(incident_id: str) -> Dict[str, Any]:
-    """Applies automated remediation to resolve the incident."""
+def mitigate_incident(
+    incident_id: str,
+    payload: Optional[MitigationPayload] = None,
+    x_approval_token: Optional[str] = Header(None, alias="X-Human-Approval-Token")
+) -> Dict[str, Any]:
+    """
+    Applies automated remediation to resolve the incident with strict SERVER-SIDE safety guards.
+    Fails closed (HTTP 403 Forbidden) unless all 5 safety requirements are strictly verified:
+    1. RCA diagnosis verdict is CONFIRMED.
+    2. No unobserved ancestors exist in the causal chain.
+    3. All telemetry sources are verified HEALTHY.
+    4. Valid human approval token is provided.
+    5. Automated cloud remediation is globally enabled.
+    """
+    incident = incident_service.get_incident(incident_id)
+    if not incident:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Incident '{incident_id}' not found")
+
+    # Guard 1: Auto-remediation globally enabled
+    if not AUTO_REMEDIATION_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Remediation guard failed: Automated cloud remediation is globally disabled."
+        )
+
+    # Guard 2: Human approval token (constant-time comparison against configured secret)
+    provided_token = (payload.human_approval_token if payload else None) or x_approval_token
+    configured_secret = config.remediation.human_approval_secret
+    if not provided_token or not secrets.compare_digest(provided_token, configured_secret):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Remediation guard failed: Missing or invalid human approval token. Action rejected."
+        )
+
+    # Guard 3: Telemetry source health
+    sources = incident_service.get_source_health() or []
+    for s in sources:
+        s_status = getattr(s, "status", getattr(s, "get", lambda k, d=None: d)("status"))
+        if s_status and str(s_status).upper() != "HEALTHY":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Remediation guard failed: Telemetry source is unhealthy ({s_status}). Action rejected."
+            )
+
+    # Guard 4 & 5: RCA v3 verification (CONFIRMED verdict, no unobserved ancestors)
+    from rca_v3.diagnose import diagnose as diagnose_v3
+    from rca_v3.config import RCAv3Config
+
+    topo_data = incident_service.get_topology(incident_id)
+    if isinstance(topo_data, dict):
+        class TopologyWrapper:
+            def __init__(self, nodes, edges):
+                self.nodes = nodes
+                self.edges = [
+                    [e["source"], e["target"]] if isinstance(e, dict) and "source" in e and "target" in e else e
+                    for e in edges
+                ]
+        topo_data = TopologyWrapper(topo_data.get("nodes", []), topo_data.get("edges", []))
+    v3_result = diagnose_v3(
+        events=incident.events,
+        topology=topo_data,
+        source_health=sources,
+        config=RCAv3Config()
+    )
+
+    if v3_result.verdict.value != "CONFIRMED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Remediation guard failed: Verdict is '{v3_result.verdict.value}' (must be CONFIRMED). Action rejected."
+        )
+
+    # Check for unobserved ancestors
+    for cand in v3_result.candidate_diagnoses:
+        if cand.service in v3_result.predicted_root_causes and getattr(cand, "is_unobserved", False):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Remediation guard failed: Root cause has unobserved ancestors in causal topology. Action rejected."
+            )
+
+    # All 5 guards passed -> proceed with remediation
     try:
         return incident_service.mitigate_incident(incident_id)
     except KeyError as e:
@@ -552,14 +747,16 @@ def get_sns_status() -> Dict[str, Any]:
 
 @router.post("/sns/test", tags=["Amazon SNS Notifications"])
 def test_sns_notification(incident_id: Optional[str] = None) -> Dict[str, Any]:
-    """Sends a test alert to the Amazon SNS topic."""
+    """Sends a mock test alert to the Amazon SNS topic for demonstration purposes."""
     test_incident = {
-        "incident_id": incident_id or "inc_test_demo",
+        "incident_id": incident_id or "inc_test_mock_demo",
+        "is_mock": True,
+        "mock_note": "Mock demonstration payload (simulated alert)",
         "severity": "CRITICAL",
         "probable_root_cause": "EC2",
-        "confidence": 96.5,
+        "ranking_score": 96.5,
         "affected_services": ["API", "Application"],
-        "remediation_suggestion": "Trigger ASG scale-out and reboot instance i-0abcdef1234567890"
+        "remediation_suggestion": "Trigger ASG scale-out and reboot instance i-0abcdef1234567890 (Mock Demonstration)"
     }
     return sns_notifier.publish_incident_alert(test_incident)
 
@@ -586,4 +783,396 @@ def poll_sqs_buffer() -> Dict[str, Any]:
         "messages_pulled": len(messages),
         "events_ingested": ingested_count
     }
+
+
+# ==========================================
+# 8. READ-ONLY SYNTHETIC RCA REPLAY & EVALUATION
+# ==========================================
+
+from pathlib import Path
+import json
+import math
+import csv
+from evaluation.schema import EvaluationCase
+from evaluation.strip_case import strip_case_for_engine
+from scripts.audit_evaluation_csvs import get_file_commit
+
+
+def _find_case_by_id(case_id: str) -> Optional[EvaluationCase]:
+    cases_dir = Path("evaluation/cases")
+    candidates = list(cases_dir.glob(f"**/{case_id}.json"))
+    if not candidates:
+        candidates = list(cases_dir.glob(f"**/{case_id}*.json"))
+    if candidates:
+        try:
+            return EvaluationCase.model_validate_json(candidates[0].read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return None
+
+
+_rca_cases_cache: Optional[List[Dict[str, Any]]] = None
+
+
+@router.get("/rca/cases", tags=["RCA Evaluation & Replay"])
+def list_rca_cases() -> List[Dict[str, Any]]:
+    """Lists available synthetic evaluation cases for diagnosis, replay, and comparison."""
+    global _rca_cases_cache
+    if _rca_cases_cache is not None:
+        return _rca_cases_cache
+
+    cases_dir = Path("evaluation/cases/independent")
+    if not cases_dir.exists():
+        return []
+
+    case_files = sorted(list(cases_dir.glob("*.json")))
+    results = []
+    for f in case_files:
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            cid = data.get("case_id", f.stem)
+            topo = data.get("topology", {})
+            nodes = topo.get("nodes", []) if isinstance(topo, dict) else []
+            evts = data.get("events", [])
+            perts = data.get("perturbations", [])
+            cat = perts[0] if perts else "independent"
+            results.append({
+                "case_id": cid,
+                "category": cat,
+                "node_count": len(nodes),
+                "event_count": len(evts),
+                "is_synthetic": True,
+                "filename": f.name
+            })
+        except Exception:
+            continue
+    _rca_cases_cache = results
+    return results
+
+
+@router.get("/rca/diagnose", tags=["RCA Evaluation & Replay"])
+def diagnose_rca_case(
+    case_id: str = Query(..., description="ID of synthetic case to diagnose"),
+    engine: str = Query("rca_v3", description="Engine to run: 'rca_v3' or 'current_scorer'")
+) -> Dict[str, Any]:
+    """Diagnoses a stripped synthetic case using rca_v3 or cleaned current scorer baseline."""
+    case = _find_case_by_id(case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Case '{case_id}' not found")
+
+    stripped = strip_case_for_engine(case)
+
+    if engine == "rca_v3":
+        from rca_v3 import diagnose as rca_v3_diagnose
+        diag = rca_v3_diagnose(
+            events=stripped.events,
+            topology=stripped.topology,
+            source_health=stripped.source_health
+        )
+        return {
+            "case_id": case_id,
+            "engine": "rca_v3",
+            "is_synthetic": True,
+            "verdict": diag.verdict.value,
+            "predicted_root_causes": diag.predicted_root_causes,
+            "ranking_scores": diag.ranking_scores,
+            "top_candidate": {
+                "service": diag.top_candidate.service if diag.top_candidate else None,
+                "ranking_score": diag.top_candidate.combined_score if diag.top_candidate else 0.0,
+                "coverage": diag.coverage,
+                "margin": diag.margin
+            } if diag.top_candidate else None,
+            "verdict_reason": diag.explanation.verdict_reason if diag.explanation else None,
+            "note": "rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data."
+        }
+    elif engine in ("current_scorer", "baseline", "current_5factor"):
+        from evaluation.baselines.current_scorer import CurrentScorerCaseTopologyBaseline
+        scorer = CurrentScorerCaseTopologyBaseline()
+        pred = scorer.predict(stripped)
+        top_svc = pred.predicted_root_causes[0] if pred.predicted_root_causes else None
+        top_score = pred.candidate_scores.get(top_svc, 0.0) if top_svc else 0.0
+        return {
+            "case_id": case_id,
+            "engine": "current_scorer",
+            "is_synthetic": True,
+            "verdict": pred.verdict,
+            "predicted_root_causes": pred.predicted_root_causes,
+            "ranking_scores": pred.candidate_scores,
+            "top_candidate": {
+                "service": top_svc,
+                "ranking_score": top_score
+            } if top_svc else None,
+            "note": "rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data."
+        }
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown engine '{engine}'. Choose 'rca_v3' or 'current_scorer'.")
+
+
+_replay_cache: Dict[Tuple[str, str], Dict[str, Any]] = {}
+
+
+@router.get("/rca/replay", tags=["RCA Evaluation & Replay"])
+def replay_rca_case(
+    case_id: str = Query(..., description="ID of synthetic case to replay"),
+    engine: str = Query("rca_v3", description="Engine to run: 'rca_v3' or 'current_scorer'")
+) -> Dict[str, Any]:
+    """Generates prefix event-by-event frames for interactive timeline replay."""
+    cache_key = (case_id, engine)
+    if cache_key in _replay_cache:
+        return _replay_cache[cache_key]
+
+    case = _find_case_by_id(case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Case '{case_id}' not found")
+
+    stripped = strip_case_for_engine(case)
+    sorted_events = sorted(stripped.events, key=lambda e: e.event_time)
+    total_evts = len(sorted_events)
+
+    max_frames = 50
+    if total_evts > max_frames:
+        indices = list(range(0, total_evts, math.ceil(total_evts / max_frames)))
+        if (total_evts - 1) not in indices:
+            indices.append(total_evts - 1)
+    else:
+        indices = list(range(total_evts))
+
+    frames = []
+    from rca_v3 import diagnose as rca_v3_diagnose
+    from evaluation.baselines.current_scorer import CurrentScorerCaseTopologyBaseline
+
+    cs_engine = CurrentScorerCaseTopologyBaseline() if engine != "rca_v3" else None
+
+    for idx in indices:
+        prefix_events = sorted_events[:idx + 1]
+        cur_evt = sorted_events[idx]
+        cur_evt_dict = {
+            "event_id": cur_evt.event_id,
+            "timestamp": cur_evt.event_time,
+            "service": cur_evt.service,
+            "metric": cur_evt.metric,
+            "value": cur_evt.value,
+            "severity": cur_evt.severity,
+            "target": getattr(cur_evt, "target", None),
+        }
+
+        if engine == "rca_v3":
+            diag = rca_v3_diagnose(
+                events=prefix_events,
+                topology=stripped.topology,
+                source_health=stripped.source_health
+            )
+            top_svc = diag.top_candidate.service if diag.top_candidate else None
+            top_sc = diag.top_candidate.combined_score if diag.top_candidate else 0.0
+            frames.append({
+                "frame_index": len(frames) + 1,
+                "event_index": idx,
+                "timestamp": cur_evt.event_time,
+                "current_event": cur_evt_dict,
+                "verdict": diag.verdict.value,
+                "predicted_root_causes": diag.predicted_root_causes,
+                "ranking_scores": diag.ranking_scores,
+                "top_candidate": top_svc,
+                "ranking_score": top_sc
+            })
+        else:
+            prefix_case = stripped.model_copy(deep=True)
+            prefix_case.events = prefix_events
+            pred = cs_engine.predict(prefix_case)
+            top_svc = pred.predicted_root_causes[0] if pred.predicted_root_causes else None
+            top_sc = pred.candidate_scores.get(top_svc, 0.0) if top_svc else 0.0
+            frames.append({
+                "frame_index": len(frames) + 1,
+                "event_index": idx,
+                "timestamp": cur_evt.event_time,
+                "current_event": cur_evt_dict,
+                "verdict": pred.verdict,
+                "predicted_root_causes": pred.predicted_root_causes,
+                "ranking_scores": pred.candidate_scores,
+                "top_candidate": top_svc,
+                "ranking_score": top_sc
+            })
+
+    node_count = len(stripped.topology.nodes)
+    res_dict = {
+        "case_id": case_id,
+        "engine": engine,
+        "is_synthetic": True,
+        "node_count": node_count,
+        "total_events": total_evts,
+        "frame_count": len(frames),
+        "frames": frames,
+        "note": "rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data."
+    }
+    _replay_cache[cache_key] = res_dict
+    return res_dict
+
+
+@router.get("/rca/compare", tags=["RCA Evaluation & Replay"])
+def compare_rca_case(
+    case_id: str = Query(..., description="ID of synthetic case to compare")
+) -> Dict[str, Any]:
+    """Compares current scorer on cleaned input against rca_v3 with a diff summary and generated sentence."""
+    case = _find_case_by_id(case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Case '{case_id}' not found")
+
+    stripped = strip_case_for_engine(case)
+
+    # 1. Current Scorer on cleaned input
+    from evaluation.baselines.current_scorer import CurrentScorerCaseTopologyBaseline
+    cs_res = CurrentScorerCaseTopologyBaseline().predict(stripped)
+    cs_top = cs_res.predicted_root_causes[0] if cs_res.predicted_root_causes else None
+    cs_score = cs_res.candidate_scores.get(cs_top, 0.0) if cs_top else 0.0
+
+    # 2. RCA v3 on cleaned input
+    from rca_v3 import diagnose as rca_v3_diagnose
+    v3_diag = rca_v3_diagnose(
+        events=stripped.events,
+        topology=stripped.topology,
+        source_health=stripped.source_health
+    )
+    v3_top = v3_diag.top_candidate.service if v3_diag.top_candidate else None
+    v3_score = v3_diag.top_candidate.combined_score if v3_diag.top_candidate else 0.0
+
+    diffs = []
+    if cs_res.verdict != v3_diag.verdict.value:
+        diffs.append(f"Verdict difference: Current Scorer output '{cs_res.verdict}', whereas rca_v3 output '{v3_diag.verdict.value}'.")
+
+    if cs_res.predicted_root_causes != v3_diag.predicted_root_causes:
+        if len(v3_diag.predicted_root_causes) > 1:
+            diffs.append(f"Root set difference: rca_v3 identified multi-root cause {v3_diag.predicted_root_causes}, whereas Current Scorer produced single ranking {cs_res.predicted_root_causes[:3]}.")
+        else:
+            diffs.append(f"Ranking difference: rca_v3 diagnosed {v3_diag.predicted_root_causes}, whereas Current Scorer ranked {cs_res.predicted_root_causes[:3]}.")
+    else:
+        diffs.append("Root set match: Both engines isolated the same root cause.")
+
+    if v3_diag.verdict.value == "INSUFFICIENT_EVIDENCE":
+        diff_sentence = f"rca_v3 abstained due to insufficient causal evidence ({v3_diag.explanation.verdict_reason if v3_diag.explanation else 'unverifiable anomaly'}), whereas Current Scorer forced a diagnosis of {cs_top or 'unknown'}."
+    elif len(v3_diag.predicted_root_causes) > 1:
+        diff_sentence = f"rca_v3 detected a multi-root incident ({', '.join(v3_diag.predicted_root_causes)}) with {v3_diag.verdict.value} verdict, whereas Current Scorer only isolated single candidate {cs_top}."
+    elif cs_top == v3_top:
+        diff_sentence = f"Both engines agreed on root cause '{v3_top}', with rca_v3 qualifying confidence as {v3_diag.verdict.value} based on topological verification."
+    else:
+        diff_sentence = f"rca_v3 selected '{v3_top}' ({v3_diag.verdict.value}) based on reachability and symptom coverage, whereas Current Scorer selected '{cs_top}'."
+
+    node_count = len(stripped.topology.nodes)
+    return {
+        "case_id": case_id,
+        "is_synthetic": True,
+        "node_count": node_count,
+        "current_scorer": {
+            "engine": "current_scorer",
+            "verdict": cs_res.verdict,
+            "predicted_root_causes": cs_res.predicted_root_causes,
+            "top_candidate": cs_top,
+            "ranking_score": cs_score,
+            "ranking_scores": cs_res.candidate_scores
+        },
+        "rca_v3": {
+            "engine": "rca_v3",
+            "verdict": v3_diag.verdict.value,
+            "predicted_root_causes": v3_diag.predicted_root_causes,
+            "top_candidate": v3_top,
+            "ranking_score": v3_score,
+            "ranking_scores": v3_diag.ranking_scores,
+            "is_multiroot": len(v3_diag.predicted_root_causes) > 1,
+            "verdict_reason": v3_diag.explanation.verdict_reason if v3_diag.explanation else None
+        },
+        "differences": diffs,
+        "diff_summary_sentence": diff_sentence,
+        "plain_note": "rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data."
+    }
+
+
+@router.get("/eval/summary", tags=["RCA Evaluation & Replay"])
+def get_evaluation_summary() -> List[Dict[str, Any]]:
+    """Reads whole evaluation CSVs and returns structured summary rows with engine, split, denominator, path, and commit."""
+    results_dir = Path("evaluation/results")
+    if not results_dir.exists():
+        return []
+
+    csv_files = sorted(list(results_dir.glob("*.csv")))
+    summary_rows = []
+
+    def infer_meta(filename: str):
+        fn = filename.lower()
+        if "stage3e" in fn:
+            engine = "rca_v3"
+            split = "val3" if "val3" in fn else "dev3"
+        elif "stage3c" in fn:
+            engine = "rca_v3"
+            split = "val3" if "val3" in fn else "dev3"
+        elif "stage3b" in fn:
+            engine = "rca_v3"
+            split = "val2" if "val2" in fn else ("old_dev" if "old_dev" in fn else "dev2")
+        elif "stage3" in fn:
+            engine = "rca_v3"
+            split = "handwritten" if "handwritten" in fn else ("dev_val" if "dev_val" in fn else "dev")
+        elif "stage2" in fn:
+            engine = "rca_v2"
+            split = "handwritten" if "handwritten" in fn else "dev"
+        elif "handwritten" in fn:
+            engine = "CurrentScorer_CaseTopology"
+            split = "handwritten"
+        else:
+            engine = "CurrentScorer_CaseTopology"
+            split = "dev"
+        return engine, split
+
+    for cp in csv_files:
+        try:
+            with open(cp, encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                total = len(rows)
+                if total == 0:
+                    continue
+                fieldnames = reader.fieldnames or []
+
+                engine, split = infer_meta(cp.name)
+
+                top1_count = 0
+                cw_count = None
+
+                if "rca_v2_correct" in fieldnames:
+                    top1_count = sum(1 for r in rows if r.get("rca_v2_correct", "").lower() in ("true", "1"))
+                    if "rca_v2_confident_wrong" in fieldnames:
+                        cw_count = sum(1 for r in rows if r.get("rca_v2_confident_wrong", "").lower() in ("true", "1"))
+                elif "is_top1" in fieldnames:
+                    top1_count = sum(1 for r in rows if r.get("is_top1", "").lower() in ("true", "1"))
+                    if "confident_wrong" in fieldnames:
+                        cw_count = sum(1 for r in rows if r.get("confident_wrong", "").lower() in ("true", "1"))
+                elif "match_ground_truth" in fieldnames:
+                    top1_count = sum(1 for r in rows if r.get("match_ground_truth", "").lower() in ("true", "1"))
+                elif "CurrentScorer_CaseTopology_correct" in fieldnames:
+                    top1_count = sum(1 for r in rows if r.get("CurrentScorer_CaseTopology_correct", "").lower() in ("true", "1"))
+                    if "CurrentScorer_CaseTopology_confident_wrong" in fieldnames:
+                        cw_count = sum(1 for r in rows if r.get("CurrentScorer_CaseTopology_confident_wrong", "").lower() in ("true", "1"))
+                elif "Current_5Factor_Ensemble_top1_correct" in fieldnames:
+                    top1_count = sum(1 for r in rows if r.get("Current_5Factor_Ensemble_top1_correct", "").lower() in ("true", "1"))
+                    if "Current_5Factor_Ensemble_confident_wrong" in fieldnames:
+                        cw_count = sum(1 for r in rows if r.get("Current_5Factor_Ensemble_confident_wrong", "").lower() in ("true", "1"))
+
+                acc_pct = round(top1_count / total * 100.0, 1)
+                cw_pct = round(cw_count / total * 100.0, 1) if cw_count is not None else None
+                commit_hash = get_file_commit(cp)
+
+                summary_rows.append({
+                    "filename": cp.name,
+                    "csv_path": str(cp.as_posix()),
+                    "engine": engine,
+                    "split": split,
+                    "denominator": total,
+                    "top1_count": top1_count,
+                    "top1_accuracy_pct": acc_pct,
+                    "confident_wrong_count": cw_count,
+                    "confident_wrong_pct": cw_pct,
+                    "commit": commit_hash
+                })
+        except Exception:
+            continue
+
+    return summary_rows
+
 

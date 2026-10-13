@@ -1,9 +1,9 @@
 {
   "case_id": "indep_026_contradiction_blamed_healthy_12node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1026,
   "topology": {
     "nodes": [
       {
@@ -137,34 +137,316 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:20+00:00",
-      "observed_time": "2026-10-16T14:00:21+00:00",
-      "source": "application",
-      "service": "OrderService",
-      "metric": "LockWaitTimeout",
-      "value": 100.0,
-      "severity": "CRITICAL"
-    },
-    {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
-      "source": "cloudwatch",
-      "service": "PostgresPrimary",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
-    },
-    {
-      "event_id": "hb_02",
       "event_time": "2026-10-16T14:00:25+00:00",
       "observed_time": "2026-10-16T14:00:26+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:32+00:00",
+      "observed_time": "2026-10-16T14:00:33+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "StorageLockContention",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_1",
+      "event_time": "2026-10-16T14:00:35.500000+00:00",
+      "observed_time": "2026-10-16T14:00:36.500000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_1",
+      "event_time": "2026-10-16T14:00:35.900000+00:00",
+      "observed_time": "2026-10-16T14:00:36.900000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_RedisCache_1",
+      "event_time": "2026-10-16T14:00:35.900000+00:00",
+      "observed_time": "2026-10-16T14:00:36.900000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:40+00:00",
+      "observed_time": "2026-10-16T14:00:41+00:00",
+      "source": "application",
+      "service": "OrderService",
+      "metric": "ConnectionPoolExhaustion",
+      "value": 100.0,
+      "severity": "CRITICAL",
+      "target": "PostgresPrimary",
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_1",
+      "event_time": "2026-10-16T14:00:40.500000+00:00",
+      "observed_time": "2026-10-16T14:00:41.500000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_1",
+      "event_time": "2026-10-16T14:00:41.600000+00:00",
+      "observed_time": "2026-10-16T14:00:42.600000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_1",
+      "event_time": "2026-10-16T14:00:42.300000+00:00",
+      "observed_time": "2026-10-16T14:00:43.300000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PaymentService_1",
+      "event_time": "2026-10-16T14:00:47.400000+00:00",
+      "observed_time": "2026-10-16T14:00:48.400000+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_1",
+      "event_time": "2026-10-16T14:00:48.300000+00:00",
+      "observed_time": "2026-10-16T14:00:49.300000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_1",
+      "event_time": "2026-10-16T14:00:48.600000+00:00",
+      "observed_time": "2026-10-16T14:00:49.600000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_APIGateway_1",
+      "event_time": "2026-10-16T14:00:49.200000+00:00",
+      "observed_time": "2026-10-16T14:00:50.200000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:50+00:00",
+      "observed_time": "2026-10-16T14:00:51+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "TransactionAbortRate",
+      "value": 0.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_PaymentService_2",
+      "event_time": "2026-10-16T14:00:59.300000+00:00",
+      "observed_time": "2026-10-16T14:01:00.300000+00:00",
+      "source": "cloudwatch",
+      "service": "PaymentService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_2",
+      "event_time": "2026-10-16T14:01:00.200000+00:00",
+      "observed_time": "2026-10-16T14:01:01.200000+00:00",
+      "source": "cloudwatch",
+      "service": "InventoryService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_2",
+      "event_time": "2026-10-16T14:01:01.700000+00:00",
+      "observed_time": "2026-10-16T14:01:02.700000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:01:05+00:00",
+      "observed_time": "2026-10-16T14:01:06+00:00",
+      "source": "application",
+      "service": "OrderService",
+      "metric": "InternalExecutionFailure",
+      "value": 80.0,
+      "severity": "HIGH",
+      "target": "PostgresPrimary",
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_2",
+      "event_time": "2026-10-16T14:01:08.100000+00:00",
+      "observed_time": "2026-10-16T14:01:09.100000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_APIGateway_2",
+      "event_time": "2026-10-16T14:01:08.200000+00:00",
+      "observed_time": "2026-10-16T14:01:09.200000+00:00",
+      "source": "cloudwatch",
+      "service": "APIGateway",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_KafkaCluster_2",
+      "event_time": "2026-10-16T14:01:08.600000+00:00",
+      "observed_time": "2026-10-16T14:01:09.600000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_2",
+      "event_time": "2026-10-16T14:01:10.400000+00:00",
+      "observed_time": "2026-10-16T14:01:11.400000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_2",
+      "event_time": "2026-10-16T14:01:12.700000+00:00",
+      "observed_time": "2026-10-16T14:01:13.700000+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:01:15+00:00",
+      "observed_time": "2026-10-16T14:01:16+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_RedisCache_2",
+      "event_time": "2026-10-16T14:01:21.700000+00:00",
+      "observed_time": "2026-10-16T14:01:22.700000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_CatalogService_2",
+      "event_time": "2026-10-16T14:01:23.800000+00:00",
+      "observed_time": "2026-10-16T14:01:24.800000+00:00",
+      "source": "cloudwatch",
+      "service": "CatalogService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -195,53 +477,61 @@
     }
   ],
   "ground_truth": {
-    "true_root_causes": [
-      "PostgresPrimary"
-    ],
+    "true_root_causes": [],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "ABSTAIN",
-    "acceptable_verdict_level": "ABSTAIN",
     "acceptable_outcomes": [
       {
         "verdict": "ABSTAIN",
         "roots": [],
-        "max_level": "ABSTAIN"
+        "max_level": "ABSTAIN",
+        "allow_partial": false
       },
       {
         "verdict": "DIAGNOSE",
         "roots": [
           "OrderService"
         ],
-        "max_level": "PROBABLE"
+        "max_level": "PROBABLE",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Contradiction: OrderService reports database lock blame, but PostgresPrimary emits verified healthy heartbeats. Engine must ABSTAIN or diagnose OrderService at PROBABLE.",
+    "max_level_by_root": {
+      "OrderService": "PROBABLE",
+      "PostgresPrimary": "ABSTAIN"
+    },
+    "identifiability_note": "Contradiction: OrderService reports 2 critical errors explicitly blaming database (target='PostgresPrimary'), but PostgresPrimary emits verified healthy metric telemetry (zero lock contention, zero transaction aborts) plus heartbeats. Engine must ABSTAIN or diagnose OrderService at PROBABLE. CONFIRMED on any root is confident-wrong.",
     "incident_groups": []
   },
   "perturbations": [
     "contradictory"
   ],
   "tags": [
+    "independent",
     "contradictory",
-    "independent_test"
+    "12node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Contradiction: OrderService reports database lock blame, but PostgresPrimary emits verified healthy heartbeats. Engine must ABSTAIN or diagnose OrderService at PROBABLE.",
-  "acceptable_verdict_level": "ABSTAIN",
+  "identifiability_note": "Contradiction: OrderService reports 2 critical errors explicitly blaming database (target='PostgresPrimary'), but PostgresPrimary emits verified healthy metric telemetry (zero lock contention, zero transaction aborts) plus heartbeats. Engine must ABSTAIN or diagnose OrderService at PROBABLE. CONFIRMED on any root is confident-wrong.",
   "acceptable_outcomes": [
     {
       "verdict": "ABSTAIN",
       "roots": [],
-      "max_level": "ABSTAIN"
+      "max_level": "ABSTAIN",
+      "allow_partial": false
     },
     {
       "verdict": "DIAGNOSE",
       "roots": [
         "OrderService"
       ],
-      "max_level": "PROBABLE"
+      "max_level": "PROBABLE",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {
+    "OrderService": "PROBABLE",
+    "PostgresPrimary": "ABSTAIN"
+  }
 }

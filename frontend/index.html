@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incident Analysis | RCA Platform</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>window.addEventListener('load', () => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap'; document.head.appendChild(l); });</script>
     
     <style>
         /* ============================================================
@@ -2057,9 +2055,12 @@
 
         <!-- Tab Navigation -->
         <nav class="app-tabs" id="appTabs">
-            <button class="tab-btn active" onclick="switchTab('tab-overview')">Topology & Diagnostics</button>
-            <button class="tab-btn" onclick="switchTab('tab-timeline')">Incident Timeline</button>
-            <button class="tab-btn" onclick="switchTab('tab-fault-lab')">Fault Injection Lab</button>
+            <button class="tab-btn active" onclick="switchTab('tab-overview', this)">Topology & Diagnostics</button>
+            <button class="tab-btn" onclick="switchTab('tab-replay', this)">Replay Timeline</button>
+            <button class="tab-btn" onclick="switchTab('tab-compare', this)">Compare Engines</button>
+            <button class="tab-btn" onclick="switchTab('tab-timeline', this)">Incident Timeline</button>
+            <button class="tab-btn" onclick="switchTab('tab-fault-lab', this)">Fault Injection Lab</button>
+            <button class="tab-btn" onclick="switchTab('tab-evaluation', this)">Evaluation & Benchmarks</button>
         </nav>
 
         <div class="tab-content">
@@ -2168,7 +2169,18 @@
 
                     <!-- Evidence Breakdown Section -->
                     <div class="evidence-section">
-                        <h4 class="evidence-heading">Evidence & Scoring Breakdown (5 Dimensions)</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <h4 class="evidence-heading" style="margin-bottom: 0;">Evidence & Scoring Breakdown (5 Dimensions)</h4>
+                        </div>
+                        <!-- Backend Exact Evidence States Legend -->
+                        <div class="evidence-legend" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; font-size: 0.7rem; color: var(--text-muted); background: var(--bg-subtle); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                            <span style="font-weight: 600; color: var(--text-heading);">Backend Evidence States:</span>
+                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#EF4444;"></span> PRESENT (Active anomaly)</span>
+                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#F59E0B;"></span> STALE (Delayed heartbeat)</span>
+                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#8B5CF6;"></span> MISSING (Expected signal absent)</span>
+                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#10B981;"></span> QUIET (Verified nominal)</span>
+                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#64748B;"></span> UNOBSERVED (Source down/uncollected)</span>
+                        </div>
                         <div class="evidence-bars" id="scoringBars">
                             <!-- Injected by app.js -->
                         </div>
@@ -2183,7 +2195,7 @@
                                     <tr>
                                         <th>Rank</th>
                                         <th>Service Candidate</th>
-                                        <th>Score</th>
+                                        <th>Ranking Score</th>
                                         <th>Role Classification</th>
                                     </tr>
                                 </thead>
@@ -2192,11 +2204,31 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="candidate-table-note" style="font-size:0.7rem; color:var(--text-muted); margin-top:0.4rem; line-height: 1.4;">
+                            * <strong>Ranking Score</strong> is the primary calibrated hypothesis score (0–100).<br>
+                            <em>Note: reachable_coverage is omitted from display as it is an uncalibrated experimental metric defined for synthetic unobserved candidates (ratio of reachable symptom dependents to total dependents) and remains 0.0 on observed candidates.</em>
+                        </div>
                     </div>
 
                     <!-- Step-by-Step Reasoning -->
                     <div class="reasoning-list" id="reasoningList">
                         <!-- Injected by app.js -->
+                    </div>
+
+                    <!-- Baseline Engine Comparison Callout -->
+                    <div id="baselineEngineBox" class="baseline-engine-box" style="margin-top: 0.85rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-sm); background: var(--bg-subtle); border: 1px solid var(--border); font-size: 0.75rem; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <strong style="color: var(--text-heading); font-size: 0.8rem;">Baseline engine (Legacy v1)</strong>
+                            <span style="padding: 0.1rem 0.45rem; border-radius: 3px; background: var(--border); color: var(--text-muted); font-size: 0.68rem; font-weight: 600;">BASELINE COMPARISON</span>
+                        </div>
+                        <div id="baselineEngineContent" style="color: var(--text-body); line-height: 1.45;">
+                            <!-- Injected by app.js -->
+                        </div>
+                    </div>
+
+                    <!-- Plain Note Required by Specification -->
+                    <div class="callout-note" style="margin-top: 0.85rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-sm); background: var(--bg-subtle); border: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); line-height: 1.45;">
+                        <strong>Engine Note:</strong> rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data.
                     </div>
                 </div>
 
@@ -2205,7 +2237,7 @@
                     <div class="panel-header-row">
                         <div>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <h2 class="panel-heading">Suggested fix</h2>
+                                <h2 class="panel-heading">Suggested (not executed)</h2>
                                 <span id="fixActionTypeBadge" class="action-type-pill" style="display: none;">SCALE_OUT</span>
                             </div>
                             <span id="fixActionSubtitle" class="panel-subtext">Automated remediation runbook</span>
@@ -2213,10 +2245,16 @@
                         <span id="fixEstimatedTime" class="time-estimate-pill">~3 min to resolve</span>
                     </div>
 
+                    <!-- Unsafe Warning Banner (Conditional) -->
+                    <div id="fixUnsafeBanner" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; font-size: 0.75rem;">
+                        <strong>⚠️ Unsafe Runbook Command Detected:</strong> Manual copy and automated execution are strictly disabled to prevent system damage.
+                    </div>
+
                     <div class="code-terminal-box">
                         <div class="code-terminal-header">
                             <span class="terminal-label">AWS CLI Runbook</span>
                             <button id="btnCopyCommand" class="btn-copy">Copy</button>
+                            <span id="btnCopyUnsafeBadge" style="display: none; font-size: 0.68rem; color: #DC2626; font-weight: 600;">Copy Disabled (Unsafe)</span>
                         </div>
                         <pre><code id="remediationCommand"># Runbook commands will load here...</code></pre>
                     </div>
@@ -2232,18 +2270,253 @@
                         </ul>
                     </div>
 
-                    <div class="fix-action-row">
-                        <button id="btnApplyFix" class="btn btn-success">
+                    <div class="fix-action-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <button id="btnApplyFix" class="btn btn-success" disabled title="Automated remediation is safely guarded server-side (requires CONFIRMED diagnosis, healthy telemetry sources, and human approval token)">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                             Apply this fix
                         </button>
-                        <span id="fixStatusMsg" class="fix-status-text"></span>
+                        <span id="fixStatusMsg" class="fix-status-text" style="color: #64748B; font-size: 0.75rem;">Remediation locked: server-side guarded (requires CONFIRMED verdict, healthy sources, and human approval token).</span>
                     </div>
                 </div>
             </section>
         </main>
         
             </div> <!-- End Tab 1 -->
+
+            <!-- TAB: Replay Timeline -->
+            <div id="tab-replay" class="tab-pane">
+                <section class="card-panel" style="padding: 1.5rem;">
+                    <div class="panel-header-row" style="margin-bottom: 1.25rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                                <h2 class="panel-heading">Interactive Event Replay & Step-Through</h2>
+                                <span class="status-tag" style="background:#EEF2FF; border:1px solid #C7D2FE; color:#4F46E5; font-weight:700;">🧪 SYNTHETIC</span>
+                            </div>
+                            <span class="panel-subtext">Event-by-event prefix evaluation on stripped synthetic cases (no hints/outcomes)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <label for="replayCaseSelect" style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">Case:</label>
+                            <select id="replayCaseSelect" class="timeline-select" style="min-width: 280px;" onchange="loadReplayCase()">
+                                <option value="indep_001_slow_burn_decoy_6node">indep_001_slow_burn_decoy_6node (6 nodes)</option>
+                                <option value="indep_004_slow_burn_decoy_12node">indep_004_slow_burn_decoy_12node (12 nodes)</option>
+                            </select>
+                            <label for="replayEngineSelect" style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-left: 0.5rem;">Engine:</label>
+                            <select id="replayEngineSelect" class="timeline-select" onchange="loadReplayCase()">
+                                <option value="rca_v3">rca_v3 (Autonomous)</option>
+                                <option value="current_scorer">Current Scorer (Cleaned Baseline)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Replay Controls & Scrubber Toolbar -->
+                    <div style="background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-md); padding:1rem 1.25rem; margin-bottom:1.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.75rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <button id="btnReplayPlay" class="btn btn-primary btn-sm" onclick="toggleReplayPlay()">▶ Play</button>
+                                <button id="btnReplayStepBack" class="btn btn-ghost btn-sm" onclick="stepReplay(-1)">⏮ Step Back</button>
+                                <button id="btnReplayStepForward" class="btn btn-ghost btn-sm" onclick="stepReplay(1)">⏭ Step Forward</button>
+                                <button id="btnReplayReset" class="btn btn-ghost btn-sm" onclick="resetReplay()">↺ Reset</button>
+                                <span style="margin-left:0.5rem; font-size:0.78rem; color:var(--text-muted);">Speed:</span>
+                                <select id="replaySpeedSelect" class="timeline-select" style="padding:0.25rem 0.5rem; font-size:0.75rem;">
+                                    <option value="1200">1x (1.2s)</option>
+                                    <option value="600">2x (0.6s)</option>
+                                    <option value="250">5x (0.25s)</option>
+                                </select>
+                            </div>
+                            <div style="font-size:0.82rem; font-weight:600; color:var(--text-heading);">
+                                Frame <span id="replayFrameIdx" style="color:var(--indigo);">1</span> / <span id="replayFrameTotal">1</span>
+                                <span style="margin: 0 0.5rem; color:var(--border-strong);">|</span>
+                                Timestamp: <code id="replayFrameTimestamp" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-body);">-</code>
+                            </div>
+                        </div>
+
+                        <!-- Scrubber Track -->
+                        <div>
+                            <input type="range" id="replayScrubber" min="1" max="1" value="1" style="width:100%; cursor:pointer;" oninput="onReplayScrub(this.value)">
+                            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-light); margin-top:0.25rem;">
+                                <span>T0 (First Anomaly)</span>
+                                <span>Event-by-Event Timeline Scrubbing</span>
+                                <span>T_end (Full Incident Window)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Replay Two-Column Display: Event on Left, Diagnosis on Right -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;" class="replay-grid-responsive">
+                        <!-- Left: Current Event Card -->
+                        <div class="card-panel" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.25rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-heading);">Telemetric Event Ingested at Frame</h3>
+                                <span id="replayEventSeverity" class="badge-severity">HIGH</span>
+                            </div>
+                            <div id="replayCurrentEventDetails" style="font-size:0.82rem; line-height:1.6; color:var(--text-body); background:var(--bg-subtle); padding:0.85rem; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:var(--font-mono);">
+                                Awaiting frame selection...
+                            </div>
+                            <div style="margin-top:1rem;">
+                                <h4 style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">Prefix Event Timeline Track</h4>
+                                <div id="replayEventTrack" style="display:flex; flex-direction:column; gap:0.35rem; max-height:220px; overflow-y:auto;">
+                                    <!-- Injected by app.js -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Engine Diagnosis Card -->
+                        <div class="card-panel" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.25rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-heading);">Engine Verdict & Candidate Ranking</h3>
+                                <span id="replayVerdictBadge" class="status-tag status-tag-open">CONFIRMED</span>
+                            </div>
+
+                            <div style="background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); letter-spacing:0.05em; text-transform:uppercase;">Identified Root Cause</div>
+                                    <h4 id="replayFrameTopRoot" style="font-size:1.35rem; font-weight:800; color:var(--red); margin-top:0.2rem;">-</h4>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); letter-spacing:0.05em; text-transform:uppercase;">Ranking Score</div>
+                                    <span id="replayFrameScore" class="confidence-tag" style="margin-top:0.25rem; display:inline-block; font-size:0.9rem;">0.0</span>
+                                </div>
+                            </div>
+
+                            <h4 style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">Candidate Score Distribution</h4>
+                            <div class="candidate-table-wrap">
+                                <table class="candidate-table" style="font-size:0.78rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Candidate Service</th>
+                                            <th>Ranking Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="replayCandidateRankingBody">
+                                        <!-- Injected by app.js -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB: Compare Engines -->
+            <div id="tab-compare" class="tab-pane">
+                <section class="card-panel" style="padding: 1.5rem;">
+                    <div class="panel-header-row" style="margin-bottom: 1.25rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                                <h2 class="panel-heading">Side-by-Side Engine Comparison</h2>
+                                <span class="status-tag status-tag-resolved">BENCHMARK CONTRAST</span>
+                            </div>
+                            <span class="panel-subtext">Cleaned Current Scorer Baseline vs. rca_v3 on identical stripped input</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <label for="compareCaseSelect" style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">Case:</label>
+                            <select id="compareCaseSelect" class="timeline-select" style="min-width: 280px;" onchange="loadCompareCase()">
+                                <option value="indep_001_slow_burn_decoy_6node">indep_001_slow_burn_decoy_6node (6 nodes)</option>
+                                <option value="indep_004_slow_burn_decoy_12node">indep_004_slow_burn_decoy_12node (12 nodes)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Plain Note Required by Specification -->
+                    <div class="callout-note" style="margin-bottom: 1rem; padding: 0.85rem 1.1rem; border-radius: var(--radius-md); background: #F8FAFC; border: 1px solid #CBD5E1; color: #334155; font-size: 0.85rem; line-height: 1.45;">
+                        <strong>Engine Contrast Note:</strong> rca_v3's added value is the verdict, abstention and multi-root output; ranking accuracy is matched by the cleaned current scorer on synthetic data.
+                    </div>
+
+                    <!-- Generated Diff Sentence Banner -->
+                    <div id="compareSentenceBox" style="margin-bottom: 1.5rem; padding: 0.9rem 1.15rem; border-radius: var(--radius-md); background: #EEF2FF; border: 1px solid #C7D2FE; color: #312E81; font-size: 0.88rem; font-weight: 600; line-height: 1.45;">
+                        <span id="compareSentenceText">Loading comparison...</span>
+                    </div>
+
+                    <!-- Side-by-Side Cards (Grid) -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;" class="compare-grid-responsive">
+                        
+                        <!-- Left Card: Cleaned Current Scorer -->
+                        <div class="card-panel" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.25rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <div>
+                                    <strong style="font-size:1rem; color:var(--text-heading);">Current Scorer (Cleaned Baseline)</strong>
+                                    <div style="font-size:0.72rem; color:var(--text-muted);">5-Factor Topological Ensemble (Forces Diagnosis)</div>
+                                </div>
+                                <span class="status-tag status-tag-open">DIAGNOSE</span>
+                            </div>
+
+                            <div style="background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.9rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Top Root Cause</span>
+                                    <h4 id="csCompareTopRoot" style="font-size:1.2rem; font-weight:800; color:var(--red); margin-top:0.2rem;">-</h4>
+                                </div>
+                                <div style="text-align:right;">
+                                    <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Ranking Score</span>
+                                    <span id="csCompareScore" class="confidence-tag" style="margin-top:0.25rem; display:inline-block;">0.0</span>
+                                </div>
+                            </div>
+
+                            <h4 style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase;">Candidate Rankings</h4>
+                            <div class="candidate-table-wrap">
+                                <table class="candidate-table" style="font-size:0.78rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Candidate</th>
+                                            <th>Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="csCompareRankingBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right Card: rca_v3 -->
+                        <div class="card-panel" style="background:var(--bg-card); border:1px solid var(--indigo); border-radius:var(--radius-md); padding:1.25rem; box-shadow:0 0 12px rgba(99, 102, 241, 0.08);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <div>
+                                    <strong style="font-size:1rem; color:var(--text-heading);">rca_v3 (Autonomous RCA)</strong>
+                                    <div style="font-size:0.72rem; color:var(--indigo);">Pure-Function Deterministic Causal Engine</div>
+                                </div>
+                                <span id="v3CompareVerdictBadge" class="status-tag status-tag-resolved">CONFIRMED</span>
+                            </div>
+
+                            <div style="background:var(--indigo-tint); border:1px solid #C7D2FE; border-radius:var(--radius-sm); padding:0.9rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <span style="font-size:0.68rem; font-weight:800; color:var(--indigo); text-transform:uppercase;">Hypothesized Root Set</span>
+                                    <h4 id="v3CompareTopRoot" style="font-size:1.2rem; font-weight:800; color:var(--text-heading); margin-top:0.2rem;">-</h4>
+                                </div>
+                                <div style="text-align:right;">
+                                    <span style="font-size:0.68rem; font-weight:800; color:var(--indigo); text-transform:uppercase;">Ranking Score</span>
+                                    <span id="v3CompareScore" class="confidence-tag" style="margin-top:0.25rem; display:inline-block; background:var(--indigo); color:#FFF;">0.0</span>
+                                </div>
+                            </div>
+
+                            <div id="v3CompareReasoningBox" style="font-size:0.78rem; line-height:1.45; color:var(--text-body); background:var(--bg-subtle); padding:0.65rem 0.85rem; border-radius:var(--radius-sm); margin-bottom:1rem; border:1px solid var(--border);">
+                                Verdict reason will load here...
+                            </div>
+
+                            <h4 style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase;">Candidate Rankings</h4>
+                            <div class="candidate-table-wrap">
+                                <table class="candidate-table" style="font-size:0.78rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Candidate</th>
+                                            <th>Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="v3CompareRankingBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Differences Breakdown Section -->
+                    <div style="margin-top:1.5rem;">
+                        <h4 style="font-size:0.88rem; font-weight:700; color:var(--text-heading); margin-bottom:0.65rem;">Highlighted Differences</h4>
+                        <div id="compareDiffsList" style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <!-- Injected by app.js -->
+                        </div>
+                    </div>
+                </section>
+            </div>
 
             <!-- TAB 2: Incident Timeline -->
             <div id="tab-timeline" class="tab-pane">
@@ -2326,6 +2599,46 @@
                 </section>
             
             </div> <!-- End Tab 3 -->
+            
+            <!-- TAB 4: Evaluation & Benchmarks -->
+            <div id="tab-evaluation" class="tab-pane">
+                <section class="card-panel" style="padding: 1.5rem;">
+                    <div class="panel-header-row" style="margin-bottom: 1rem;">
+                        <div>
+                            <h2 class="panel-heading">Evaluation & Benchmarks (Frozen Splits)</h2>
+                            <span class="panel-subtext">Committed evaluation runs with split names and git commit hashes</span>
+                        </div>
+                        <span class="status-tag status-tag-resolved">✓ COMMITTED RUNS ONLY</span>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; font-size: 0.8rem; line-height: 1.45;">
+                        <strong>Blinding & Headline Claim Policy:</strong> In strict compliance with evaluation rules, all headline claims reflect committed Dev and Handwritten benchmark runs only. Validation runs (val2, val3) are non-headline exploratory data and are excluded from headline claims.
+                    </div>
+
+                    <div class="candidate-table-wrap">
+                        <table class="candidate-table" style="font-size: 0.82rem;">
+                            <thead>
+                                <tr>
+                                    <th>Split Name</th>
+                                    <th>Result Artifact File</th>
+                                    <th>Engine</th>
+                                    <th>Denominator (Cases)</th>
+                                    <th>Accuracy (Top-1)</th>
+                                    <th>Confident-Wrong</th>
+                                    <th>Git Commit Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="evalSummaryTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                                        Loading committed evaluation runs from /api/eval/summary...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         
         </div> <!-- End Tab Content -->
     </div>
@@ -2475,13 +2788,31 @@
 
     <script src="app.js"></script>
     <script>
-        // Tab switching logic for index.html directly
-        window.switchTab = function(tabId) {
+        // Robust tab switching preventing event.currentTarget crash with lazy data loading
+        window.switchTab = async function(tabId, targetEl) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
+            
+            const btn = targetEl || (typeof event !== 'undefined' && event?.currentTarget) || document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+            if (btn && btn.classList) btn.classList.add('active');
+
+            if (tabId === 'tab-replay') {
+                if (typeof window.ensureReplayAndCompareLoaded === 'function') {
+                    await window.ensureReplayAndCompareLoaded();
+                }
+            } else if (tabId === 'tab-compare') {
+                if (typeof window.ensureReplayAndCompareLoaded === 'function') {
+                    await window.ensureReplayAndCompareLoaded();
+                }
+                if (typeof window.loadCompareCase === 'function') {
+                    window.loadCompareCase();
+                }
+            } else if (tabId === 'tab-evaluation' && typeof window.loadEvaluationSummary === 'function') {
+                window.loadEvaluationSummary();
+            }
         };
     </script>
 </body>

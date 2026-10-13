@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, DateTime, JSON, ForeignKey, Integer, Index, Text, func, text
-from sqlalchemy.orm import relationship, foreign
+from sqlalchemy.orm import relationship, foreign, synonym
 from backend.app.db.database import Base
 
 
@@ -13,6 +13,7 @@ class DBIncident(Base):
     updated_at = Column(DateTime)
     probable_root_cause = Column(String, nullable=True)
     confidence = Column(Float, nullable=True)
+    ranking_score = synonym("confidence")
     affected_services = Column(JSON, default=[])
     score_breakdown = Column(JSON, default={})
     remediation_suggestion = Column(String, nullable=True)

@@ -1,9 +1,9 @@
 {
   "case_id": "indep_007_silent_root_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1007,
   "topology": {
     "nodes": [
       {
@@ -78,73 +78,123 @@
   "events": [
     {
       "event_id": "evt_01",
-      "event_time": "2026-10-16T14:00:30+00:00",
-      "observed_time": "2026-10-16T14:00:31+00:00",
-      "source": "cloudwatch",
-      "service": "API",
-      "metric": "SocketConnectionRefused",
-      "value": 45.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_02",
       "event_time": "2026-10-16T14:00:35+00:00",
       "observed_time": "2026-10-16T14:00:36+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "HostUnreachable",
-      "value": 30.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:40+00:00",
-      "observed_time": "2026-10-16T14:00:41+00:00",
-      "source": "application",
-      "service": "Application",
-      "metric": "HTTP502Rate",
-      "value": 25.0,
-      "severity": "HIGH"
+      "service": "API",
+      "metric": "NetworkSocketTimeout",
+      "value": 45.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:00:42+00:00",
+      "observed_time": "2026-10-16T14:00:43+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
-      "event_id": "hb_02",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:48+00:00",
+      "observed_time": "2026-10-16T14:00:49+00:00",
       "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW"
+      "service": "Worker",
+      "metric": "ConnectionPoolExhaustion",
+      "value": 30.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_03",
-      "event_time": "2026-10-16T14:00:10+00:00",
-      "observed_time": "2026-10-16T14:00:11+00:00",
+      "event_time": "2026-10-16T14:00:50+00:00",
+      "observed_time": "2026-10-16T14:00:51+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:57.500000+00:00",
+      "observed_time": "2026-10-16T14:00:58.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:01:12+00:00",
+      "observed_time": "2026-10-16T14:01:13+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 50.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_02",
+      "event_time": "2026-10-16T14:01:22+00:00",
+      "observed_time": "2026-10-16T14:01:23+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:01:24.100000+00:00",
+      "observed_time": "2026-10-16T14:01:25.100000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
     },
     {
       "event_id": "hb_04",
-      "event_time": "2026-10-16T14:00:45+00:00",
-      "observed_time": "2026-10-16T14:00:46+00:00",
+      "event_time": "2026-10-16T14:01:28+00:00",
+      "observed_time": "2026-10-16T14:01:29+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:35+00:00",
+      "observed_time": "2026-10-16T14:01:36+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "TaskExecutionStall",
+      "value": 40.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -180,38 +230,40 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "PROBABLE",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
         "roots": [
           "EC2"
         ],
-        "max_level": "PROBABLE"
+        "max_level": "PROBABLE",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "EC2 emits zero events (kernel hard crash); dependents API and Worker report socket connection timeouts. Competing candidates DynamoDB and Auth emit verified healthy heartbeats inside window.",
+    "max_level_by_root": {},
+    "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats inside [t+35s, t+95s].",
     "incident_groups": []
   },
   "perturbations": [
     "silent_root"
   ],
   "tags": [
+    "independent",
     "silent_root",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "EC2 emits zero events (kernel hard crash); dependents API and Worker report socket connection timeouts. Competing candidates DynamoDB and Auth emit verified healthy heartbeats inside window.",
-  "acceptable_verdict_level": "PROBABLE",
+  "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats inside [t+35s, t+95s].",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
       "roots": [
         "EC2"
       ],
-      "max_level": "PROBABLE"
+      "max_level": "PROBABLE",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }

@@ -1,5 +1,5 @@
 import pytest
-from evaluation.schema import EvaluationCase, GroundTruth, TopologyData
+from evaluation.schema import EvaluationCase, GroundTruth, TopologyData, AcceptableOutcome
 from evaluation.baselines.adapter import BaselineResult
 from evaluation.metrics.engine import (
     compute_top_k_accuracy,
@@ -12,15 +12,21 @@ DUMMY_TOPO = TopologyData(nodes=[], edges=[])
 
 
 def make_dummy_case(case_id: str, true_roots: list, expected_verdict: str = "DIAGNOSE") -> EvaluationCase:
+    outcomes = []
+    if expected_verdict == "ABSTAIN":
+        outcomes.append(AcceptableOutcome(verdict="ABSTAIN", roots=[]))
+    else:
+        outcomes.append(AcceptableOutcome(verdict="DIAGNOSE", roots=true_roots))
     return EvaluationCase(
         case_id=case_id,
         family_id="fam_dummy",
         seed=1,
         topology=DUMMY_TOPO,
         events=[],
+        acceptable_outcomes=outcomes,
         ground_truth=GroundTruth(
             true_root_causes=true_roots,
-            expected_verdict=expected_verdict
+            acceptable_outcomes=outcomes
         )
     )
 

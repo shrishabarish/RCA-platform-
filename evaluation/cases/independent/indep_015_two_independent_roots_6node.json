@@ -1,9 +1,9 @@
 {
   "case_id": "indep_015_two_independent_roots_6node",
-  "family_id": "indep_eval",
+  "family_id": "independent_eval_v1",
   "base_case_id": null,
-  "generator_version": "independent_handwritten_2.0",
-  "seed": 20261016,
+  "generator_version": "independent_handcrafted_v1.0",
+  "seed": 1015,
   "topology": {
     "nodes": [
       {
@@ -77,44 +77,124 @@
   },
   "events": [
     {
-      "event_id": "evt_01",
+      "event_id": "hb_01",
       "event_time": "2026-10-16T14:00:10+00:00",
       "observed_time": "2026-10-16T14:00:11+00:00",
-      "source": "cloudwatch",
-      "service": "EC2",
-      "metric": "PhysicalMemorySaturation",
-      "value": 98.5,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_02",
-      "event_time": "2026-10-16T14:00:12+00:00",
-      "observed_time": "2026-10-16T14:00:13+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoDB",
-      "metric": "StorageThrottleRate",
-      "value": 92.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "evt_03",
-      "event_time": "2026-10-16T14:00:25+00:00",
-      "observed_time": "2026-10-16T14:00:26+00:00",
-      "source": "cloudwatch",
-      "service": "API",
-      "metric": "InternalServerErrorRate",
-      "value": 80.0,
-      "severity": "CRITICAL"
-    },
-    {
-      "event_id": "hb_01",
-      "event_time": "2026-10-16T14:00:15+00:00",
-      "observed_time": "2026-10-16T14:00:16+00:00",
       "source": "cloudwatch",
       "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
-      "severity": "LOW"
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_01",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "HostResourceSaturation",
+      "value": 98.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:27.500000+00:00",
+      "observed_time": "2026-10-16T14:00:28.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_03",
+      "event_time": "2026-10-16T14:00:28+00:00",
+      "observed_time": "2026-10-16T14:00:29+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "StorageWriteThrottle",
+      "value": 95.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:29.500000+00:00",
+      "observed_time": "2026-10-16T14:00:30.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:00:44.800000+00:00",
+      "observed_time": "2026-10-16T14:00:45.800000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_02",
+      "event_time": "2026-10-16T14:00:45+00:00",
+      "observed_time": "2026-10-16T14:00:46+00:00",
+      "source": "cloudwatch",
+      "service": "EC2",
+      "metric": "ThreadContextSwitchStorm",
+      "value": 90.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:00:52+00:00",
+      "observed_time": "2026-10-16T14:00:53+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "StorageLockContention",
+      "value": 88.0,
+      "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:07.900000+00:00",
+      "observed_time": "2026-10-16T14:01:08.900000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_05",
+      "event_time": "2026-10-16T14:01:10+00:00",
+      "observed_time": "2026-10-16T14:01:11+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "EndpointFailureRate",
+      "value": 50.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
     }
   ],
   "source_health": [
@@ -151,8 +231,6 @@
     ],
     "onset_times": {},
     "symptom_to_cause": {},
-    "expected_verdict": "DIAGNOSE",
-    "acceptable_verdict_level": "CONFIRMED",
     "acceptable_outcomes": [
       {
         "verdict": "DIAGNOSE",
@@ -160,31 +238,25 @@
           "EC2",
           "DynamoDB"
         ],
-        "max_level": "CONFIRMED"
-      },
-      {
-        "verdict": "DIAGNOSE",
-        "roots": [
-          "DynamoDB",
-          "EC2"
-        ],
-        "max_level": "CONFIRMED"
+        "max_level": "CONFIRMED",
+        "allow_partial": false
       }
     ],
-    "identifiability_note": "Independent simultaneous outages on compute fleet EC2 and database DynamoDB.",
+    "max_level_by_root": {},
+    "identifiability_note": "Concurrent independent failures on EC2 and DynamoDB with API observing transitive errors; both roots have 2 anomalous events. Full root set is the only fully correct outcome.",
     "incident_groups": []
   },
   "perturbations": [
     "two_independent_roots"
   ],
   "tags": [
+    "independent",
     "two_independent_roots",
-    "independent_test"
+    "6node"
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "Independent simultaneous outages on compute fleet EC2 and database DynamoDB.",
-  "acceptable_verdict_level": "CONFIRMED",
+  "identifiability_note": "Concurrent independent failures on EC2 and DynamoDB with API observing transitive errors; both roots have 2 anomalous events. Full root set is the only fully correct outcome.",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",
@@ -192,15 +264,9 @@
         "EC2",
         "DynamoDB"
       ],
-      "max_level": "CONFIRMED"
-    },
-    {
-      "verdict": "DIAGNOSE",
-      "roots": [
-        "DynamoDB",
-        "EC2"
-      ],
-      "max_level": "CONFIRMED"
+      "max_level": "CONFIRMED",
+      "allow_partial": false
     }
-  ]
+  ],
+  "max_level_by_root": {}
 }
