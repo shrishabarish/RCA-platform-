@@ -1,0 +1,17 @@
+{
+  "split": "dev",
+  "status": "SUPERSEDED",
+  "engines": {
+    "rca_v3": {
+      "top1_column": "rca_v3_correct",
+      "cw_column": "rca_v3_confident_wrong",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "CurrentScorer_CaseTopology": {
+      "top1_column": "CurrentScorer_CaseTopology_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

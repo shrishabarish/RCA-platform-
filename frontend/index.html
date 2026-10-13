@@ -2089,7 +2089,7 @@
                 <span class="kpi-title">Likely cause</span>
                 <div class="kpi-number-row">
                     <span id="kpiRootCause" class="kpi-big-num text-danger">Healthy</span>
-                    <span id="kpiConfidenceBadge" class="kpi-badge-pill">0% ranking score</span>
+                    <span id="kpiConfidenceBadge" class="kpi-badge-pill">0 ranking score</span>
                 </div>
             </div>
 
@@ -2150,7 +2150,7 @@
                     <div class="diagnosis-hero-box">
                         <div class="diagnosis-top-line">
                             <span class="eyebrow-tag">MOST LIKELY CAUSE</span>
-                            <span id="diagnosisConfidenceTag" class="confidence-tag">0% RANKING SCORE</span>
+                            <span id="diagnosisConfidenceTag" class="confidence-tag">0 RANKING SCORE</span>
                         </div>
                         <h3 id="diagnosisCauseTitle" class="diagnosis-title">Analyzing Telemetry...</h3>
                         <div id="diagnosisResourceId" class="diagnosis-resource-tag">-</div>
@@ -2617,10 +2617,10 @@
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
                         <div style="font-size:0.85rem; font-weight:600; color:var(--text-main);">
-                            <span id="evalViewTitle">Latest Frozen Benchmark Runs (One Row per Engine)</span>
+                            <span id="evalViewTitle">Dev3 & Val3 Engine Comparison (Same-Split Benchmarks)</span>
                         </div>
                         <div style="display:flex; gap:0.5rem;">
-                            <button id="btnEvalShowFrozen" class="tab-btn active" style="padding:0.35rem 0.75rem; font-size:0.75rem; border-radius:4px;" onclick="window.setEvalView('frozen')">Latest Frozen Runs</button>
+                            <button id="btnEvalShowFrozen" class="tab-btn active" style="padding:0.35rem 0.75rem; font-size:0.75rem; border-radius:4px;" onclick="window.setEvalView('frozen')">Dev3 & Val3 Comparison</button>
                             <button id="btnEvalShowAll" class="tab-btn" style="padding:0.35rem 0.75rem; font-size:0.75rem; border-radius:4px;" onclick="window.setEvalView('all')">All Runs (26 CSVs)</button>
                         </div>
                     </div>
@@ -2630,12 +2630,12 @@
                             <thead>
                                 <tr>
                                     <th>Split Name</th>
-                                    <th>Result Artifact File</th>
                                     <th>Engine</th>
                                     <th>Run Status</th>
+                                    <th>Metric</th>
+                                    <th>Numerator / Denominator</th>
                                     <th>Denominator (Cases & Families)</th>
                                     <th>Accuracy (Top-1)</th>
-                                    <th>Confident-Wrong</th>
                                     <th>Git Commit Hash</th>
                                 </tr>
                             </thead>

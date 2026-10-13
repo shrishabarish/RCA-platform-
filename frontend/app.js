@@ -947,7 +947,7 @@ function renderDiagnosis(detail) {
     if (!detail) return;
 
     const cause = detail.probable_root_cause || "EC2";
-    const confidence = Math.round(detail.confidence ?? detail.ranking_score ?? 0);
+    const rankingScore = Math.round(detail.ranking_score ?? detail.confidence ?? 0);
     const rootEvent = (currentIncident?.events || []).find(e => e.service === cause) || currentIncident?.events?.[0];
     const resource = rootEvent?.resource_id || detail.resource_id || "target-resource";
     const region = rootEvent?.metadata?.aws_region || rootEvent?.metadata?.region || "eu-north-1";
@@ -955,7 +955,7 @@ function renderDiagnosis(detail) {
     // KPIs
     kpiRootCause.textContent = cause;
     kpiRootCause.className = "kpi-big-num text-danger";
-    kpiConfidenceBadge.textContent = `${confidence}% ranking score`;
+    kpiConfidenceBadge.textContent = `${rankingScore} ranking score`;
     kpiBlastCount.textContent = (detail.affected_services?.length || 0) + 1;
 
     // Headline & Region
@@ -996,7 +996,7 @@ function renderDiagnosis(detail) {
     // Diagnosis Hero Card
     diagnosisCauseTitle.textContent = `${cause} Outage Detected`;
     diagnosisResourceId.textContent = resource;
-    diagnosisConfidenceTag.textContent = `${confidence}% RANKING SCORE`;
+    diagnosisConfidenceTag.textContent = `${rankingScore} RANKING SCORE`;
     diagnosisSeverityTag.textContent = `${detail.severity || 'HIGH'} SEVERITY`;
     diagnosisExplanation.textContent = detail.explanation || detail.remediation_suggestion || (detail.reasoning_chain?.[0] ?? "Anomaly detected in telemetry stream.");
 
@@ -1013,7 +1013,7 @@ function renderDiagnosis(detail) {
     const reasoning = detail.reasoning_chain || [
         `Service '${cause}' registered the earliest anomaly in the incident timeline.`,
         `'${cause}' occupies a structural dependency position affecting downstream services.`,
-        `Calibrated Result: '${cause}' determined as Primary Root Cause with ${confidence}% ranking score.`
+        `Calibrated Result: '${cause}' determined as Primary Root Cause with ${rankingScore} ranking score.`
     ];
 
     reasoningList.innerHTML = reasoning.map((r, i) => `
@@ -1039,7 +1039,7 @@ function renderDiagnosisFromDiagnose(data) {
     // KPIs
     kpiRootCause.textContent = cause;
     kpiRootCause.className = (verdict === "CONFIRMED" || causes.length > 0) ? "kpi-big-num text-danger" : "kpi-big-num text-success";
-    kpiConfidenceBadge.textContent = `${rankingScore}% ranking score (${verdict})`;
+    kpiConfidenceBadge.textContent = `${rankingScore} ranking score (${verdict})`;
     kpiConfidenceBadge.title = "Hypothesis Ranking Score (Calibrated 0-100)";
     kpiBlastCount.textContent = (topCand.downstream_symptoms_observed ?? 0) + 1;
 
@@ -1062,7 +1062,7 @@ function renderDiagnosisFromDiagnose(data) {
     // Diagnosis Hero Card
     diagnosisCauseTitle.textContent = `${cause} Outage Diagnosed`;
     diagnosisResourceId.textContent = `Diagnosis Verdict: ${verdict}`;
-    diagnosisConfidenceTag.textContent = `${rankingScore}% RANKING SCORE`;
+    diagnosisConfidenceTag.textContent = `${rankingScore} RANKING SCORE`;
     diagnosisSeverityTag.textContent = `${verdict} VERDICT`;
     diagnosisExplanation.textContent = (data.explanation?.root_cause_summary) 
         || (data.explanation?.summary) 
@@ -1076,7 +1076,7 @@ function renderDiagnosisFromDiagnose(data) {
         const baseScore = baseline.ranking_score || 0;
         const baseChain = (baseline.reasoning_chain && baseline.reasoning_chain[0]) || "Single-factor ranking heuristic";
         baseContent.innerHTML = `
-            <div>• <strong>Probable Cause:</strong> <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(baseCause)}</span> | <strong>Ranking Score:</strong> ${baseScore}%</div>
+            <div>• <strong>Probable Cause:</strong> <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(baseCause)}</span> | <strong>Ranking Score:</strong> ${baseScore}</div>
             <div>• <strong>Reasoning:</strong> <em>${escapeHtml(baseChain)}</em></div>
             <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;">(Baseline engine runs legacy single-pass analyzer without multi-root or unobserved hypothesis ranking)</div>
         `;
@@ -1103,7 +1103,7 @@ function renderDiagnosisFromDiagnose(data) {
     const reasoning = (data.explanation?.reasoning_steps) || [
         `Service '${cause}' registered time-consistent anomaly preceding downstream symptoms.`,
         `Topological causal evaluation confirmed dependency propagation to affected services.`,
-        `RCA verdict established as ${verdict} with ranking score ${rankingScore}%.`
+        `RCA verdict established as ${verdict} with ranking score ${rankingScore}.`
     ];
     reasoningList.innerHTML = reasoning.map((r, i) => `
         <div class="reasoning-item">
@@ -1223,11 +1223,11 @@ function renderCandidateRanking(allCandidates, rootCause, contributingCauses) {
                 <td><strong>${escapeHtml(cand.service)}</strong></td>
                 <td>
                     <div class="candidate-score-bar-wrap">
-                        <span style="font-weight:700; width:45px;">${scoreVal}%</span>
+                        <span style="font-weight:700; width:45px;">${scoreVal}</span>
                         <div class="candidate-mini-track">
                             <div class="candidate-mini-fill" style="width: ${scoreVal}%; background: ${barColor};"></div>
                         </div>
-                        ${(combinedVal !== null && combinedVal !== scoreVal) ? `<small style="color:var(--text-muted); margin-left:6px; font-size:0.68rem;">(Tie-Break: ${combinedVal}%)</small>` : ''}
+                        ${(combinedVal !== null && combinedVal !== scoreVal) ? `<small style="color:var(--text-muted); margin-left:6px; font-size:0.68rem;">(Tie-Break: ${combinedVal})</small>` : ''}
                     </div>
                 </td>
                 <td><span class="${badgeClass}">${badgeText}</span></td>
@@ -1357,7 +1357,7 @@ function updateLifecycleStepper(status) {
 function renderEmptyState() {
     kpiRootCause.textContent = "Healthy";
     kpiRootCause.className = "kpi-big-num text-success";
-    kpiConfidenceBadge.textContent = "0% ranking score";
+    kpiConfidenceBadge.textContent = "0 ranking score";
     kpiBlastCount.textContent = "0";
 
     incidentTitle.textContent = "All Cloud Services Healthy";
@@ -1374,7 +1374,7 @@ function renderEmptyState() {
 
     diagnosisCauseTitle.textContent = "No Failures Detected";
     diagnosisResourceId.textContent = "All cloud services nominal";
-    diagnosisConfidenceTag.textContent = "0% RANKING SCORE";
+    diagnosisConfidenceTag.textContent = "0 RANKING SCORE";
     diagnosisExplanation.textContent = "Architecture is operating within healthy performance and error budget thresholds.";
 
     if (causalPathsList) causalPathsList.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted);">No active anomaly propagation.</div>`;
@@ -1991,7 +1991,14 @@ async function loadCompareCase() {
 }
 
 let evalSummaryRows = [];
-let currentEvalView = "frozen"; // "frozen" (default, 1 row per engine) or "all"
+let currentEvalView = "frozen"; // "frozen" (default: same-split comparison on dev3 and val3) or "all"
+
+function formatEngineName(eng) {
+    if (eng === "CurrentScorer_Raw") return "Current Scorer (Raw)";
+    if (eng === "CurrentScorer_Clean") return "Current Scorer (Clean)";
+    if (eng === "Earliest_Anomaly_Clean") return "Earliest Anomaly (Clean)";
+    return eng;
+}
 
 function renderEvalSummaryTable() {
     const tbody = document.getElementById("evalSummaryTableBody");
@@ -2002,28 +2009,33 @@ function renderEvalSummaryTable() {
         return;
     }
 
+    const TARGET_ENGINES = ["rca_v3", "rca_v3h", "CurrentScorer_Raw", "CurrentScorer_Clean", "Earliest_Anomaly_Clean"];
     const rowsToRender = currentEvalView === "frozen"
-        ? evalSummaryRows.filter(r => r.is_latest_frozen)
+        ? evalSummaryRows.filter(r => (r.split === "dev3" || r.split === "val3") && TARGET_ENGINES.includes(r.engine) && (r.filename.includes("stage3f_") || r.status !== "SUPERSEDED"))
         : evalSummaryRows;
 
     tbody.innerHTML = rowsToRender.map(r => {
-        const accFormatted = `${r.top1_count} / ${r.denominator_cases} (${r.top1_accuracy_pct.toFixed(1)}%)`;
-        const cwFormatted = r.confident_wrong_count !== null 
-            ? `${r.confident_wrong_count} / ${r.denominator_cases} (${r.confident_wrong_pct.toFixed(1)}%)` 
-            : `<span style="color:var(--text-light);">-</span>`;
+        const numDen = `${r.numerator ?? r.top1_count} / ${r.denominator ?? r.denominator_cases}`;
+        const denScope = `${r.denominator_cases} (${r.denominator_type || 'all cases'}) <span style="color:var(--text-muted); font-size:0.72rem;">(${r.denominator_families} fam)</span>`;
+        const accFormatted = `${r.top1_accuracy_pct.toFixed(1)}%`;
 
-        const badgeHtml = r.is_superseded
-            ? `<span class="status-tag" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:0.7rem; font-weight:700;">SUPERSEDED</span>`
-            : `<span class="status-tag status-tag-resolved" style="font-size:0.7rem; font-weight:700;">LATEST FROZEN</span>`;
+        let badgeHtml = '';
+        if (r.status === 'PREREGISTERED') {
+            badgeHtml = `<span class="status-tag" style="background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE; font-size:0.7rem; font-weight:700;">PREREGISTERED</span>`;
+        } else if (r.status === 'EXPLORATORY') {
+            badgeHtml = `<span class="status-tag" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:0.7rem; font-weight:700;">EXPLORATORY</span>`;
+        } else {
+            badgeHtml = `<span class="status-tag" style="background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; font-size:0.7rem; font-weight:700;">SUPERSEDED</span>`;
+        }
 
         return `<tr>
             <td><strong>${escapeHtml(r.split)}</strong></td>
-            <td><code>${escapeHtml(r.filename || r.csv_path)}</code></td>
-            <td><span class="status-tag ${r.engine === 'rca_v3' ? 'status-tag-resolved' : 'status-tag-open'}">${escapeHtml(r.engine)}</span></td>
+            <td><span class="status-tag ${r.engine.startsWith('rca') ? 'status-tag-resolved' : 'status-tag-open'}">${escapeHtml(formatEngineName(r.engine))}</span></td>
             <td>${badgeHtml}</td>
-            <td><strong>${r.denominator_cases} cases</strong> <span style="color:var(--text-muted); font-size:0.75rem;">(${r.denominator_families} families)</span></td>
+            <td>${escapeHtml(r.metric || 'Top-1 Accuracy')}</td>
+            <td><strong>${numDen}</strong></td>
+            <td>${denScope}</td>
             <td><strong style="color:var(--emerald);">${accFormatted}</strong></td>
-            <td>${cwFormatted}</td>
             <td><code>${escapeHtml(r.commit || 'uncommitted')}</code></td>
         </tr>`;
     }).join("");
@@ -2052,7 +2064,7 @@ window.setEvalView = function(view) {
         if (view === "frozen") {
             btnFrozen.classList.add("active");
             btnAll.classList.remove("active");
-            if (title) title.textContent = "Latest Frozen Benchmark Runs (One Row per Engine)";
+            if (title) title.textContent = "Dev3 & Val3 Engine Comparison (Same-Split Benchmarks)";
         } else {
             btnAll.classList.add("active");
             btnFrozen.classList.remove("active");

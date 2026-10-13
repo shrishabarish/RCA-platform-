@@ -1,0 +1,11 @@
+{
+  "split": "val3",
+  "status": "EXPLORATORY",
+  "engines": {
+    "rca_v3": {
+      "top1_column": "is_top1",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

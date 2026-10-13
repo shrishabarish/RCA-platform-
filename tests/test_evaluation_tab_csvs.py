@@ -63,34 +63,19 @@ def test_api_eval_summary_numbers_match_csvs():
                 f"Row '{split_name}': Displayed denominator ({cases_count}) != actual CSV row count ({actual_count})"
             )
 
-            if "rca_v2_correct" in fieldnames:
-                corr = sum(1 for r in data_rows if r.get("rca_v2_correct", "").lower() in ("true", "1"))
-                actual_acc = round(corr / actual_count * 100.0, 1)
-            elif "is_top1" in fieldnames:
-                corr = sum(1 for r in data_rows if r.get("is_top1", "").lower() in ("true", "1"))
-                actual_acc = round(corr / actual_count * 100.0, 1)
-            elif "match_ground_truth" in fieldnames:
-                corr = sum(1 for r in data_rows if r.get("match_ground_truth", "").lower() in ("true", "1"))
-                actual_acc = round(corr / actual_count * 100.0, 1)
-            elif "CurrentScorer_CaseTopology_correct" in fieldnames:
-                corr = sum(1 for r in data_rows if r.get("CurrentScorer_CaseTopology_correct", "").lower() in ("true", "1"))
-                actual_acc = round(corr / actual_count * 100.0, 1)
-            elif "Current_5Factor_Ensemble_top1_correct" in fieldnames:
-                corr = sum(1 for r in data_rows if r.get("Current_5Factor_Ensemble_top1_correct", "").lower() in ("true", "1"))
-                actual_acc = round(corr / actual_count * 100.0, 1)
-            else:
-                actual_acc = acc_pct
+            cols_used = row.get("columns_used", [])
+            top1_col = cols_used[0] if cols_used else None
+            assert top1_col and top1_col in fieldnames, f"Top1 column {top1_col} not in CSV {csv_rel}"
+            corr = sum(1 for r in data_rows if str(r.get(top1_col, "")).strip().lower() in ("true", "1"))
+            actual_acc = round(corr / actual_count * 100.0, 1)
 
             assert abs(acc_pct - actual_acc) <= 0.1, (
-                f"Row '{split_name}': API accuracy ({acc_pct}%) != recomputed CSV accuracy ({actual_acc}%)"
+                f"Row '{split_name}' engine '{engine}': API accuracy ({acc_pct}%) != recomputed CSV accuracy ({actual_acc}%)"
             )
 
-            if cw_pct is not None:
-                if "rca_v2_confident_wrong" in fieldnames:
-                    cw_count = sum(1 for r in data_rows if r.get("rca_v2_confident_wrong", "").lower() in ("true", "1"))
-                    actual_cw = round(cw_count / actual_count * 100.0, 1)
-                    assert abs(cw_pct - actual_cw) <= 0.1
-                elif "CurrentScorer_CaseTopology_confident_wrong" in fieldnames:
-                    cw_count = sum(1 for r in data_rows if r.get("CurrentScorer_CaseTopology_confident_wrong", "").lower() in ("true", "1"))
+            if cw_pct is not None and len(cols_used) > 1:
+                cw_col = cols_used[1]
+                if cw_col in fieldnames:
+                    cw_count = sum(1 for r in data_rows if str(r.get(cw_col, "")).strip().lower() in ("true", "1"))
                     actual_cw = round(cw_count / actual_count * 100.0, 1)
                     assert abs(cw_pct - actual_cw) <= 0.1

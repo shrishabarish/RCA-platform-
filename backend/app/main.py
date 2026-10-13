@@ -108,6 +108,7 @@ async def websocket_endpoint(websocket: WebSocket):
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 if frontend_dir.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_dir), html=True), name="frontend_alias")
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 

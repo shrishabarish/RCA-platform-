@@ -1,0 +1,26 @@
+{
+  "split": "val3",
+  "status": "SUPERSEDED",
+  "engines": {
+    "rca_v3": {
+      "top1_column": "rca_v3_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "CurrentScorer_CaseTopology": {
+      "top1_column": "CurrentScorer_CaseTopology_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "Earliest_Anomaly_NoBaselines": {
+      "top1_column": "Earliest_Anomaly_NoBaselines_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "rca_v2": {
+      "top1_column": "rca_v2_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

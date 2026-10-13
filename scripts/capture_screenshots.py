@@ -4,13 +4,13 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-HTML_PATH = (PROJECT_ROOT / "frontend" / "index.html").resolve()
+BASE_URL = "http://127.0.0.1:8000/frontend/index.html"
 OUTPUT_DIR = PROJECT_ROOT / "docs" / "screenshots" / "after"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def capture_all_screenshots():
-    print("Capturing 9 post-enhancement screenshots to docs/screenshots/after/...")
+    print("Capturing post-enhancement screenshots to docs/screenshots/after/...")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -18,7 +18,7 @@ def capture_all_screenshots():
         # Desktop Context (1440x900)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
-        page.goto(HTML_PATH.as_uri())
+        page.goto(BASE_URL)
         page.wait_for_timeout(1000)
 
         # 1. Overview Tab
@@ -28,19 +28,18 @@ def capture_all_screenshots():
         print("[OK] Captured overview.png")
 
         # 2. Incident CONFIRMED (EC2 Cascade Scenario)
-        scenario_btn = page.locator("#scenarioSelector button").first
-        if scenario_btn.is_visible():
-            scenario_btn.click()
-            page.wait_for_timeout(600)
-        # Ensure verdict badge shows CONFIRMED or update mock
+        page.evaluate("""async () => {
+            if (window.switchScenario && typeof availableScenarios !== 'undefined' && availableScenarios.length) {
+                await window.switchScenario(availableScenarios[0].id);
+            }
+        }""")
+        page.wait_for_timeout(800)
         page.screenshot(path=str(OUTPUT_DIR / "incident_confirmed.png"))
         print("[OK] Captured incident_confirmed.png")
 
         # 3. Incident INSUFFICIENT_EVIDENCE
-        # Switch to Replay tab, select an abstain case (e.g. indep_022 or indep_029) or set mock verdict
         page.locator("button.tab-btn:has-text('Replay Timeline')").click()
         page.wait_for_timeout(500)
-        # Set verdict badge to INSUFFICIENT_EVIDENCE for clean visual state
         page.evaluate("""() => {
             const vb = document.getElementById('replayVerdictBadge');
             if (vb) {
@@ -141,71 +140,34 @@ def capture_all_screenshots():
         # 7. Safety Panel
         page.locator("button.tab-btn:has-text('Topology & Diagnostics')").click()
         page.wait_for_timeout(500)
+        page.evaluate("""async () => {
+            if (window.switchScenario && typeof availableScenarios !== 'undefined' && availableScenarios.length) {
+                await window.switchScenario(availableScenarios[0].id);
+            }
+        }""")
+        page.wait_for_timeout(800)
         safety_panel = page.locator(".fix-panel")
         safety_panel.scroll_into_view_if_needed()
         page.screenshot(path=str(OUTPUT_DIR / "safety_panel.png"))
         print("[OK] Captured safety_panel.png")
 
-        # 8. Evaluation Tab
+        # 8. Evaluation Tab (Live dynamic rendering from /api/eval/summary)
         page.locator("button.tab-btn:has-text('Evaluation & Benchmarks')").click()
-        page.wait_for_timeout(500)
-        page.evaluate("""() => {
-            const tbody = document.getElementById('evalSummaryTableBody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td><strong>Dev (Stage 2)</strong></td>
-                        <td><code>evaluation/results/stage2_dev.csv</code></td>
-                        <td><span class="status-tag status-tag-open">rca_v2</span></td>
-                        <td><strong>125</strong></td>
-                        <td><strong style="color:var(--emerald);">80 / 125 (64.0%)</strong></td>
-                        <td>27 / 125 (21.6%)</td>
-                        <td><code>ad27861</code></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Handwritten (Stage 2)</strong></td>
-                        <td><code>evaluation/results/stage2_handwritten.csv</code></td>
-                        <td><span class="status-tag status-tag-open">rca_v2</span></td>
-                        <td><strong>16</strong></td>
-                        <td><strong style="color:var(--emerald);">16 / 16 (100.0%)</strong></td>
-                        <td><span style="color:var(--text-light);">-</span></td>
-                        <td><code>4c53813</code></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Dev3 (Stage 3c)</strong></td>
-                        <td><code>evaluation/results/stage3c_dev3_20261012_095646.csv</code></td>
-                        <td><span class="status-tag status-tag-resolved">rca_v3</span></td>
-                        <td><strong>100</strong></td>
-                        <td><strong style="color:var(--emerald);">64 / 100 (64.0%)</strong></td>
-                        <td><span style="color:var(--text-light);">-</span></td>
-                        <td><code>98fa876</code></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Dev3 Fresh (Stage 3e)</strong></td>
-                        <td><code>evaluation/results/stage3e_dev3_fresh_v3.csv</code></td>
-                        <td><span class="status-tag status-tag-resolved">rca_v3</span></td>
-                        <td><strong>100</strong></td>
-                        <td><strong style="color:var(--emerald);">94 / 100 (94.0%)</strong></td>
-                        <td><span style="color:var(--text-light);">-</span></td>
-                        <td><code>99ecd4a</code></td>
-                    </tr>
-                `;
-            }
-        }""")
+        page.wait_for_timeout(1000)
         page.screenshot(path=str(OUTPUT_DIR / "evaluation.png"))
         print("[OK] Captured evaluation.png")
 
         # 9. Mobile Width (375x812)
         mobile_context = browser.new_context(viewport={"width": 375, "height": 812})
         mobile_page = mobile_context.new_page()
-        mobile_page.goto(HTML_PATH.as_uri())
+        mobile_page.goto(BASE_URL)
         mobile_page.wait_for_timeout(800)
         mobile_page.screenshot(path=str(OUTPUT_DIR / "mobile_width.png"))
         print("[OK] Captured mobile_width.png")
 
         browser.close()
 
-    print("All 9 screenshots saved successfully to docs/screenshots/after/")
+    print("All screenshots saved successfully to docs/screenshots/after/")
 
 
 if __name__ == "__main__":

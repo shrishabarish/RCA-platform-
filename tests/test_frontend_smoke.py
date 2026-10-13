@@ -137,6 +137,7 @@ def test_smoke_insufficient_evidence():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page, console_errors = _get_page(browser)
+        page.wait_for_timeout(600)
 
         page.evaluate("""
             window.renderDiagnosisFromDiagnose({

@@ -1,0 +1,11 @@
+{
+  "split": "dev_val",
+  "status": "SUPERSEDED",
+  "engines": {
+    "rca_v3": {
+      "top1_column": "rca_v3_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

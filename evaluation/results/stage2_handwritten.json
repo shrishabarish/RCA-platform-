@@ -1,0 +1,16 @@
+{
+  "split": "handwritten",
+  "status": "SUPERSEDED",
+  "engines": {
+    "rca_v2": {
+      "top1_column": "rca_v2_top1",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "CurrentScorer": {
+      "top1_column": "match_ground_truth",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

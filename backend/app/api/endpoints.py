@@ -1087,45 +1087,13 @@ def compare_rca_case(
 
 @router.get("/eval/summary", tags=["RCA Evaluation & Replay"])
 def get_evaluation_summary() -> List[Dict[str, Any]]:
-    """Reads whole evaluation CSVs and returns structured summary rows with engine, split, denominator, path, and commit."""
+    """Reads whole evaluation CSVs and sidecar metadata, returning structured summary rows with engine, split, metric, numerator, denominator, denominator_type, status, path, and commit."""
     results_dir = Path("evaluation/results")
     if not results_dir.exists():
         return []
 
     csv_files = sorted(list(results_dir.glob("*.csv")))
     summary_rows = []
-
-    def infer_meta(filename: str):
-        fn = filename.lower()
-        if "stage3e" in fn:
-            engine = "rca_v3"
-            split = "val3" if "val3" in fn else "dev3"
-        elif "stage3c" in fn:
-            engine = "rca_v3"
-            split = "val3" if "val3" in fn else "dev3"
-        elif "stage3b" in fn:
-            engine = "rca_v3"
-            split = "val2" if "val2" in fn else ("old_dev" if "old_dev" in fn else "dev2")
-        elif "stage3" in fn:
-            engine = "rca_v3"
-            split = "handwritten" if "handwritten" in fn else ("dev_val" if "dev_val" in fn else "dev")
-        elif "stage2" in fn:
-            engine = "rca_v2"
-            split = "handwritten" if "handwritten" in fn else "dev"
-        elif "handwritten" in fn:
-            engine = "CurrentScorer_CaseTopology"
-            split = "handwritten"
-        else:
-            engine = "CurrentScorer_CaseTopology"
-            split = "dev"
-        return engine, split
-
-    # The latest frozen primary runs (one per engine)
-    LATEST_FROZEN_FILES = {
-        "stage3e_dev3_fresh_v3.csv",
-        "stage2_dev.csv",
-        "latest_dev.csv"
-    }
 
     for cp in csv_files:
         try:
@@ -1136,8 +1104,6 @@ def get_evaluation_summary() -> List[Dict[str, Any]]:
                 if total == 0:
                     continue
                 fieldnames = reader.fieldnames or []
-
-                engine, split = infer_meta(cp.name)
 
                 # Count distinct families
                 fam_set = set(
@@ -1152,54 +1118,121 @@ def get_evaluation_summary() -> List[Dict[str, Any]]:
                         for r in rows
                     )
                 family_count = len(fam_set)
-
-                is_latest_frozen = cp.name in LATEST_FROZEN_FILES
-                # Superseded if not latest frozen (Stage 1/1b, val2, val3, older iterations)
-                is_superseded = not is_latest_frozen
-
-                top1_count = 0
-                cw_count = None
-
-                if "rca_v2_correct" in fieldnames:
-                    top1_count = sum(1 for r in rows if r.get("rca_v2_correct", "").lower() in ("true", "1"))
-                    if "rca_v2_confident_wrong" in fieldnames:
-                        cw_count = sum(1 for r in rows if r.get("rca_v2_confident_wrong", "").lower() in ("true", "1"))
-                elif "is_top1" in fieldnames:
-                    top1_count = sum(1 for r in rows if r.get("is_top1", "").lower() in ("true", "1"))
-                    if "confident_wrong" in fieldnames:
-                        cw_count = sum(1 for r in rows if r.get("confident_wrong", "").lower() in ("true", "1"))
-                elif "match_ground_truth" in fieldnames:
-                    top1_count = sum(1 for r in rows if r.get("match_ground_truth", "").lower() in ("true", "1"))
-                elif "CurrentScorer_CaseTopology_correct" in fieldnames:
-                    top1_count = sum(1 for r in rows if r.get("CurrentScorer_CaseTopology_correct", "").lower() in ("true", "1"))
-                    if "CurrentScorer_CaseTopology_confident_wrong" in fieldnames:
-                        cw_count = sum(1 for r in rows if r.get("CurrentScorer_CaseTopology_confident_wrong", "").lower() in ("true", "1"))
-                elif "Current_5Factor_Ensemble_top1_correct" in fieldnames:
-                    top1_count = sum(1 for r in rows if r.get("Current_5Factor_Ensemble_top1_correct", "").lower() in ("true", "1"))
-                    if "Current_5Factor_Ensemble_confident_wrong" in fieldnames:
-                        cw_count = sum(1 for r in rows if r.get("Current_5Factor_Ensemble_confident_wrong", "").lower() in ("true", "1"))
-
-                acc_pct = round(top1_count / total * 100.0, 1)
-                cw_pct = round(cw_count / total * 100.0, 1) if cw_count is not None else None
                 commit_hash = get_file_commit(cp)
 
-                summary_rows.append({
-                    "filename": cp.name,
-                    "csv_path": str(cp.as_posix()),
-                    "engine": engine,
-                    "split": split,
-                    "denominator": total,
-                    "denominator_cases": total,
-                    "denominator_families": family_count,
-                    "is_superseded": is_superseded,
-                    "is_latest_frozen": is_latest_frozen,
-                    "top1_count": top1_count,
-                    "top1_accuracy_pct": acc_pct,
-                    "confident_wrong_count": cw_count,
-                    "confident_wrong_pct": cw_pct,
-                    "commit": commit_hash
-                })
-        except Exception:
+                sidecar_path = cp.with_suffix(".json")
+                if sidecar_path.exists():
+                    try:
+                        with open(sidecar_path, encoding="utf-8") as sf:
+                            meta = json.load(sf)
+                    except Exception:
+                        meta = {}
+                else:
+                    meta = {}
+
+                split = meta.get("split")
+                if not split:
+                    fn = cp.name.lower()
+                    if "val3" in fn:
+                        split = "val3"
+                    elif "dev3" in fn:
+                        split = "dev3"
+                    elif "val2" in fn:
+                        split = "val2"
+                    elif "dev2" in fn:
+                        split = "dev2"
+                    elif "old_dev" in fn:
+                        split = "old_dev"
+                    elif "dev_val" in fn:
+                        split = "dev_val"
+                    elif "handwritten" in fn:
+                        split = "handwritten"
+                    else:
+                        split = "dev"
+
+                status = meta.get("status", "SUPERSEDED")
+
+                # Read engines definition from sidecar or discover directly from CSV columns
+                engines_dict = meta.get("engines", {})
+                if not engines_dict:
+                    engines_dict = {}
+                    for col in fieldnames:
+                        if col.endswith("_correct"):
+                            eng = col[:-len("_correct")]
+                            engines_dict[eng] = {
+                                "top1_column": col,
+                                "metric": "Top-1 Accuracy",
+                                "denominator_type": "all cases"
+                            }
+                        elif col == "match_ground_truth":
+                            engines_dict["rca_v2"] = {
+                                "top1_column": "match_ground_truth",
+                                "metric": "Top-1 Accuracy",
+                                "denominator_type": "all cases"
+                            }
+                        elif col == "is_top1":
+                            engines_dict["rca_v3"] = {
+                                "top1_column": "is_top1",
+                                "metric": "Top-1 Accuracy",
+                                "denominator_type": "all cases"
+                            }
+
+                if not engines_dict:
+                    continue
+
+                for eng_name, eng_info in engines_dict.items():
+                    top1_col = eng_info.get("top1_column")
+                    if not top1_col or top1_col not in fieldnames:
+                        continue
+                    cw_col = eng_info.get("cw_column")
+                    if cw_col and cw_col not in fieldnames:
+                        cw_col = None
+
+                    metric = eng_info.get("metric", "Top-1 Accuracy")
+                    den_type = eng_info.get("denominator_type", "all cases")
+
+                    cols_used = [top1_col]
+                    if cw_col:
+                        cols_used.append(cw_col)
+
+                    print(f"[{cp.name}] Engine: {eng_name} | Columns used: {cols_used}")
+
+                    numerator = sum(1 for r in rows if str(r.get(top1_col, "")).strip().lower() in ("true", "1"))
+                    denominator = total
+                    acc_pct = round(numerator / denominator * 100.0, 1) if denominator else 0.0
+
+                    cw_count = None
+                    cw_pct = None
+                    if cw_col:
+                        cw_count = sum(1 for r in rows if str(r.get(cw_col, "")).strip().lower() in ("true", "1"))
+                        cw_pct = round(cw_count / denominator * 100.0, 1) if denominator else 0.0
+
+                    is_latest_frozen = (cp.name in ("stage3f_dev3_comparison.csv", "stage3f_val3_comparison.csv"))
+                    is_superseded = (status == "SUPERSEDED")
+
+                    summary_rows.append({
+                        "filename": cp.name,
+                        "csv_path": str(cp.as_posix()),
+                        "engine": eng_name,
+                        "split": split,
+                        "status": status,
+                        "metric": metric,
+                        "numerator": numerator,
+                        "denominator": denominator,
+                        "denominator_cases": denominator,
+                        "denominator_families": family_count,
+                        "denominator_type": den_type,
+                        "columns_used": cols_used,
+                        "is_superseded": is_superseded,
+                        "is_latest_frozen": is_latest_frozen,
+                        "top1_count": numerator,
+                        "top1_accuracy_pct": acc_pct,
+                        "confident_wrong_count": cw_count,
+                        "confident_wrong_pct": cw_pct,
+                        "commit": commit_hash
+                    })
+        except Exception as e:
+            print(f"Error parsing evaluation CSV {cp}: {e}")
             continue
 
     return summary_rows

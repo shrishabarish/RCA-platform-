@@ -1,0 +1,31 @@
+{
+  "split": "dev3",
+  "status": "PREREGISTERED",
+  "engines": {
+    "rca_v3": {
+      "top1_column": "rca_v3_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "rca_v3h": {
+      "top1_column": "rca_v3h_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "CurrentScorer_Raw": {
+      "top1_column": "CurrentScorer_Raw_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "CurrentScorer_Clean": {
+      "top1_column": "CurrentScorer_Clean_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    },
+    "Earliest_Anomaly_Clean": {
+      "top1_column": "Earliest_Anomaly_Clean_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "split": "handwritten",
+  "status": "SUPERSEDED",
+  "engines": {
+    "Current_5Factor_Ensemble": {
+      "top1_column": "Current_5Factor_Ensemble_top1_correct",
+      "metric": "Top-1 Accuracy",
+      "denominator_type": "all cases",
+      "cw_column": "Current_5Factor_Ensemble_confident_wrong"
+    }
+  }
+}
