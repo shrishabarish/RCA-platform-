@@ -77,6 +77,42 @@
   },
   "events": [
     {
+      "event_id": "hb_ddb_pre",
+      "event_time": "2026-10-16T14:00:15+00:00",
+      "observed_time": "2026-10-16T14:00:16+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoDB",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_auth_pre",
+      "event_time": "2026-10-16T14:00:20+00:00",
+      "observed_time": "2026-10-16T14:00:21+00:00",
+      "source": "cloudwatch",
+      "service": "Auth",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_Application_1",
+      "event_time": "2026-10-16T14:00:26.600000+00:00",
+      "observed_time": "2026-10-16T14:00:27.600000+00:00",
+      "source": "cloudwatch",
+      "service": "Application",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:35+00:00",
       "observed_time": "2026-10-16T14:00:36+00:00",
@@ -94,18 +130,6 @@
       "observed_time": "2026-10-16T14:00:43+00:00",
       "source": "cloudwatch",
       "service": "DynamoDB",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:46.100000+00:00",
-      "observed_time": "2026-10-16T14:00:47.100000+00:00",
-      "source": "cloudwatch",
-      "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -161,11 +185,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:01:27.300000+00:00",
-      "observed_time": "2026-10-16T14:01:28.300000+00:00",
+      "event_id": "hb_04",
+      "event_time": "2026-10-16T14:01:28+00:00",
+      "observed_time": "2026-10-16T14:01:29+00:00",
       "source": "cloudwatch",
-      "service": "Application",
+      "service": "Auth",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -173,11 +197,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_04",
-      "event_time": "2026-10-16T14:01:28+00:00",
-      "observed_time": "2026-10-16T14:01:29+00:00",
+      "event_id": "hb_bg_Application_2",
+      "event_time": "2026-10-16T14:01:33.800000+00:00",
+      "observed_time": "2026-10-16T14:01:34.800000+00:00",
       "source": "cloudwatch",
-      "service": "Auth",
+      "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -241,7 +265,7 @@
       }
     ],
     "max_level_by_root": {},
-    "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats inside [t+35s, t+95s].",
+    "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats before symptom and inside [t+35s, t+95s].",
     "incident_groups": []
   },
   "perturbations": [
@@ -254,7 +278,7 @@
   ],
   "is_hard": false,
   "telemetry_policy": null,
-  "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats inside [t+35s, t+95s].",
+  "identifiability_note": "EC2 emits zero events (hard crash); dependents API and Worker fail between t+35s and t+95s. Competing candidates DynamoDB and Auth emit healthy heartbeats before symptom and inside [t+35s, t+95s].",
   "acceptable_outcomes": [
     {
       "verdict": "DIAGNOSE",

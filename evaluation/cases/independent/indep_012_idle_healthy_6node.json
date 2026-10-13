@@ -90,8 +90,8 @@
     },
     {
       "event_id": "hb_bg_API_1",
-      "event_time": "2026-10-16T14:00:21+00:00",
-      "observed_time": "2026-10-16T14:00:22+00:00",
+      "event_time": "2026-10-16T14:00:25.400000+00:00",
+      "observed_time": "2026-10-16T14:00:26.400000+00:00",
       "source": "cloudwatch",
       "service": "API",
       "metric": "Heartbeat",
@@ -109,18 +109,6 @@
       "metric": "StorageWriteThrottle",
       "value": 92.0,
       "severity": "CRITICAL",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_API_2",
-      "event_time": "2026-10-16T14:01:04.900000+00:00",
-      "observed_time": "2026-10-16T14:01:05.900000+00:00",
-      "source": "cloudwatch",
-      "service": "API",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -161,6 +149,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_API_2",
+      "event_time": "2026-10-16T14:01:37+00:00",
+      "observed_time": "2026-10-16T14:01:38+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:01:47+00:00",
       "observed_time": "2026-10-16T14:01:48+00:00",
@@ -168,6 +168,30 @@
       "service": "Worker",
       "metric": "TaskExecutionStall",
       "value": 45.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:02:05+00:00",
+      "observed_time": "2026-10-16T14:02:06+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "ProcessThreadSaturation",
+      "value": 80.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_05",
+      "event_time": "2026-10-16T14:02:20+00:00",
+      "observed_time": "2026-10-16T14:02:21+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "ConnectionPoolExhaustion",
+      "value": 75.0,
       "severity": "HIGH",
       "target": null,
       "dimensions": {}

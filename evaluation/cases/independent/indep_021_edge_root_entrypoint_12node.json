@@ -150,22 +150,10 @@
     },
     {
       "event_id": "hb_bg_DynamoTable_1",
-      "event_time": "2026-10-16T14:00:13.600000+00:00",
-      "observed_time": "2026-10-16T14:00:14.600000+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoTable",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_NotificationService_1",
       "event_time": "2026-10-16T14:00:16.300000+00:00",
       "observed_time": "2026-10-16T14:00:17.300000+00:00",
       "source": "cloudwatch",
-      "service": "NotificationService",
+      "service": "DynamoTable",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -185,21 +173,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_AuthService_1",
+      "event_id": "hb_bg_PostgresPrimary_1",
       "event_time": "2026-10-16T14:00:21.800000+00:00",
       "observed_time": "2026-10-16T14:00:22.800000+00:00",
-      "source": "cloudwatch",
-      "service": "AuthService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_PostgresPrimary_1",
-      "event_time": "2026-10-16T14:00:33+00:00",
-      "observed_time": "2026-10-16T14:00:34+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
       "metric": "Heartbeat",
@@ -209,9 +185,33 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_NotificationService_1",
+      "event_time": "2026-10-16T14:00:23.600000+00:00",
+      "observed_time": "2026-10-16T14:00:24.600000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_1",
+      "event_time": "2026-10-16T14:00:25.900000+00:00",
+      "observed_time": "2026-10-16T14:00:26.900000+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "hb_bg_KafkaCluster_1",
-      "event_time": "2026-10-16T14:00:33.700000+00:00",
-      "observed_time": "2026-10-16T14:00:34.700000+00:00",
+      "event_time": "2026-10-16T14:00:33+00:00",
+      "observed_time": "2026-10-16T14:00:34+00:00",
       "source": "cloudwatch",
       "service": "KafkaCluster",
       "metric": "Heartbeat",
@@ -305,18 +305,6 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_2",
-      "event_time": "2026-10-16T14:01:29.600000+00:00",
-      "observed_time": "2026-10-16T14:01:30.600000+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoTable",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "evt_04",
       "event_time": "2026-10-16T14:01:35+00:00",
       "observed_time": "2026-10-16T14:01:36+00:00",
@@ -325,6 +313,18 @@
       "metric": "EndpointFailureRate",
       "value": 92.0,
       "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_2",
+      "event_time": "2026-10-16T14:01:50.400000+00:00",
+      "observed_time": "2026-10-16T14:01:51.400000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
       "target": null,
       "dimensions": {}
     },
@@ -341,21 +341,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_PostgresPrimary_2",
+      "event_id": "hb_bg_KafkaCluster_2",
       "event_time": "2026-10-16T14:01:58+00:00",
       "observed_time": "2026-10-16T14:01:59+00:00",
-      "source": "cloudwatch",
-      "service": "PostgresPrimary",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_KafkaCluster_2",
-      "event_time": "2026-10-16T14:02:06.900000+00:00",
-      "observed_time": "2026-10-16T14:02:07.900000+00:00",
       "source": "cloudwatch",
       "service": "KafkaCluster",
       "metric": "Heartbeat",
@@ -366,8 +354,8 @@
     },
     {
       "event_id": "hb_bg_AuthService_2",
-      "event_time": "2026-10-16T14:02:12.300000+00:00",
-      "observed_time": "2026-10-16T14:02:13.300000+00:00",
+      "event_time": "2026-10-16T14:02:08.900000+00:00",
+      "observed_time": "2026-10-16T14:02:09.900000+00:00",
       "source": "cloudwatch",
       "service": "AuthService",
       "metric": "Heartbeat",
@@ -377,11 +365,23 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_NotificationService_2",
+      "event_id": "hb_bg_PostgresPrimary_2",
+      "event_time": "2026-10-16T14:02:12.300000+00:00",
+      "observed_time": "2026-10-16T14:02:13.300000+00:00",
+      "source": "cloudwatch",
+      "service": "PostgresPrimary",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_DynamoTable_2",
       "event_time": "2026-10-16T14:02:13.900000+00:00",
       "observed_time": "2026-10-16T14:02:14.900000+00:00",
       "source": "cloudwatch",
-      "service": "NotificationService",
+      "service": "DynamoTable",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",

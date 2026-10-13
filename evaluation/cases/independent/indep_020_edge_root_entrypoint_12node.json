@@ -149,6 +149,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_ddb_00",
+      "event_time": "2026-10-16T14:00:05+00:00",
+      "observed_time": "2026-10-16T14:00:06+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_01",
       "event_time": "2026-10-16T14:00:12+00:00",
       "observed_time": "2026-10-16T14:00:13+00:00",
@@ -161,21 +173,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_NotificationService_1",
+      "event_id": "hb_bg_PostgresPrimary_1",
       "event_time": "2026-10-16T14:00:14.400000+00:00",
       "observed_time": "2026-10-16T14:00:15.400000+00:00",
-      "source": "cloudwatch",
-      "service": "NotificationService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_PostgresPrimary_1",
-      "event_time": "2026-10-16T14:00:16.600000+00:00",
-      "observed_time": "2026-10-16T14:00:17.600000+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
       "metric": "Heartbeat",
@@ -185,9 +185,21 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_RedisCache_1",
+      "event_time": "2026-10-16T14:00:16.600000+00:00",
+      "observed_time": "2026-10-16T14:00:17.600000+00:00",
+      "source": "cloudwatch",
+      "service": "RedisCache",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "hb_bg_KafkaCluster_1",
-      "event_time": "2026-10-16T14:00:23.600000+00:00",
-      "observed_time": "2026-10-16T14:00:24.600000+00:00",
+      "event_time": "2026-10-16T14:00:24+00:00",
+      "observed_time": "2026-10-16T14:00:25+00:00",
       "source": "cloudwatch",
       "service": "KafkaCluster",
       "metric": "Heartbeat",
@@ -197,23 +209,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_1",
-      "event_time": "2026-10-16T14:00:24+00:00",
-      "observed_time": "2026-10-16T14:00:25+00:00",
+      "event_id": "hb_bg_InventoryService_1",
+      "event_time": "2026-10-16T14:00:26.500000+00:00",
+      "observed_time": "2026-10-16T14:00:27.500000+00:00",
       "source": "cloudwatch",
-      "service": "DynamoTable",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_RedisCache_1",
-      "event_time": "2026-10-16T14:00:25.900000+00:00",
-      "observed_time": "2026-10-16T14:00:26.900000+00:00",
-      "source": "cloudwatch",
-      "service": "RedisCache",
+      "service": "InventoryService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -233,11 +233,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_InventoryService_1",
+      "event_id": "hb_bg_NotificationService_1",
       "event_time": "2026-10-16T14:00:29.700000+00:00",
       "observed_time": "2026-10-16T14:00:30.700000+00:00",
       "source": "cloudwatch",
-      "service": "InventoryService",
+      "service": "NotificationService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -329,33 +329,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_NotificationService_2",
+      "event_id": "hb_bg_PostgresPrimary_2",
       "event_time": "2026-10-16T14:01:18.500000+00:00",
       "observed_time": "2026-10-16T14:01:19.500000+00:00",
-      "source": "cloudwatch",
-      "service": "NotificationService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_KafkaCluster_2",
-      "event_time": "2026-10-16T14:01:26.200000+00:00",
-      "observed_time": "2026-10-16T14:01:27.200000+00:00",
-      "source": "cloudwatch",
-      "service": "KafkaCluster",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_PostgresPrimary_2",
-      "event_time": "2026-10-16T14:01:29.400000+00:00",
-      "observed_time": "2026-10-16T14:01:30.400000+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
       "metric": "Heartbeat",
@@ -365,21 +341,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_2",
-      "event_time": "2026-10-16T14:01:29.800000+00:00",
-      "observed_time": "2026-10-16T14:01:30.800000+00:00",
-      "source": "cloudwatch",
-      "service": "DynamoTable",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "hb_bg_RedisCache_2",
-      "event_time": "2026-10-16T14:01:40.700000+00:00",
-      "observed_time": "2026-10-16T14:01:41.700000+00:00",
+      "event_time": "2026-10-16T14:01:29.400000+00:00",
+      "observed_time": "2026-10-16T14:01:30.400000+00:00",
       "source": "cloudwatch",
       "service": "RedisCache",
       "metric": "Heartbeat",
@@ -389,9 +353,33 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_InventoryService_2",
+      "event_id": "hb_bg_KafkaCluster_2",
+      "event_time": "2026-10-16T14:01:29.800000+00:00",
+      "observed_time": "2026-10-16T14:01:30.800000+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_2",
       "event_time": "2026-10-16T14:01:45.500000+00:00",
       "observed_time": "2026-10-16T14:01:46.500000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_2",
+      "event_time": "2026-10-16T14:01:46.100000+00:00",
+      "observed_time": "2026-10-16T14:01:47.100000+00:00",
       "source": "cloudwatch",
       "service": "InventoryService",
       "metric": "Heartbeat",

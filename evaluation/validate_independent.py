@@ -425,24 +425,36 @@ def validate_case(case_data: Dict[str, Any]) -> List[str]:
                     if e["service"] == cand and parse_iso(e["event_time"]) < t_sym
                 ]
 
-                if not cand_events:
-                    # Silent ancestor with no telemetry
+                # Plausibility rule: an alternative candidate counts as ruled out only if it has
+                # at least one healthy sample (heartbeat or LOW metric) BEFORE the first symptom
+                # it would explain, and none of the anomalies afterwards.
+                healthy_prior = [
+                    e for e in cand_events
+                    if (str(e.get("metric", "")).lower() == "heartbeat" or str(e.get("severity", "")).upper() == "LOW")
+                    and parse_iso(e["event_time"]) < t_sym
+                ]
+
+                if not healthy_prior:
+                    # No healthy sample before this symptom -> NOT ruled out
                     plausible_for_sym.add(cand)
-                elif cand_anoms_prior:
-                    t_cand_last_anom = max(parse_iso(e["event_time"]) for e in cand_anoms_prior)
-                    # Recovery evidence: non-heartbeat metric with LOW severity observed after last anomaly and before t_sym
-                    recovery_metrics = [
-                        e for e in cand_events
-                        if parse_iso(e["event_time"]) > t_cand_last_anom
-                        and parse_iso(e["event_time"]) < t_sym
-                        and str(e.get("severity", "")).upper() == "LOW"
-                        and str(e.get("metric", "")).lower() != "heartbeat"
-                    ]
-                    if not recovery_metrics:
-                        plausible_for_sym.add(cand)
                 else:
-                    # Has telemetry, all healthy, no anomalies -> ruled out
-                    pass
+                    t_last_healthy = max(parse_iso(e["event_time"]) for e in healthy_prior)
+                    anoms_after = [
+                        e for e in cand_anoms_prior
+                        if parse_iso(e["event_time"]) > t_last_healthy
+                    ]
+                    if anoms_after or cand_anoms_prior:
+                        # Candidate had anomalies prior to t_sym; check for verified recovery metric
+                        t_last_anom = max(parse_iso(e["event_time"]) for e in cand_anoms_prior) if cand_anoms_prior else None
+                        recovery = [
+                            e for e in cand_events
+                            if t_last_anom and parse_iso(e["event_time"]) > t_last_anom
+                            and parse_iso(e["event_time"]) < t_sym
+                            and str(e.get("severity", "")).upper() == "LOW"
+                            and str(e.get("metric", "")).lower() != "heartbeat"
+                        ]
+                        if not recovery:
+                            plausible_for_sym.add(cand)
 
             if len(plausible_for_sym) > 1:
                 unacceptable = plausible_for_sym - acceptable_individual_roots
@@ -498,6 +510,64 @@ def evaluate_fewest_anomalous_events(cases: List[Dict[str, Any]]) -> Dict[str, A
             is_correct = is_abstain
         else:
             sorted_svcs = sorted(counts.items(), key=lambda kv: (kv[1], kv[0]))
+            pred = sorted_svcs[0][0]
+            if is_abstain:
+                is_correct = False
+            else:
+                is_correct = (pred in true_roots)
+
+        if not is_abstain:
+            total_diagnosable += 1
+            if is_correct:
+                correct_count += 1
+
+        predictions.append({
+            "case_id": cid,
+            "category": category,
+            "counts": counts,
+            "predicted": pred,
+            "true_roots": true_roots,
+            "is_correct": is_correct
+        })
+
+    return {
+        "correct_diagnosable": correct_count,
+        "total_diagnosable": total_diagnosable,
+        "accuracy_pct": (correct_count / total_diagnosable * 100.0) if total_diagnosable else 0.0,
+        "predictions": predictions
+    }
+
+
+def evaluate_most_anomalous_events(cases: List[Dict[str, Any]]) -> Dict[str, Any]:
+    correct_count = 0
+    total_diagnosable = 0
+    predictions = []
+
+    for c in cases:
+        cid = c["case_id"]
+        gt = c.get("ground_truth", {})
+        true_roots = gt.get("true_root_causes", [])
+        outcomes = gt.get("acceptable_outcomes", [])
+        is_abstain = any(o.get("verdict") == "ABSTAIN" and not o.get("roots") for o in outcomes)
+        category = c.get("perturbations", ["unknown"])[0]
+
+        events = c.get("events", [])
+        anom_events = [
+            e for e in events
+            if str(e.get("severity", "")).upper() in ("CRITICAL", "HIGH", "MEDIUM")
+            and str(e.get("metric", "")).lower() != "heartbeat"
+        ]
+
+        counts: Dict[str, int] = {}
+        for e in anom_events:
+            s = e["service"]
+            counts[s] = counts.get(s, 0) + 1
+
+        if not counts:
+            pred = "ABSTAIN"
+            is_correct = is_abstain
+        else:
+            sorted_svcs = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
             pred = sorted_svcs[0][0]
             if is_abstain:
                 is_correct = False
@@ -874,8 +944,9 @@ def validate_all_cases() -> Tuple[bool, List[Dict[str, Any]], Dict[str, Any], Di
     if count_6node != 17 or count_12node != 16 or len(results) != 33:
         all_passed = False
 
-    # Five static baselines
+    # Six static baselines
     fewest_results = evaluate_fewest_anomalous_events(raw_cases)
+    most_results = evaluate_most_anomalous_events(raw_cases)
     highest_results = evaluate_highest_severity(raw_cases)
     lowest_results = evaluate_lowest_severity(raw_cases)
     second_highest_results = evaluate_second_highest_severity(raw_cases)
@@ -885,6 +956,7 @@ def validate_all_cases() -> Tuple[bool, List[Dict[str, Any]], Dict[str, Any], Di
     # Check baseline target (< 60% each)
     baselines_below_60 = (
         fewest_results["accuracy_pct"] < 60.0 and
+        most_results["accuracy_pct"] < 60.0 and
         highest_results["accuracy_pct"] < 60.0 and
         lowest_results["accuracy_pct"] < 60.0 and
         second_highest_results["accuracy_pct"] < 60.0 and
@@ -895,13 +967,13 @@ def validate_all_cases() -> Tuple[bool, List[Dict[str, Any]], Dict[str, Any], Di
 
     return (
         all_passed, results,
-        fewest_results, highest_results, lowest_results, second_highest_results, earliest_results,
+        fewest_results, most_results, highest_results, lowest_results, second_highest_results, earliest_results,
         spread_results
     )
 
 
 if __name__ == "__main__":
-    passed, res_list, fewest_info, highest_info, lowest_info, second_highest_info, earliest_info, spread_info = validate_all_cases()
+    passed, res_list, fewest_info, most_info, highest_info, lowest_info, second_highest_info, earliest_info, spread_info = validate_all_cases()
     print("=" * 110)
     print("EXTENDED INDEPENDENT CASES VALIDATION SUITE (Stage 3f Tightened - 33 Cases)")
     print("=" * 110)
@@ -918,12 +990,13 @@ if __name__ == "__main__":
     print(f"Topology Balance: 6-node = {sum(1 for r in res_list if r['nodes'] == 6)}/17, 12-node = {sum(1 for r in res_list if r['nodes'] == 12)}/16")
     print(f"Overall Validation Result: {'PASSED' if passed else 'FAILED'}")
     print("=" * 110)
-    print("FIVE STATIC BASELINE ANALYSES ON 33 INDEPENDENT CASES (Target each strictly below 60%, No Engine Execution):")
+    print("SIX STATIC BASELINE ANALYSES ON 33 INDEPENDENT CASES (Target each strictly below 60%, No Engine Execution):")
     print(f"  1. Fewest Anomalous Events:       {fewest_info['correct_diagnosable']}/{fewest_info['total_diagnosable']} ({fewest_info['accuracy_pct']:.1f}%) [Target < 60%]")
-    print(f"  2. Highest Severity:              {highest_info['correct_diagnosable']}/{highest_info['total_diagnosable']} ({highest_info['accuracy_pct']:.1f}%) [Target < 60%]")
-    print(f"  3. Lowest Severity:               {lowest_info['correct_diagnosable']}/{lowest_info['total_diagnosable']} ({lowest_info['accuracy_pct']:.1f}%) [Target < 60%]")
-    print(f"  4. Second-Highest Severity:       {second_highest_info['correct_diagnosable']}/{second_highest_info['total_diagnosable']} ({second_highest_info['accuracy_pct']:.1f}%) [Target < 60%]")
-    print(f"  5. Earliest Anomaly:              {earliest_info['correct_diagnosable']}/{earliest_info['total_diagnosable']} ({earliest_info['accuracy_pct']:.1f}%) [Target < 60%]")
+    print(f"  2. Most Anomalous Events:         {most_info['correct_diagnosable']}/{most_info['total_diagnosable']} ({most_info['accuracy_pct']:.1f}%) [Target < 60%]")
+    print(f"  3. Highest Severity:              {highest_info['correct_diagnosable']}/{highest_info['total_diagnosable']} ({highest_info['accuracy_pct']:.1f}%) [Target < 60%]")
+    print(f"  4. Lowest Severity:               {lowest_info['correct_diagnosable']}/{lowest_info['total_diagnosable']} ({lowest_info['accuracy_pct']:.1f}%) [Target < 60%]")
+    print(f"  5. Second-Highest Severity:       {second_highest_info['correct_diagnosable']}/{second_highest_info['total_diagnosable']} ({second_highest_info['accuracy_pct']:.1f}%) [Target < 60%]")
+    print(f"  6. Earliest Anomaly:              {earliest_info['correct_diagnosable']}/{earliest_info['total_diagnosable']} ({earliest_info['accuracy_pct']:.1f}%) [Target < 60%]")
     print("=" * 110)
     print("TIMING OFFSETS SPREAD PER CATEGORY (Seeded Wide-Range Randomization):")
     for cat in sorted(spread_info.keys()):

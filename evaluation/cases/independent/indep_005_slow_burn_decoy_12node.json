@@ -149,6 +149,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_ddb_00",
+      "event_time": "2026-10-16T14:00:05+00:00",
+      "observed_time": "2026-10-16T14:00:06+00:00",
+      "source": "cloudwatch",
+      "service": "DynamoTable",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_01a",
       "event_time": "2026-10-16T14:00:12+00:00",
       "observed_time": "2026-10-16T14:00:13+00:00",
@@ -161,11 +173,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_1",
+      "event_id": "hb_bg_RedisCache_1",
       "event_time": "2026-10-16T14:00:16.300000+00:00",
       "observed_time": "2026-10-16T14:00:17.300000+00:00",
       "source": "cloudwatch",
-      "service": "DynamoTable",
+      "service": "RedisCache",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -185,11 +197,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_RedisCache_1",
+      "event_id": "hb_bg_KafkaCluster_1",
       "event_time": "2026-10-16T14:00:23.500000+00:00",
       "observed_time": "2026-10-16T14:00:24.500000+00:00",
       "source": "cloudwatch",
-      "service": "RedisCache",
+      "service": "KafkaCluster",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -238,18 +250,6 @@
       "observed_time": "2026-10-16T14:00:30+00:00",
       "source": "cloudwatch",
       "service": "PostgresPrimary",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_KafkaCluster_1",
-      "event_time": "2026-10-16T14:00:32.200000+00:00",
-      "observed_time": "2026-10-16T14:00:33.200000+00:00",
-      "source": "cloudwatch",
-      "service": "KafkaCluster",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -389,18 +389,6 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_KafkaCluster_2",
-      "event_time": "2026-10-16T14:02:42.400000+00:00",
-      "observed_time": "2026-10-16T14:02:43.400000+00:00",
-      "source": "cloudwatch",
-      "service": "KafkaCluster",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "hb_bg_PostgresPrimary_2",
       "event_time": "2026-10-16T14:02:42.700000+00:00",
       "observed_time": "2026-10-16T14:02:43.700000+00:00",
@@ -413,11 +401,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_RedisCache_2",
+      "event_id": "hb_bg_KafkaCluster_2",
       "event_time": "2026-10-16T14:02:44.500000+00:00",
       "observed_time": "2026-10-16T14:02:45.500000+00:00",
       "source": "cloudwatch",
-      "service": "RedisCache",
+      "service": "KafkaCluster",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -425,11 +413,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_2",
+      "event_id": "hb_bg_RedisCache_2",
       "event_time": "2026-10-16T14:02:50.300000+00:00",
       "observed_time": "2026-10-16T14:02:51.300000+00:00",
       "source": "cloudwatch",
-      "service": "DynamoTable",
+      "service": "RedisCache",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",

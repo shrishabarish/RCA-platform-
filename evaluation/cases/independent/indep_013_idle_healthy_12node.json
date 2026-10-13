@@ -149,33 +149,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_NotificationService_1",
+      "event_id": "hb_bg_DynamoTable_1",
       "event_time": "2026-10-16T14:00:10.600000+00:00",
       "observed_time": "2026-10-16T14:00:11.600000+00:00",
-      "source": "cloudwatch",
-      "service": "NotificationService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_K8sCluster_1",
-      "event_time": "2026-10-16T14:00:11+00:00",
-      "observed_time": "2026-10-16T14:00:12+00:00",
-      "source": "cloudwatch",
-      "service": "K8sCluster",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_DynamoTable_1",
-      "event_time": "2026-10-16T14:00:11.600000+00:00",
-      "observed_time": "2026-10-16T14:00:12.600000+00:00",
       "source": "cloudwatch",
       "service": "DynamoTable",
       "metric": "Heartbeat",
@@ -185,9 +161,57 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_InventoryService_1",
+      "event_id": "hb_bg_KafkaCluster_1",
+      "event_time": "2026-10-16T14:00:11+00:00",
+      "observed_time": "2026-10-16T14:00:12+00:00",
+      "source": "cloudwatch",
+      "service": "KafkaCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_K8sCluster_1",
+      "event_time": "2026-10-16T14:00:11.600000+00:00",
+      "observed_time": "2026-10-16T14:00:12.600000+00:00",
+      "source": "cloudwatch",
+      "service": "K8sCluster",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_AuthService_1",
+      "event_time": "2026-10-16T14:00:21+00:00",
+      "observed_time": "2026-10-16T14:00:22+00:00",
+      "source": "cloudwatch",
+      "service": "AuthService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_NotificationService_1",
       "event_time": "2026-10-16T14:00:21.800000+00:00",
       "observed_time": "2026-10-16T14:00:22.800000+00:00",
+      "source": "cloudwatch",
+      "service": "NotificationService",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "hb_bg_InventoryService_1",
+      "event_time": "2026-10-16T14:00:25.200000+00:00",
+      "observed_time": "2026-10-16T14:00:26.200000+00:00",
       "source": "cloudwatch",
       "service": "InventoryService",
       "metric": "Heartbeat",
@@ -198,8 +222,8 @@
     },
     {
       "event_id": "hb_bg_PaymentService_1",
-      "event_time": "2026-10-16T14:00:25.200000+00:00",
-      "observed_time": "2026-10-16T14:00:26.200000+00:00",
+      "event_time": "2026-10-16T14:00:28.400000+00:00",
+      "observed_time": "2026-10-16T14:00:29.400000+00:00",
       "source": "cloudwatch",
       "service": "PaymentService",
       "metric": "Heartbeat",
@@ -209,21 +233,9 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_KafkaCluster_1",
-      "event_time": "2026-10-16T14:00:27+00:00",
-      "observed_time": "2026-10-16T14:00:28+00:00",
-      "source": "cloudwatch",
-      "service": "KafkaCluster",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_AuthService_1",
-      "event_time": "2026-10-16T14:00:28.400000+00:00",
-      "observed_time": "2026-10-16T14:00:29.400000+00:00",
+      "event_id": "hb_bg_AuthService_2",
+      "event_time": "2026-10-16T14:01:24.300000+00:00",
+      "observed_time": "2026-10-16T14:01:25.300000+00:00",
       "source": "cloudwatch",
       "service": "AuthService",
       "metric": "Heartbeat",
@@ -245,23 +257,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_PaymentService_2",
+      "event_id": "hb_bg_InventoryService_2",
       "event_time": "2026-10-16T14:01:29.500000+00:00",
       "observed_time": "2026-10-16T14:01:30.500000+00:00",
       "source": "cloudwatch",
-      "service": "PaymentService",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
-      "event_id": "hb_bg_KafkaCluster_2",
-      "event_time": "2026-10-16T14:01:35.800000+00:00",
-      "observed_time": "2026-10-16T14:01:36.800000+00:00",
-      "source": "cloudwatch",
-      "service": "KafkaCluster",
+      "service": "InventoryService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -293,11 +293,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_NotificationService_2",
+      "event_id": "hb_bg_DynamoTable_2",
       "event_time": "2026-10-16T14:01:47+00:00",
       "observed_time": "2026-10-16T14:01:48+00:00",
       "source": "cloudwatch",
-      "service": "NotificationService",
+      "service": "DynamoTable",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -305,11 +305,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_AuthService_2",
+      "event_id": "hb_bg_PaymentService_2",
       "event_time": "2026-10-16T14:01:53.800000+00:00",
       "observed_time": "2026-10-16T14:01:54.800000+00:00",
       "source": "cloudwatch",
-      "service": "AuthService",
+      "service": "PaymentService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -317,11 +317,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_InventoryService_2",
+      "event_id": "hb_bg_NotificationService_2",
       "event_time": "2026-10-16T14:01:57+00:00",
       "observed_time": "2026-10-16T14:01:58+00:00",
       "source": "cloudwatch",
-      "service": "InventoryService",
+      "service": "NotificationService",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -341,11 +341,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_DynamoTable_2",
+      "event_id": "hb_bg_K8sCluster_2",
       "event_time": "2026-10-16T14:02:05.800000+00:00",
       "observed_time": "2026-10-16T14:02:06.800000+00:00",
       "source": "cloudwatch",
-      "service": "DynamoTable",
+      "service": "K8sCluster",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -353,11 +353,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_K8sCluster_2",
+      "event_id": "hb_bg_KafkaCluster_2",
       "event_time": "2026-10-16T14:02:13.100000+00:00",
       "observed_time": "2026-10-16T14:02:14.100000+00:00",
       "source": "cloudwatch",
-      "service": "K8sCluster",
+      "service": "KafkaCluster",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",

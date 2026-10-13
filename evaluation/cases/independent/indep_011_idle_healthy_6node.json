@@ -90,8 +90,8 @@
     },
     {
       "event_id": "hb_bg_Worker_1",
-      "event_time": "2026-10-16T14:00:23.300000+00:00",
-      "observed_time": "2026-10-16T14:00:24.300000+00:00",
+      "event_time": "2026-10-16T14:00:12.900000+00:00",
+      "observed_time": "2026-10-16T14:00:13.900000+00:00",
       "source": "cloudwatch",
       "service": "Worker",
       "metric": "Heartbeat",
@@ -137,18 +137,6 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_2",
-      "event_time": "2026-10-16T14:00:48.500000+00:00",
-      "observed_time": "2026-10-16T14:00:49.500000+00:00",
-      "source": "cloudwatch",
-      "service": "Worker",
-      "metric": "Heartbeat",
-      "value": 1.0,
-      "severity": "LOW",
-      "target": null,
-      "dimensions": {}
-    },
-    {
       "event_id": "evt_02",
       "event_time": "2026-10-16T14:00:55+00:00",
       "observed_time": "2026-10-16T14:00:56+00:00",
@@ -161,6 +149,18 @@
       "dimensions": {}
     },
     {
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:06.500000+00:00",
+      "observed_time": "2026-10-16T14:01:07.500000+00:00",
+      "source": "cloudwatch",
+      "service": "Worker",
+      "metric": "Heartbeat",
+      "value": 1.0,
+      "severity": "LOW",
+      "target": null,
+      "dimensions": {}
+    },
+    {
       "event_id": "evt_03",
       "event_time": "2026-10-16T14:01:10+00:00",
       "observed_time": "2026-10-16T14:01:11+00:00",
@@ -169,6 +169,30 @@
       "metric": "EndpointFailureRate",
       "value": 98.0,
       "severity": "CRITICAL",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_04",
+      "event_time": "2026-10-16T14:01:28+00:00",
+      "observed_time": "2026-10-16T14:01:29+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "NetworkSocketTimeout",
+      "value": 85.0,
+      "severity": "HIGH",
+      "target": null,
+      "dimensions": {}
+    },
+    {
+      "event_id": "evt_05",
+      "event_time": "2026-10-16T14:01:45+00:00",
+      "observed_time": "2026-10-16T14:01:46+00:00",
+      "source": "cloudwatch",
+      "service": "API",
+      "metric": "ServiceRequestHang",
+      "value": 75.0,
+      "severity": "HIGH",
       "target": null,
       "dimensions": {}
     }

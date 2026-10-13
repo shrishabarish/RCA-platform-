@@ -89,11 +89,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Application_1",
-      "event_time": "2026-10-16T14:00:31+00:00",
-      "observed_time": "2026-10-16T14:00:32+00:00",
+      "event_id": "hb_bg_Worker_1",
+      "event_time": "2026-10-16T14:00:31.500000+00:00",
+      "observed_time": "2026-10-16T14:00:32.500000+00:00",
       "source": "cloudwatch",
-      "service": "Application",
+      "service": "Worker",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -101,11 +101,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_1",
+      "event_id": "hb_bg_Application_1",
       "event_time": "2026-10-16T14:00:43.200000+00:00",
       "observed_time": "2026-10-16T14:00:44.200000+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
+      "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -137,11 +137,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Worker_2",
+      "event_id": "hb_bg_Application_2",
       "event_time": "2026-10-16T14:01:11.300000+00:00",
       "observed_time": "2026-10-16T14:01:12.300000+00:00",
       "source": "cloudwatch",
-      "service": "Worker",
+      "service": "Application",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
@@ -173,11 +173,11 @@
       "dimensions": {}
     },
     {
-      "event_id": "hb_bg_Application_2",
-      "event_time": "2026-10-16T14:01:23.100000+00:00",
-      "observed_time": "2026-10-16T14:01:24.100000+00:00",
+      "event_id": "hb_bg_Worker_2",
+      "event_time": "2026-10-16T14:01:33.200000+00:00",
+      "observed_time": "2026-10-16T14:01:34.200000+00:00",
       "source": "cloudwatch",
-      "service": "Application",
+      "service": "Worker",
       "metric": "Heartbeat",
       "value": 1.0,
       "severity": "LOW",
