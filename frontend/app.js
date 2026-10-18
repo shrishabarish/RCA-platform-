@@ -48,7 +48,8 @@ const SCENARIO_ICONS = {
     "cascade": "🖥️",
     "db_exhaustion": "🗄️",
     "auth_outage": "🔐",
-    "memory_leak": "⚙️"
+    "memory_leak": "⚙️",
+    "live_aws_failure": "💥"
 };
 
 function escapeHtml(value) {

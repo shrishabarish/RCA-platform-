@@ -1,0 +1,52 @@
+[
+  {
+    "event_id": "evt_aws_fail_001",
+    "timestamp": "2026-09-01T15:00:00Z",
+    "source": "application",
+    "event_type": "db_connection_refused",
+    "service": "DynamoDB",
+    "resource_id": "postgres-primary:5432",
+    "metric": "ConnectionRefusalCount",
+    "value": 1.0,
+    "severity": "CRITICAL",
+    "metadata": {
+      "source_app": "code-review-backend",
+      "endpoint": "/api/submissions",
+      "error_message": "connect ECONNREFUSED 127.0.0.1:5432",
+      "http_status": 500,
+      "correlation_id": "corr-aws-fail-01"
+    }
+  },
+  {
+    "event_id": "evt_aws_fail_002",
+    "timestamp": "2026-09-01T15:00:05Z",
+    "source": "application",
+    "event_type": "db_connection_pool_timeout",
+    "service": "API",
+    "resource_id": "api-gateway-01",
+    "metric": "ConnectionPoolWaitTimeMs",
+    "value": 5000.0,
+    "severity": "HIGH",
+    "metadata": {
+      "source_app": "code-review-backend",
+      "endpoint": "/api/submissions",
+      "correlation_id": "corr-aws-fail-01"
+    }
+  },
+  {
+    "event_id": "evt_aws_fail_003",
+    "timestamp": "2026-09-01T15:00:12Z",
+    "source": "application",
+    "event_type": "http_500_internal_error",
+    "service": "Application",
+    "resource_id": "web-ui-frontend",
+    "metric": "5xxErrorRate",
+    "value": 100.0,
+    "severity": "HIGH",
+    "metadata": {
+      "source_app": "code-review-frontend",
+      "path": "/submissions",
+      "correlation_id": "corr-aws-fail-01"
+    }
+  }
+]

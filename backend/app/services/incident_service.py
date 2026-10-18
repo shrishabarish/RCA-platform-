@@ -104,6 +104,13 @@ class IncidentService:
                 "description": "Data analytics worker pod experiences memory leak, gets OOMKilled, resulting in SQS backlog and stalled jobs.",
                 "category": "Containers & Queue",
                 "root_cause_expected": "Worker"
+            },
+            {
+                "id": "live_aws_failure",
+                "name": "Live AWS Failure App (PostgreSQL Outage & 500s)",
+                "description": "Simulates AWS failure code-review app database drop, causing connection pool exhaustion and downstream 500 cascade.",
+                "category": "Live Target Microservice",
+                "root_cause_expected": "DynamoDB"
             }
         ]
 
