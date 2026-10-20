@@ -18,12 +18,18 @@ if exist "%~dp0venv\Scripts\activate.bat" (
     call "%~dp0venv\Scripts\activate.bat"
 )
 
-:: 3. Launch the browser directly (single window, no second terminal)
+:: 3. Automatically free port 8000 if occupied by a previous running instance
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do (
+    echo Port 8000 is already in use by old process PID %%a. Automatically freeing port...
+    taskkill /F /PID %%a >nul 2>&1
+)
+
+:: 4. Launch the browser directly (single window, no second terminal)
 echo.
 echo Launching Cockpit Dashboard at http://localhost:8000 ...
 start http://localhost:8000
 
-:: 4. Start the Uvicorn server in this window
+:: 5. Start the Uvicorn server in this window
 echo.
 echo ========================================================
 echo   Platform running at: http://localhost:8000
