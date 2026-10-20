@@ -245,6 +245,111 @@ def get_webhook_event_log() -> Dict[str, Any]:
     }
 
 
+class EC2SyncRequest(BaseModel):
+    host: str = "13.60.84.225"
+    port: int = 5000
+
+
+@router.post("/ec2/sync", tags=["External Webhook"])
+async def sync_live_ec2_target(req: EC2SyncRequest) -> Dict[str, Any]:
+    """
+    Dynamically connects to ANY live EC2 instance via HTTP, checks health,
+    registers it into the Causal Graph without hardcoding, and ingests live faults.
+    """
+    import httpx
+    import uuid
+    from datetime import datetime, timezone
+    from backend.app.models.event import CloudEvent, EventSource, Severity
+
+    target_url = f"http://{req.host}:{req.port}/health"
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get(target_url)
+            data = resp.json()
+    except Exception as e:
+        return {
+            "connected": False,
+            "host": req.host,
+            "port": req.port,
+            "error": f"Failed to connect to {target_url}: {e}",
+            "message": "Instance unreachable or port 5000 not open in Security Group."
+        }
+
+    status_str = data.get("status", "HEALTHY")
+    active_faults = data.get("active_faults", {})
+    db_info = data.get("database", {})
+    node_id = f"EC2_{req.host.replace('.', '_')}"
+
+    # Auto-register this specific EC2 instance dynamically in Causal Graph
+    causal_graph_engine.register_service(
+        service_name=node_id,
+        service_type="compute",
+        label=f"EC2 Target ({req.host})",
+        metadata={"host": req.host, "port": req.port, "status": status_str}
+    )
+    causal_graph_engine.register_dependency("API", node_id)
+
+    events_generated = 0
+    # If a fault is injected on that EC2 instance (e.g. database disconnect)
+    if not db_info.get("connected", True) or active_faults.get("dbDisconnect"):
+        now_utc = datetime.now(timezone.utc)
+        ev1 = CloudEvent(
+            event_id=f"ec2_db_{uuid.uuid4().hex[:6]}",
+            timestamp=now_utc,
+            source=EventSource.APPLICATION,
+            event_type="db_connection_refused",
+            service="DynamoDB",
+            metric="ConnectionRefusedCount",
+            value=1.0,
+            severity=Severity.CRITICAL,
+            resource_id=f"rds-{req.host}",
+            metadata={"origin": f"EC2_Live_Poll ({req.host})", "error": db_info.get("error", "Connection Refused")}
+        )
+        ev2 = CloudEvent(
+            event_id=f"ec2_api_{uuid.uuid4().hex[:6]}",
+            timestamp=now_utc,
+            source=EventSource.APPLICATION,
+            event_type="http_500_internal_error",
+            service="API",
+            metric="5xxErrorCount",
+            value=1.0,
+            severity=Severity.HIGH,
+            resource_id="api-gateway",
+            metadata={"origin": "Cascading_Propagation", "status": 500}
+        )
+        ev3 = CloudEvent(
+            event_id=f"ec2_app_{uuid.uuid4().hex[:6]}",
+            timestamp=now_utc,
+            source=EventSource.APPLICATION,
+            event_type="service_degraded",
+            service="Application",
+            metric="ErrorBudgetBurn",
+            value=1.0,
+            severity=Severity.HIGH,
+            resource_id="customer-app",
+            metadata={"origin": "Cascading_Propagation", "status": 503}
+        )
+        for ev in [ev1, ev2, ev3]:
+            incident_service.ingest_event(ev)
+        events_generated = 3
+
+    incidents = incident_service.get_all_incidents()
+    analysis = run_rca_analysis(incidents[-1]) if incidents else None
+
+    return {
+        "connected": True,
+        "host": req.host,
+        "port": req.port,
+        "status": status_str,
+        "raw_health": data,
+        "faults_active": active_faults,
+        "events_generated": events_generated,
+        "rca_result": analysis,
+        "topology": causal_graph_engine.export_graph_topology()
+    }
+
+
+
 # ==========================================
 # 3. SCENARIO SIMULATION & TOPOLOGY
 # ==========================================

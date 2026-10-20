@@ -168,7 +168,10 @@ function setupEventListeners() {
     btnReset.addEventListener("click", resetSystem);
     btnApplyFix.addEventListener("click", applyRemediationFix);
 
-    // Amazon S3 & SNS Integration Buttons (Review 1)
+    // Amazon S3, SNS & Live EC2 Integration Buttons (Review 1)
+    const btnConnectLiveEc2El = document.getElementById("btnConnectLiveEc2");
+    if (btnConnectLiveEc2El) btnConnectLiveEc2El.addEventListener("click", connectLiveEc2);
+
     const btnDiscover = document.getElementById("btnDiscoverAws");
     if (btnDiscover) btnDiscover.addEventListener("click", discoverAwsAssets);
 
@@ -1665,6 +1668,43 @@ async function discoverAwsAssets() {
         if (btn) {
             btn.disabled = false;
             btn.textContent = "🔍 Discover AWS Assets";
+        }
+    }
+}
+
+async function connectLiveEc2() {
+    const ip = prompt("Enter the Public IP of your EC2 Target Instance:", "13.60.84.225");
+    if (!ip) return;
+    const btn = document.getElementById("btnConnectLiveEc2");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Connecting to EC2...";
+    }
+    try {
+        const res = await fetch(`${API_BASE}/ec2/sync`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ host: ip.trim(), port: 5000 })
+        });
+        const data = await res.json();
+        if (data.connected) {
+            const isDbConnected = data.raw_health?.database?.connected;
+            const faultsActive = Object.entries(data.faults_active || {})
+                .filter(([_, v]) => v && v !== 0 && (Array.isArray(v) ? v.length : true))
+                .map(([k, v]) => `${k}`)
+                .join(", ") || "None";
+
+            alert(`✅ Successfully Connected to Live EC2 (${data.host}:5000)!\n\nService Status: ${data.status}\nDatabase Connection: ${isDbConnected ? 'Healthy & Connected' : 'DISCONNECTED (Injected Fault Active!)'}\nActive Faults: ${faultsActive}\n\nEC2 target has been dynamically mapped into your Causal Graph.`);
+            await fetchDashboardData();
+        } else {
+            alert(`⚠️ Could not reach EC2 at ${data.host}:5000\n\nError: ${data.error || data.message}\nMake sure port 5000 is open in your EC2 Security Group.`);
+        }
+    } catch (e) {
+        alert(`Connection error: ${e.message}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "🌐 Connect Live EC2";
         }
     }
 }

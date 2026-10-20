@@ -56,7 +56,7 @@ class AWSCloudCollector:
                 return self._cached_connectivity
 
         try:
-            kwargs = self._get_boto_kwargs()
+            kwargs = get_boto3_kwargs(self.region)
             sts = boto3.client("sts", **kwargs)
             identity = sts.get_caller_identity()
             acc = identity.get("Account", "unknown")
