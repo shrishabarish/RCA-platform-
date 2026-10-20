@@ -94,6 +94,161 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* App Full Height Layout with Enterprise Sidebar */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .app-sidebar {
+            width: 310px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            z-index: 60;
+        }
+
+        .sidebar-header {
+            padding: 1.15rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .sidebar-section {
+            padding: 1.15rem 1.15rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .scenario-buttons-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .scenario-btn {
+            text-align: left;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.65rem 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-family: inherit;
+            color: inherit;
+            width: 100%;
+        }
+
+        .scenario-btn:hover {
+            background: var(--bg-card);
+            border-color: var(--indigo);
+            transform: translateX(2px);
+        }
+
+        .scenario-btn.is-active {
+            background: var(--indigo-tint);
+            border-color: var(--indigo);
+            box-shadow: 0 0 0 1px var(--indigo);
+        }
+
+        .scenario-btn-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .scenario-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .scenario-category-pill {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+
+        .scenario-desc-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .sidebar-tools-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .sidebar-tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-heading);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .sidebar-tool-btn:hover {
+            background: var(--bg-subtle);
+            border-color: var(--border-strong);
+        }
+
+        .app-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
         /* Top Header */
         .app-header {
             background: var(--bg-card);
@@ -1915,69 +2070,123 @@
     </style>
 </head>
 <body>
-    <!-- Top Global Header -->
-    <header class="app-header">
-        <div class="header-left">
-            <div class="logo-mark">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="9" stroke="#4F46E5" />
-                    <path d="M12 7v5l3 3" stroke="#4F46E5" stroke-linecap="round" />
-                    <circle cx="12" cy="12" r="2.5" fill="#EF4444" />
-                </svg>
-            </div>
-            <div class="brand-text">
-                <span class="brand-name">RCA Platform</span>
-                <span class="brand-divider">/</span>
-                <span class="brand-console">RCA console</span>
-            </div>
-        </div>
-
-        <div class="header-right">
-            <div id="awsStatusPill" class="status-pill">
-                <span class="status-dot"></span>
-                <span>Checking AWS status...</span>
-            </div>
-
-            <div class="on-call-badge" id="onCallBadge" style="cursor: pointer;" title="Click to customize SRE On-Call Responder">
-                <span class="on-call-tag">ON CALL</span>
-                <div class="on-call-info">
-                    <strong id="onCallTeamName">SRE Team</strong>
-                    <small id="onCallStatus">Active monitoring</small>
+    <!-- App Outer Layout with Enterprise Sidebar -->
+    <div class="app-layout">
+        <!-- Modern Left Control Sidebar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-mark">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="9" stroke="#4F46E5" />
+                        <path d="M12 7v5l3 3" stroke="#4F46E5" stroke-linecap="round" />
+                        <circle cx="12" cy="12" r="2.5" fill="#EF4444" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-name" style="font-size: 1.05rem; font-weight: 800; color: var(--text-heading); letter-spacing:-0.02em;">CloudLens</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 600;">Autonomous Cloud RCA</div>
                 </div>
             </div>
 
-            <button id="btnThemeToggle" class="btn btn-ghost btn-theme-toggle" title="Toggle Dark / Light Mode">
-                <span id="themeIcon">🌙</span>
-                <span id="themeLabel">Dark</span>
-            </button>
+            <!-- Failure Scenarios Section (Permanently in Sidebar!) -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <span>Failure Scenarios</span>
+                    <span class="status-tag" style="font-size:0.6rem; padding: 1px 5px; font-weight:700;">Live Sim</span>
+                </div>
+                <div id="scenarioSelector" class="scenario-buttons-sidebar">
+                    <!-- Dynamically populated by app.js -->
+                </div>
+            </div>
 
-            <button id="btnPollAws" class="btn btn-primary" title="Connect to API and Sync Data">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-                Connect / Sync Data
-            </button>
+            <!-- Investigation Tools Section -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <span>Cloud Investigation Tools</span>
+                </div>
+                <div class="sidebar-tools-grid">
+                    <button id="btnConnectLiveEc2" class="sidebar-tool-btn" title="Connect and monitor live EC2 target instance dynamically">
+                        <span style="font-size: 1.05rem;">🌐</span>
+                        <span>Connect Live EC2</span>
+                    </button>
+                    <button id="btnDiscoverAws" class="sidebar-tool-btn" title="Scan and Discover live AWS EC2, RDS, and Lambda assets">
+                        <span style="font-size: 1.05rem;">🔍</span>
+                        <span>Discover AWS Assets</span>
+                    </button>
+                    <button id="btnViewS3PostMortem" class="sidebar-tool-btn" title="View & Download Amazon S3 Incident Post-Mortem">
+                        <span style="font-size: 1.05rem;">📦</span>
+                        <span>S3 Post-Mortem</span>
+                    </button>
+                    <button id="btnTestSnsAlert" class="sidebar-tool-btn" title="Trigger Amazon SNS Test Alert">
+                        <span style="font-size: 1.05rem;">🔔</span>
+                        <span>Test SNS Alert</span>
+                    </button>
+                    <button id="btnOpenFaultModal" class="sidebar-tool-btn" title="Inject custom fault telemetry">
+                        <span style="font-size: 1.05rem;">⚡</span>
+                        <span>Inject Custom Fault</span>
+                    </button>
+                    <button id="btnReset" class="sidebar-tool-btn" style="color: var(--red);" title="Reset incident data">
+                        <span style="font-size: 1.05rem;">🔄</span>
+                        <span>Reset Incident</span>
+                    </button>
+                </div>
+            </div>
 
-            <button id="btnConnectLiveEc2" class="btn btn-outline" style="border: 1px solid #10B981; color: #10B981; font-weight: 600;" title="Connect and monitor live EC2 target instance dynamically">
-                🌐 Connect Live EC2
-            </button>
+            <!-- AWS Cloud Services Health -->
+            <div class="sidebar-section" style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 0.85rem;">
+                <div class="sidebar-section-title" style="margin-bottom: 0.35rem;">
+                    <span>AWS Stack Status</span>
+                    <span style="font-size:0.65rem; color:var(--emerald); font-weight:700;">● Online</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.72rem;">
+                    <div style="display:flex; justify-content:space-between; color:var(--text-body);">
+                        <span>RDS PostgreSQL:</span> <strong style="color:var(--emerald);">Connected</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--text-body);">
+                        <span>CloudWatch:</span> <strong style="color:var(--emerald);">Active</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--text-body);">
+                        <span>Region:</span> <code>eu-north-1</code>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
-            <button id="btnDiscoverAws" class="btn btn-outline" style="border: 1px solid #D97706; color: #D97706; font-weight: 600;" title="Scan and Discover live AWS EC2, RDS, and Lambda assets">
-                🔍 Discover AWS Assets
-            </button>
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <!-- Top Global Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <span class="brand-console" style="font-weight: 700; color: var(--text-heading); font-size: 0.95rem;">RCA Cockpit</span>
+                    <span class="brand-divider">/</span>
+                    <span style="font-size: 0.82rem; color: var(--text-muted);">Autonomous Cloud Incident Detection & Diagnostics</span>
+                </div>
 
-            <button id="btnViewS3PostMortem" class="btn btn-outline" style="border: 1px solid #4F46E5; color: #4F46E5; font-weight: 600;" title="View & Download Amazon S3 Incident Post-Mortem">
-                📦 S3 Post-Mortem
-            </button>
+                <div class="header-right">
+                    <div id="awsStatusPill" class="status-pill">
+                        <span class="status-dot"></span>
+                        <span>Checking AWS status...</span>
+                    </div>
 
-            <button id="btnTestSnsAlert" class="btn btn-outline" style="border: 1px solid #059669; color: #059669; font-weight: 600;" title="Trigger Amazon SNS Test Alert">
-                🔔 Test SNS Alert
-            </button>
+                    <div class="on-call-badge" id="onCallBadge" style="cursor: pointer;" title="Click to customize SRE On-Call Responder">
+                        <span class="on-call-tag">ON CALL</span>
+                        <div class="on-call-info">
+                            <strong id="onCallTeamName">SRE Team</strong>
+                            <small id="onCallStatus">Active monitoring</small>
+                        </div>
+                    </div>
 
-            <button id="btnReset" class="btn btn-ghost" title="Reset incident data">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                Reset
-            </button>
-        </div>
-    </header>
+                    <button id="btnThemeToggle" class="btn btn-ghost btn-theme-toggle" title="Toggle Dark / Light Mode">
+                        <span id="themeIcon">🌙</span>
+                        <span id="themeLabel">Dark</span>
+                    </button>
+
+                    <button id="btnPollAws" class="btn btn-primary" title="Connect to API and Sync Data">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+                        Connect / Sync Data
+                    </button>
+                </div>
+            </header>
 
     <!-- Live AWS Cloud Architecture Services Banner (Review 1 Specification) -->
     <div class="aws-cloud-banner">
@@ -2597,8 +2806,8 @@
                             </button>
                         </div>
                     </div>
-                    <div class="scenario-buttons-grid" id="scenarioSelector">
-                        <!-- Dynamically populated by app.js -->
+                    <div class="scenario-buttons-grid" id="scenarioSelectorLab">
+                        <!-- Lab controls -->
                     </div>
                 </section>
             
@@ -2656,7 +2865,9 @@
             </div>
         
         </div> <!-- End Tab Content -->
-    </div>
+    </div> <!-- End page-container -->
+    </div> <!-- End app-main -->
+    </div> <!-- End app-layout -->
 
     <!-- Floating Component Hover Tooltip Popover -->
     <div id="graphNodeTooltip" class="graph-node-tooltip" style="display: none;">

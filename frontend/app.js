@@ -323,6 +323,11 @@ async function fetchScenarios() {
         if (!res.ok) return;
         availableScenarios = await res.json();
         renderScenarioButtons();
+
+        // Auto-populate active scenario if no incident is loaded
+        if (!currentIncident && availableScenarios.length > 0) {
+            await switchScenario(activeScenarioId || availableScenarios[0].id);
+        }
     } catch (err) {
         console.error("Failed to load scenarios:", err);
     }

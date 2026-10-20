@@ -41,7 +41,7 @@ engine_kwargs = {"pool_pre_ping": True}
 
 if "postgresql" in db_url or "postgres" in db_url:
     if "pg8000" in db_url:
-        connect_args["timeout"] = config.database.connect_timeout_seconds
+        connect_args["timeout"] = int(os.getenv("DB_SOCKET_TIMEOUT", "45"))
     elif "psycopg" in db_url:
         connect_args["connect_timeout"] = config.database.connect_timeout_seconds
 

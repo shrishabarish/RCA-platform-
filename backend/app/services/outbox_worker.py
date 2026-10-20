@@ -282,7 +282,8 @@ class OutboxWorker:
                 logger.info(f"Outbox delivered {ev_type} for incident {inc_id}")
             else:
                 item.last_error = error_msg
-                if item.attempts >= item.max_attempts:
+                is_permanent = any(perm in str(error_msg) for perm in ["AccessDenied", "InvalidClientTokenId", "InvalidParameter", "offline", "unreachable"])
+                if item.attempts >= item.max_attempts or is_permanent:
                     item.status = "FAILED"
                     item.lease_until = None
                     item.next_retry_at = None
@@ -295,7 +296,7 @@ class OutboxWorker:
                             incident.notification_status = "FAILED"
                         incident.delivery_error = f"{ev_type}: {error_msg}"
                     logger.warning(
-                        f"Outbox item {item_id} marked FAILED after {item.attempts} attempts: {error_msg}"
+                        f"Outbox item {item_id} marked FAILED (permanent={is_permanent}) after {item.attempts} attempts: {error_msg}"
                     )
                 else:
                     item.status = "RETRYING"

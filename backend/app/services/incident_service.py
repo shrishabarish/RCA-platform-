@@ -9,7 +9,7 @@ import concurrent.futures
 
 from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload, Session
+from sqlalchemy.orm import joinedload, selectinload, Session
 from backend.app.db.database import SessionLocal
 from backend.app.db.models import DBCloudEvent, DBIncident, DBOutboxItem
 from backend.app.models.event import (
@@ -126,9 +126,13 @@ class IncidentService:
         try:
             db = SessionLocal()
             try:
-                db.execute(text("DELETE FROM outbox_events"))
-                db.execute(text("DELETE FROM cloud_events"))
-                db.execute(text("DELETE FROM incidents"))
+                dialect = db.bind.dialect.name if db.bind else ""
+                if dialect in ("postgresql", "postgres"):
+                    db.execute(text("TRUNCATE TABLE outbox_events, cloud_events, incidents CASCADE;"))
+                else:
+                    db.execute(text("DELETE FROM outbox_events"))
+                    db.execute(text("DELETE FROM cloud_events"))
+                    db.execute(text("DELETE FROM incidents"))
                 db.commit()
                 logger.info("Database state successfully cleared.")
             finally:
@@ -495,45 +499,25 @@ class IncidentService:
         except Exception as e:
             logger.warning(f"Background incident persistence error: {e}")
 
-    def auto_resolve_inactive_incidents(self, db: Session) -> int:
-        """Transitions OPEN incidents with no new events after inactivity window to RESOLVED."""
+    def auto_resolve_inactive_incidents(self, db: Session, deploy_cutoff: Optional[datetime] = None) -> int:
+        """Transitions OPEN incidents with no new events after inactivity window to RESOLVED using single bulk update."""
         threshold_min = config.correlator.incident_inactivity_resolve_minutes
-        cutoff = datetime.now(timezone.utc) - timedelta(minutes=threshold_min)
-        inactive = db.query(DBIncident).filter(
+        now_utc = datetime.now(timezone.utc)
+        cutoff = now_utc - timedelta(minutes=threshold_min)
+        query = db.query(DBIncident).filter(
             DBIncident.status == "OPEN",
             DBIncident.updated_at < cutoff
-        ).all()
-        from backend.app.services.outbox_worker import outbox_worker
-        for inc in inactive:
-            inc.status = "RESOLVED"
-            # Final fresh RCA when incident closes
-            for mem_inc in self._active_incidents:
-                if mem_inc.incident_id == inc.incident_id:
-                    self.analyze_incident_freshness(mem_inc, force=True)
-                    inc.probable_root_cause = mem_inc.probable_root_cause
-                    inc.confidence = mem_inc.confidence
-                    inc.score_breakdown = mem_inc.score_breakdown
-                    inc.analysis_status = "DONE"
-                    inc.analyzed_at = mem_inc.analyzed_at
-
-            resolution_payload = {
-                "incident_id": inc.incident_id,
-                "status": "RESOLVED",
-                "severity": inc.severity,
-                "probable_root_cause": inc.probable_root_cause or "UNKNOWN",
-                "confidence": inc.confidence or 0.0,
-                "affected_services": inc.affected_services or [],
-                "score_breakdown": inc.score_breakdown or {},
-                "remediation_suggestion": inc.remediation_suggestion or "Incident resolved successfully.",
-                "resolved_at": datetime.now(timezone.utc).isoformat(),
-                "message_type": "INCIDENT_RESOLVED"
-            }
-            outbox_worker.enqueue_side_effects(db, resolution_payload)
-
-        if inactive:
+        )
+        if deploy_cutoff is not None:
+            query = query.filter(DBIncident.created_at >= deploy_cutoff)
+        count = query.update(
+            {DBIncident.status: "RESOLVED", DBIncident.updated_at: now_utc},
+            synchronize_session=False
+        )
+        if count > 0:
             db.commit()
-            logger.info(f"Auto-resolved {len(inactive)} inactive incidents older than {threshold_min}m.")
-        return len(inactive)
+            logger.info(f"Auto-resolved {count} inactive incident(s).")
+        return count
 
     def update_incident_status(self, incident_id: str, new_status: str) -> Optional[Incident]:
         """Manually updates the status of an incident."""
@@ -629,8 +613,7 @@ class IncidentService:
         try:
             db = SessionLocal()
             try:
-                self.auto_resolve_inactive_incidents(db)
-                query = db.query(DBIncident).options(joinedload(DBIncident.events))
+                query = db.query(DBIncident).options(selectinload(DBIncident.events))
                 if status:
                     query = query.filter(DBIncident.status == status)
                 if severity:
@@ -760,31 +743,6 @@ class IncidentService:
 
         return causal_graph_engine.export_graph_topology(root_cause=root_cause, affected_services=affected)
 
-    def auto_resolve_inactive_incidents(self, db: Session, deploy_cutoff: Optional[datetime] = None) -> int:
-        """
-        Auto-resolves inactive OPEN incidents whose last event update is older than
-        config.correlator.incident_inactivity_resolve_minutes.
-        Guarded by deploy_cutoff to ensure legacy historical incidents are never touched.
-        """
-        inactivity_minutes = config.correlator.incident_inactivity_resolve_minutes
-        now_utc = datetime.now(timezone.utc)
-        threshold = now_utc - timedelta(minutes=inactivity_minutes)
-
-        query = db.query(DBIncident).filter(
-            DBIncident.status == "OPEN",
-            DBIncident.updated_at < threshold
-        )
-        if deploy_cutoff is not None:
-            query = query.filter(DBIncident.created_at >= deploy_cutoff)
-
-        stale_incidents = query.all()
-        for inc in stale_incidents:
-            inc.status = "RESOLVED"
-            inc.updated_at = now_utc
-
-        if stale_incidents:
-            logger.info(f"Auto-resolved {len(stale_incidents)} inactive incident(s).")
-        return len(stale_incidents)
 
     def get_source_health(self) -> List[Dict[str, Any]]:
         """Returns live source health status records for telemetry sources."""

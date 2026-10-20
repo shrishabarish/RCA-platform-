@@ -108,8 +108,9 @@ class CorrelatorConsumer:
         self._last_analyzed_time: Dict[str, float] = {}
         self._last_auto_resolve: float = 0.0
         self._last_health_check: float = 0.0
+        self._last_heartbeat_time: float = 0.0
         self._last_progress_time: float = time.monotonic()
-        self.heartbeat_timeout = float(os.getenv("LEADER_HEARTBEAT_TIMEOUT_SECONDS", "10.0"))
+        self.heartbeat_timeout = float(os.getenv("LEADER_HEARTBEAT_TIMEOUT_SECONDS", "30.0"))
 
         # Guardrails & Metrics
         self.metrics_data: Dict[str, Any] = {
@@ -335,7 +336,9 @@ class CorrelatorConsumer:
 
                 # Leader worker: record progress & check connection health every 5s
                 self._last_progress_time = now_mono
-                self._record_heartbeat()
+                if (now_mono - self._last_heartbeat_time) >= 5.0:
+                    self._last_heartbeat_time = now_mono
+                    self._record_heartbeat()
 
                 if (now_mono - self._last_health_check) >= 5.0:
                     self._last_health_check = now_mono
@@ -351,7 +354,7 @@ class CorrelatorConsumer:
                 if count > 0:
                     continue  # Backlog draining: iterate immediately
                 else:
-                    time.sleep(0.05)
+                    time.sleep(0.5)
             except Exception as e:
                 logger.warning(f"[{self._worker_id}] Error in correlator consumer loop: {e}")
                 time.sleep(0.5)
