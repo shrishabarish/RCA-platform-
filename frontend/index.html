@@ -96,8 +96,8 @@
             background-color: var(--bg-page);
             color: var(--text-body);
             font-family: var(--font-sans);
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.45;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
@@ -642,51 +642,51 @@
         }
 
         .incident-main-title {
-            font-size: 1.65rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--text-heading);
-            letter-spacing: -0.025em;
+            letter-spacing: -0.02em;
         }
 
         .incident-sub-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
         .incident-sub-title code {
             font-family: var(--font-mono);
             background: var(--bg-subtle);
-            padding: 0.12rem 0.4rem;
+            padding: 0.1rem 0.35rem;
             border-radius: 4px;
             color: var(--text-heading);
-            font-size: 0.8rem;
+            font-size: 0.76rem;
         }
 
         .lifecycle-stepper {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.65rem;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            padding: 0.75rem 1.25rem;
-            border-radius: var(--radius-lg);
+            padding: 0.55rem 0.95rem;
+            border-radius: var(--radius-md);
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
         }
 
         .stepper-item {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.5rem;
         }
 
         .stepper-circle {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: var(--bg-subtle);
             border: 1px solid var(--border-strong);
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -700,12 +700,12 @@
         }
 
         .stepper-labels strong {
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             color: var(--text-muted);
         }
 
         .stepper-labels span {
-            font-size: 0.7rem;
+            font-size: 0.66rem;
             color: var(--text-light);
         }
 
@@ -726,7 +726,7 @@
         }
 
         .stepper-divider {
-            width: 20px;
+            width: 16px;
             height: 1px;
             background: var(--border);
         }
@@ -735,17 +735,17 @@
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1.15rem;
+            gap: 0.95rem;
         }
 
         .kpi-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.1rem 1.25rem;
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1.05rem;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.3rem;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
 
@@ -755,7 +755,7 @@
         }
 
         .kpi-title {
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             font-weight: 600;
             color: var(--text-muted);
         }
@@ -763,11 +763,11 @@
         .kpi-number-row {
             display: flex;
             align-items: baseline;
-            gap: 0.5rem;
+            gap: 0.45rem;
         }
 
         .kpi-big-num {
-            font-size: 1.6rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: var(--text-heading);
             letter-spacing: -0.02em;
@@ -802,30 +802,30 @@
         .card-panel {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
-            padding: 1.35rem;
+            border-radius: var(--radius-lg);
+            padding: 1.05rem;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
-            gap: 1.15rem;
+            gap: 0.95rem;
         }
 
         .panel-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
+            gap: 0.85rem;
         }
 
         .panel-heading {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--text-heading);
             letter-spacing: -0.01em;
         }
 
         .panel-subtext {
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
             margin-top: 0.1rem;
             display: block;
@@ -2432,20 +2432,20 @@
                 <strong>Amazon S3</strong>
                 <small id="awsS3Label">cloudlens-incident-archive</small>
             </div>
-            <div class="aws-badge-item" id="awsSnsBadge" title="Real-Time SRE Alerts (Amazon SNS)">
+            <div class="aws-badge-item" id="awsSnsBadge" title="Real-Time SRE Alerts (Amazon SNS with In-Memory Dispatcher)">
                 <span class="aws-dot"></span>
                 <strong>Amazon SNS</strong>
-                <small id="awsSnsLabel">cloudlens-notifications</small>
+                <small id="awsSnsLabel">Alerts Ready (Autonomous)</small>
             </div>
             <div class="aws-badge-item" id="awsConfigBadge" title="Resource Configuration Changes (AWS Config)">
                 <span class="aws-dot"></span>
                 <strong>AWS Config</strong>
                 <small>Drift Tracking Active</small>
             </div>
-            <div class="aws-badge-item" id="awsSqsBadge" title="Telemetry Buffer Queue (Amazon SQS)">
+            <div class="aws-badge-item" id="awsSqsBadge" title="Telemetry Buffer Queue (Amazon SQS with In-Memory Buffer)">
                 <span class="aws-dot"></span>
                 <strong>Amazon SQS</strong>
-                <small>Buffer Queue Ready</small>
+                <small>Dead-Letter Buffer (Autonomous)</small>
             </div>
         </div>
     </div>
