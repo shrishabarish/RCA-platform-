@@ -197,6 +197,40 @@ function setupEventListeners() {
         });
     }
 
+    // Sidebar Collapse / Expand Toggle
+    const btnToggleSidebarEl = document.getElementById("btnToggleSidebar");
+    const btnHeaderToggleSidebarEl = document.getElementById("btnHeaderToggleSidebar");
+    const appSidebarEl = document.querySelector(".app-sidebar");
+
+    function toggleSidebarCollapse() {
+        if (!appSidebarEl) return;
+        const isCollapsed = appSidebarEl.classList.toggle("is-collapsed");
+        localStorage.setItem("cloudlens_sidebar_collapsed", isCollapsed ? "1" : "0");
+        if (btnHeaderToggleSidebarEl) {
+            btnHeaderToggleSidebarEl.style.color = isCollapsed ? "var(--indigo)" : "";
+            btnHeaderToggleSidebarEl.title = isCollapsed ? "Expand Sidebar (Open)" : "Collapse Sidebar";
+        }
+        window.scrollTo({ left: 0 });
+    }
+
+    if (btnToggleSidebarEl) btnToggleSidebarEl.addEventListener("click", toggleSidebarCollapse);
+    if (btnHeaderToggleSidebarEl) btnHeaderToggleSidebarEl.addEventListener("click", toggleSidebarCollapse);
+
+    document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+            e.preventDefault();
+            toggleSidebarCollapse();
+        }
+    });
+
+    if (localStorage.getItem("cloudlens_sidebar_collapsed") === "1" && appSidebarEl) {
+        appSidebarEl.classList.add("is-collapsed");
+        if (btnHeaderToggleSidebarEl) {
+            btnHeaderToggleSidebarEl.style.color = "var(--indigo)";
+            btnHeaderToggleSidebarEl.title = "Expand Sidebar (Open)";
+        }
+    }
+
     // Theme Toggle
     if (btnThemeToggle) btnThemeToggle.addEventListener("click", toggleTheme);
 
@@ -339,16 +373,17 @@ function renderScenarioButtons() {
     scenarioSelector.innerHTML = availableScenarios.map(s => {
         const isActive = s.id === activeScenarioId;
         const icon = SCENARIO_ICONS[s.id] || "⚡";
-        const shortTitle = s.name.includes("&") ? s.name.split("&")[0].trim() : s.name;
+        const title = s.name;
 
         return `
             <button class="scenario-btn ${isActive ? 'is-active' : ''}" onclick="switchScenario('${escapeHtml(s.id)}')">
-                <div class="scenario-btn-top">
-                    <div class="scenario-icon-title">
-                        <span>${icon}</span>
-                        <span>${escapeHtml(shortTitle)}</span>
-                    </div>
+                <div class="scenario-btn-meta">
                     <span class="scenario-category-pill">${escapeHtml(s.category || 'Outage')}</span>
+                    ${isActive ? '<span class="scenario-active-tag">ACTIVE SIM</span>' : ''}
+                </div>
+                <div class="scenario-icon-title">
+                    <span class="scenario-icon">${icon}</span>
+                    <span class="scenario-name">${escapeHtml(title)}</span>
                 </div>
                 <div class="scenario-desc-text" title="${escapeHtml(s.description)}">${escapeHtml(s.description)}</div>
             </button>
