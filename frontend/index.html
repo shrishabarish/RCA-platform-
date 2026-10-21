@@ -2311,6 +2311,24 @@
                 </div>
             </div>
 
+            <!-- Dynamic Target EC2 IP Controller (Persisted Across Reboots) -->
+            <div class="sidebar-section" style="padding-bottom: 0.35rem; background: var(--bg-subtle); border-radius: 8px; margin: 0 0.5rem 0.6rem 0.5rem; padding: 0.55rem 0.7rem; border: 1px solid var(--border);">
+                <div class="sidebar-section-title" style="margin-bottom: 0.35rem; font-size: 0.72rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span>Target EC2 Host IP</span>
+                    <span id="ec2HostSavedTag" class="status-tag" style="font-size:0.56rem; padding: 1px 5px; font-weight:700; background:#EEF2FF; color:#4338CA;">Persisted</span>
+                </div>
+                <div style="display:flex; gap:0.35rem; align-items:center;">
+                    <input type="text" id="inputEc2HostIp" placeholder="e.g. 13.60.84.225" style="flex:1; font-size:0.75rem; padding:0.35rem 0.45rem; border-radius:6px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-heading); font-family:var(--font-mono, monospace); min-width:0;" />
+                    <button id="btnSaveSyncEc2" class="btn btn-sm btn-primary" style="padding:0.35rem 0.6rem; font-size:0.72rem; white-space:nowrap;" title="Save IP and Sync Live Causal Graph">
+                        <span>Sync</span>
+                    </button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.35rem;">
+                    <small id="ec2IpHelpText" style="font-size:0.65rem; color:var(--text-muted);">Stored in localStorage</small>
+                    <span id="ec2HostPingDot" style="font-size:0.65rem; font-weight:700; color:#10B981;">● Online</span>
+                </div>
+            </div>
+
             <!-- Failure Scenarios Section (Permanently in Sidebar!) -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">
@@ -2389,12 +2407,17 @@
                 </div>
 
                 <div class="header-right">
-                    <div id="awsStatusPill" class="status-pill">
+                    <div id="awsStatusPill" class="status-pill" title="AWS Cloud IAM & STS Identity Connection">
                         <span class="status-dot"></span>
-                        <span>Checking AWS status...</span>
+                        <span id="awsStatusText">AWS IAM: Checking...</span>
                     </div>
 
-                    <div class="on-call-badge" id="onCallBadge" style="cursor: pointer;" title="Click to customize SRE On-Call Responder">
+                    <div id="ec2StatusPill" class="status-pill" style="margin-left: 0.25rem;" title="Live Target EC2 Instance Probe">
+                        <span class="status-dot"></span>
+                        <span id="ec2StatusText">EC2: Checking...</span>
+                    </div>
+
+                    <div class="on-call-badge" id="onCallBadge" style="cursor: pointer;" title="Click to view/switch SRE On-Call Responder & Escalation Details">
                         <span class="on-call-tag">ON CALL</span>
                         <div class="on-call-info">
                             <strong id="onCallTeamName">SRE Team</strong>
@@ -2602,10 +2625,16 @@
                         <h2 class="panel-heading">Dependency graph</h2>
                         <span class="panel-subtext">Arrow direction: service depends on target</span>
                     </div>
-                    <div class="graph-legend-pills">
-                        <span class="legend-pill"><span class="dot dot-red"></span> Root cause</span>
-                        <span class="legend-pill"><span class="dot dot-amber"></span> Degraded</span>
-                        <span class="legend-pill"><span class="dot dot-green"></span> Healthy</span>
+                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <button id="btnToggleGraphLayout" class="btn btn-sm btn-ghost" style="padding:0.25rem 0.65rem; font-size:0.75rem; border:1px solid var(--border);" title="Toggle Full Width Canvas / Split View">
+                            <span id="graphLayoutIcon">⛶</span>
+                            <span id="graphLayoutText">Full Width Canvas</span>
+                        </button>
+                        <div class="graph-legend-pills">
+                            <span class="legend-pill"><span class="dot dot-red"></span> Root cause</span>
+                            <span class="legend-pill"><span class="dot dot-amber"></span> Degraded</span>
+                            <span class="legend-pill"><span class="dot dot-green"></span> Healthy</span>
+                        </div>
                     </div>
                 </div>
 
@@ -3346,6 +3375,38 @@
             <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="status-tag status-tag-open">✓ Verified S3 Cloud Archive</span>
                 <button type="button" id="btnCloseS3ModalBtn" class="btn btn-primary">Close</button>
+            </div>
+    <!-- On-Call SRE Team Modal -->
+    <div class="modal-backdrop" id="onCallModal" style="display: none;">
+        <div class="modal-card" style="max-width: 480px; width: 90%;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🚨</span>
+                    <span>SRE On-Call Responder & Escalation</span>
+                </h3>
+                <button class="modal-close-btn" id="btnCloseOnCallModal">&times;</button>
+            </div>
+            <div class="modal-body" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">
+                <p style="margin-bottom: 0.75rem;">
+                    <strong>What is the On-Call SRE Team?</strong><br>
+                    In production cloud operations, the <em>On-Call SRE</em> is the primary engineer or automated system designated to receive CloudWatch and SNS incident alerts 24/7, triage anomalies, and execute recovery runbooks.
+                </p>
+                <label style="display: block; font-weight: 700; margin-bottom: 0.35rem; font-size: 0.8rem;">Select Active On-Call Responder:</label>
+                <select id="selectOnCallRole" class="filter-select" style="width: 100%; margin-bottom: 0.85rem; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-heading);">
+                    <option value="Shrisha (Lead SRE & Incident Commander)">Shrisha (Lead SRE & Incident Commander)</option>
+                    <option value="Autonomous RCA Engine (AI Auto-Remediator)">Autonomous RCA Engine (AI Auto-Remediator)</option>
+                    <option value="DevOps Incident Response Team">DevOps Incident Response Team</option>
+                    <option value="Cloud Reliability Team (eu-north-1)">Cloud Reliability Team (eu-north-1)</option>
+                    <option value="custom">-- Custom Responder --</option>
+                </select>
+                <input type="text" id="inputCustomOnCall" placeholder="Enter custom responder name" style="display: none; width: 100%; margin-bottom: 0.85rem; padding: 0.45rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-heading);" />
+                <div style="background: var(--bg-subtle); padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--border); font-size: 0.78rem;">
+                    <strong>Active Policy:</strong> P1/P2 incidents page via Amazon SNS within 30s. Automated diagnostics & causal graph localization executed immediately.
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                <button type="button" class="btn btn-ghost" id="btnCancelOnCallModal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveOnCallModal">Save Responder</button>
             </div>
         </div>
     </div>

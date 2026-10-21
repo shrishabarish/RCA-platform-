@@ -245,9 +245,24 @@ def get_webhook_event_log() -> Dict[str, Any]:
     }
 
 
+_current_ec2_target: Dict[str, Any] = {
+    "host": "13.60.84.225",
+    "port": 5000,
+    "connected": False,
+    "status": "DISCONNECTED",
+    "last_synced": None
+}
+
+
 class EC2SyncRequest(BaseModel):
     host: str = "13.60.84.225"
     port: int = 5000
+
+
+@router.get("/ec2/target", tags=["External Webhook"])
+def get_live_ec2_target() -> Dict[str, Any]:
+    """Returns the currently configured live EC2 target instance status and host IP."""
+    return _current_ec2_target
 
 
 @router.post("/ec2/sync", tags=["External Webhook"])
@@ -256,6 +271,7 @@ async def sync_live_ec2_target(req: EC2SyncRequest) -> Dict[str, Any]:
     Dynamically connects to ANY live EC2 instance via HTTP, checks health,
     registers it into the Causal Graph without hardcoding, and ingests live faults.
     """
+    global _current_ec2_target
     import httpx
     import uuid
     from datetime import datetime, timezone
@@ -263,10 +279,17 @@ async def sync_live_ec2_target(req: EC2SyncRequest) -> Dict[str, Any]:
 
     target_url = f"http://{req.host}:{req.port}/health"
     try:
-        async with httpx.AsyncClient(timeout=4.0) as client:
+        async with httpx.AsyncClient(timeout=1.8) as client:
             resp = await client.get(target_url)
             data = resp.json()
     except Exception as e:
+        _current_ec2_target = {
+            "host": req.host,
+            "port": req.port,
+            "connected": False,
+            "status": "UNREACHABLE",
+            "last_synced": datetime.now(timezone.utc).isoformat()
+        }
         return {
             "connected": False,
             "host": req.host,
@@ -335,6 +358,14 @@ async def sync_live_ec2_target(req: EC2SyncRequest) -> Dict[str, Any]:
 
     incidents = incident_service.get_all_incidents()
     analysis = run_rca_analysis(incidents[-1]) if incidents else None
+
+    _current_ec2_target = {
+        "host": req.host,
+        "port": req.port,
+        "connected": True,
+        "status": status_str,
+        "last_synced": datetime.now(timezone.utc).isoformat()
+    }
 
     return {
         "connected": True,

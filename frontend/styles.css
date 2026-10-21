@@ -482,14 +482,29 @@ body {
 .dot-amber { background: var(--amber); }
 .dot-green { background: var(--emerald); }
 
+.main-workspace-grid.graph-fullwidth {
+    grid-template-columns: 1fr !important;
+}
+
+.main-workspace-grid.graph-fullwidth .graph-panel {
+    grid-column: 1 / -1 !important;
+}
+
+.main-workspace-grid.graph-fullwidth .topology-svg {
+    min-height: 480px;
+}
+
 .graph-canvas-wrap {
     background: #FAFAFA;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 0.5rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    position: relative;
 }
 
 .topology-svg {
+    min-width: 680px;
     width: 100%;
     height: auto;
     display: block;

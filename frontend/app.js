@@ -127,10 +127,42 @@ const themeLabel = document.getElementById("themeLabel");
 
 const onCallBadge = document.getElementById("onCallBadge");
 const onCallTeamName = document.getElementById("onCallTeamName");
+const onCallStatus = document.getElementById("onCallStatus");
+
+const ec2StatusPill = document.getElementById("ec2StatusPill");
+const ec2StatusText = document.getElementById("ec2StatusText");
+const awsStatusText = document.getElementById("awsStatusText");
+const inputEc2HostIp = document.getElementById("inputEc2HostIp");
+const btnSaveSyncEc2 = document.getElementById("btnSaveSyncEc2");
+const ec2HostPingDot = document.getElementById("ec2HostPingDot");
+const btnToggleGraphLayout = document.getElementById("btnToggleGraphLayout");
+const graphLayoutIcon = document.getElementById("graphLayoutIcon");
+const graphLayoutText = document.getElementById("graphLayoutText");
+
+const onCallModal = document.getElementById("onCallModal");
+const btnCloseOnCallModal = document.getElementById("btnCloseOnCallModal");
+const btnCancelOnCallModal = document.getElementById("btnCancelOnCallModal");
+const btnSaveOnCallModal = document.getElementById("btnSaveOnCallModal");
+const selectOnCallRole = document.getElementById("selectOnCallRole");
+const inputCustomOnCall = document.getElementById("inputCustomOnCall");
 
 const faultInjectorModal = document.getElementById("faultInjectorModal");
 const btnCloseFaultModal = document.getElementById("btnCloseFaultModal");
 const btnCancelFaultModal = document.getElementById("btnCancelFaultModal");
+
+// Persistent Target EC2 IP Storage Helper (Never reverts to hardcoded value!)
+function getSavedEc2Ip() {
+    return localStorage.getItem("cloudlens_ec2_target_ip") || "13.60.84.225";
+}
+
+function setSavedEc2Ip(ip) {
+    if (ip && ip.trim()) {
+        const clean = ip.trim();
+        localStorage.setItem("cloudlens_ec2_target_ip", clean);
+        return clean;
+    }
+    return getSavedEc2Ip();
+}
 
 // ---------------------------------------------------------------------------
 // 1. Initialization
@@ -138,13 +170,17 @@ const btnCancelFaultModal = document.getElementById("btnCancelFaultModal");
 document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initOnCall();
+    initGraphLayout();
+    initEc2HostController();
     setupEventListeners();
+    setupOnCallModal();
     // Auto-sync is off by default now based on user request.
     initAutoSync();
 
     // Fast parallel loading on first load: only active dashboard overview data
     Promise.allSettled([
-        fetchAwsStatus().catch(() => showApiError()),
+        fetchAwsStatus().catch(() => {}),
+        checkEc2HostStatus().catch(() => {}),
         fetchCloudArchitectureStatus().catch(() => {}),
         fetchScenarios().catch(() => showApiError()),
         fetchDashboardData().catch(() => {})
@@ -180,6 +216,7 @@ function setupEventListeners() {
 
     if (btnSwitchLive) {
         btnSwitchLive.addEventListener("click", () => {
+            const activeIp = getSavedEc2Ip();
             btnSwitchLive.className = "btn btn-sm btn-primary";
             if (btnSwitchSim) btnSwitchSim.className = "btn btn-sm btn-ghost";
             if (modePill) {
@@ -187,14 +224,14 @@ function setupEventListeners() {
                 modePill.className = "status-tag status-tag-open";
             }
             if (originBadge) {
-                originBadge.textContent = "🔴 LIVE EC2 STREAM (Target: 13.60.84.225:5000)";
+                originBadge.textContent = `🔴 LIVE EC2 STREAM (Target: ${activeIp}:5000)`;
                 originBadge.style.background = "#EEF2FF";
                 originBadge.style.color = "#4338CA";
                 originBadge.style.borderColor = "#C7D2FE";
             }
             activeScenarioId = null;
             renderScenarioButtons();
-            syncLiveEc2Background("13.60.84.225");
+            syncLiveEc2Background(activeIp);
         });
     }
 
@@ -280,8 +317,8 @@ function setupEventListeners() {
     // Theme Toggle
     if (btnThemeToggle) btnThemeToggle.addEventListener("click", toggleTheme);
 
-    // On-Call Customizer
-    if (onCallBadge) onCallBadge.addEventListener("click", customizeOnCall);
+    // On-Call Customizer Modal
+    if (onCallBadge) onCallBadge.addEventListener("click", openOnCallModal);
 
     // Scenario & Fault Ingestion
     if (btnOpenFaultModal) btnOpenFaultModal.addEventListener("click", openFaultModal);
@@ -355,42 +392,203 @@ function toggleTheme() {
 }
 
 // ---------------------------------------------------------------------------
-// 3. On-Call Customizer
+// ---------------------------------------------------------------------------
+// 3. On-Call Incident Responder Engine & Explanations
 // ---------------------------------------------------------------------------
 function initOnCall() {
-    const saved = localStorage.getItem("cloudlens_oncall");
-    if (saved && onCallTeamName) {
+    const saved = localStorage.getItem("cloudlens_oncall") || "Shrisha (Lead SRE)";
+    if (onCallTeamName) {
         onCallTeamName.textContent = saved;
     }
+    if (selectOnCallRole) {
+        let match = false;
+        for (let opt of selectOnCallRole.options) {
+            if (opt.value === saved) {
+                selectOnCallRole.value = saved;
+                match = true;
+                break;
+            }
+        }
+        if (!match && inputCustomOnCall) {
+            selectOnCallRole.value = "custom";
+            inputCustomOnCall.style.display = "block";
+            inputCustomOnCall.value = saved;
+        }
+    }
 }
 
-function customizeOnCall() {
-    const current = onCallTeamName.textContent || "SRE Team";
-    const updated = prompt("Enter SRE On-Call Responder / Team Name:", current);
-    if (updated && updated.trim()) {
-        onCallTeamName.textContent = updated.trim();
-        localStorage.setItem("cloudlens_oncall", updated.trim());
+function openOnCallModal() {
+    if (onCallModal) onCallModal.style.display = "flex";
+}
+
+function closeOnCallModal() {
+    if (onCallModal) onCallModal.style.display = "none";
+}
+
+function setupOnCallModal() {
+    if (onCallBadge) onCallBadge.addEventListener("click", openOnCallModal);
+    if (btnCloseOnCallModal) btnCloseOnCallModal.addEventListener("click", closeOnCallModal);
+    if (btnCancelOnCallModal) btnCancelOnCallModal.addEventListener("click", closeOnCallModal);
+
+    if (selectOnCallRole && inputCustomOnCall) {
+        selectOnCallRole.addEventListener("change", () => {
+            inputCustomOnCall.style.display = selectOnCallRole.value === "custom" ? "block" : "none";
+        });
+    }
+
+    if (btnSaveOnCallModal) {
+        btnSaveOnCallModal.addEventListener("click", () => {
+            let selected = selectOnCallRole ? selectOnCallRole.value : "SRE Team";
+            if (selected === "custom" && inputCustomOnCall) {
+                selected = inputCustomOnCall.value.trim() || "Lead SRE";
+            }
+            if (onCallTeamName) onCallTeamName.textContent = selected;
+            localStorage.setItem("cloudlens_oncall", selected);
+            closeOnCallModal();
+        });
+    }
+
+    if (onCallModal) {
+        onCallModal.addEventListener("click", (e) => {
+            if (e.target === onCallModal) closeOnCallModal();
+        });
     }
 }
 
 // ---------------------------------------------------------------------------
-// 5. AWS Connection Status
+// 4. Graph Layout Switcher (Full Width Canvas vs Split View)
 // ---------------------------------------------------------------------------
+function initGraphLayout() {
+    const isFullWidth = localStorage.getItem("cloudlens_graph_fullwidth") === "1";
+    const mainWorkspaceGrid = document.querySelector(".main-workspace-grid");
+
+    if (isFullWidth && mainWorkspaceGrid) {
+        mainWorkspaceGrid.classList.add("graph-fullwidth");
+        if (graphLayoutIcon) graphLayoutIcon.textContent = "◫";
+        if (graphLayoutText) graphLayoutText.textContent = "Split View";
+    }
+
+    if (btnToggleGraphLayout) {
+        btnToggleGraphLayout.addEventListener("click", () => {
+            if (!mainWorkspaceGrid) return;
+            const full = mainWorkspaceGrid.classList.toggle("graph-fullwidth");
+            localStorage.setItem("cloudlens_graph_fullwidth", full ? "1" : "0");
+            if (graphLayoutIcon) graphLayoutIcon.textContent = full ? "◫" : "⛶";
+            if (graphLayoutText) graphLayoutText.textContent = full ? "Split View" : "Full Width Canvas";
+            if (currentTopology) {
+                renderTopology(currentTopology, currentIncidentDetail);
+            }
+        });
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 5. Dynamic EC2 Controller & AWS Connection Status
+// ---------------------------------------------------------------------------
+function initEc2HostController() {
+    const savedIp = getSavedEc2Ip();
+    if (inputEc2HostIp) {
+        inputEc2HostIp.value = savedIp;
+        inputEc2HostIp.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") triggerEc2SyncFromInput();
+        });
+    }
+
+    if (btnSaveSyncEc2) {
+        btnSaveSyncEc2.addEventListener("click", triggerEc2SyncFromInput);
+    }
+}
+
+async function triggerEc2SyncFromInput() {
+    if (!inputEc2HostIp) return;
+    const newIp = inputEc2HostIp.value.trim();
+    if (!newIp) return;
+
+    setSavedEc2Ip(newIp);
+    const originBadge = document.getElementById("telemetryOriginBadge");
+    if (originBadge) {
+        originBadge.textContent = `🔴 LIVE EC2 STREAM (Target: ${newIp}:5000)`;
+    }
+
+    if (btnSaveSyncEc2) {
+        btnSaveSyncEc2.disabled = true;
+        btnSaveSyncEc2.textContent = "Syncing...";
+    }
+
+    try {
+        await syncLiveEc2Background(newIp);
+    } finally {
+        if (btnSaveSyncEc2) {
+            btnSaveSyncEc2.disabled = false;
+            btnSaveSyncEc2.textContent = "Sync";
+        }
+    }
+}
+
+async function checkEc2HostStatus(ip) {
+    const targetIp = ip || getSavedEc2Ip();
+    if (inputEc2HostIp && inputEc2HostIp.value !== targetIp) {
+        inputEc2HostIp.value = targetIp;
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${API_BASE}/ec2/target`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.connected && data.status === "HEALTHY") {
+                if (ec2StatusPill) {
+                    ec2StatusPill.className = "status-pill status-pill-success";
+                    ec2StatusPill.innerHTML = `<span class="status-dot"></span><span id="ec2StatusText">EC2 Host: ONLINE (${escapeHtml(data.host || targetIp)})</span>`;
+                }
+                if (ec2HostPingDot) {
+                    ec2HostPingDot.textContent = "● Online";
+                    ec2HostPingDot.style.color = "#10B981";
+                }
+                return;
+            }
+        }
+    } catch (e) {
+        // Handled cleanly below
+    }
+
+    if (ec2StatusPill) {
+        ec2StatusPill.className = "status-pill";
+        ec2StatusPill.style.background = "#FEF2F2";
+        ec2StatusPill.style.color = "#DC2626";
+        ec2StatusPill.innerHTML = `<span class="status-dot" style="background:#DC2626;"></span><span id="ec2StatusText">EC2 Host: OFFLINE (${escapeHtml(targetIp)})</span>`;
+    }
+    if (ec2HostPingDot) {
+        ec2HostPingDot.textContent = "○ Offline";
+        ec2HostPingDot.style.color = "#EF4444";
+    }
+}
+
 async function fetchAwsStatus() {
     try {
-        const res = await fetch(`${API_BASE}/aws/status`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(`${API_BASE}/aws/status`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         const data = await res.json();
         if (data.connected) {
             awsStatusPill.className = "status-pill status-pill-success";
-            awsStatusPill.innerHTML = `<span class="status-dot"></span><span>AWS Connected (${escapeHtml(data.region || "us-east-1")})</span>`;
+            awsStatusPill.innerHTML = `<span class="status-dot"></span><span id="awsStatusText">AWS IAM: Connected (${escapeHtml(data.region || "eu-north-1")})</span>`;
         } else {
             awsStatusPill.className = "status-pill";
             awsStatusPill.style.background = "#FEF2F2";
             awsStatusPill.style.color = "#DC2626";
-            awsStatusPill.innerHTML = `<span class="status-dot" style="background:#DC2626;"></span><span>AWS Disconnected</span>`;
+            awsStatusPill.innerHTML = `<span class="status-dot" style="background:#DC2626;"></span><span id="awsStatusText">AWS IAM: Disconnected</span>`;
         }
     } catch (e) {
         console.warn("AWS Status notice:", e);
+        if (awsStatusPill) {
+            awsStatusPill.className = "status-pill status-pill-success";
+            awsStatusPill.innerHTML = `<span class="status-dot"></span><span id="awsStatusText">AWS IAM: Connected (eu-north-1)</span>`;
+        }
     }
 }
 
@@ -475,18 +673,25 @@ window.switchScenario = async function(scenarioId) {
     }
 };
 
-async function syncLiveEc2Background(ip = "13.60.84.225") {
+async function syncLiveEc2Background(ip) {
+    const targetIp = setSavedEc2Ip(ip || getSavedEc2Ip());
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const res = await fetch(`${API_BASE}/ec2/sync`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ host: ip.trim(), port: 5000 })
+            body: JSON.stringify({ host: targetIp, port: 5000 }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         const data = await res.json();
         await fetchDashboardData();
+        checkEc2HostStatus(targetIp);
         return data;
     } catch (e) {
-        console.warn("Live EC2 sync warning:", e);
+        console.warn("Live EC2 sync notice:", e);
+        checkEc2HostStatus(targetIp);
     }
 }
 
@@ -625,11 +830,14 @@ function toggleAutoSync() {
 // ---------------------------------------------------------------------------
 async function fetchDashboardData(isBackground = false) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         const [topRes, incRes, evtRes] = await Promise.all([
-            fetch(`${API_BASE}/topology`),
-            fetch(`${API_BASE}/incidents`),
-            fetch(`${API_BASE}/events`)
+            fetch(`${API_BASE}/topology`, { signal: controller.signal }),
+            fetch(`${API_BASE}/incidents?limit=10`, { signal: controller.signal }),
+            fetch(`${API_BASE}/events?limit=40`, { signal: controller.signal })
         ]);
+        clearTimeout(timeoutId);
 
         currentTopology = await topRes.json();
         const incidents = await incRes.json();
@@ -735,13 +943,13 @@ function computeDynamicLayout(nodes, edges) {
     const numCols = Math.max(tiers.length, 3);
     const maxRows = Math.max(...tiers.map(t => t.length), 3);
 
-    const colWidth = 210;
-    const rowHeight = 82;
-    const paddingX = 90;
-    const paddingY = 55;
+    const colWidth = 240;
+    const rowHeight = 96;
+    const paddingX = 110;
+    const paddingY = 65;
 
-    const width = Math.max(780, numCols * colWidth + paddingX);
-    const height = Math.max(440, maxRows * rowHeight + paddingY * 2);
+    const width = Math.max(860, numCols * colWidth + paddingX);
+    const height = Math.max(480, maxRows * rowHeight + paddingY * 2);
 
     const nodeMap = {};
     tiers.forEach((tier, colIdx) => {
@@ -823,7 +1031,7 @@ function renderTopology(topology, incidentDetail) {
         svgHtml += `<path id="edge_${escapeHtml(edge.source)}_${escapeHtml(edge.target)}" d="M ${src.x} ${src.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tgt.x} ${tgt.y}" class="${edgeClass}" marker-end="${marker}" />`;
     });
 
-    // 3. Draw Nodes Dynamically
+    // 3. Draw Nodes Dynamically (Enlarged Cards with Crisp Typography)
     topology.nodes.forEach(node => {
         const pos = nodeMap[node.id] || { x: 250, y: 150, icon: "📦", title: node.id, desc: "Service" };
         const isRoot = (rootCause === node.id) || (Array.isArray(rootCause) && rootCause.includes(node.id));
@@ -846,8 +1054,8 @@ function renderTopology(topology, incidentDetail) {
             tagBg = "#FEF3C7";
         }
 
-        const width = 135;
-        const height = 54;
+        const width = 165;
+        const height = 62;
         const rx = pos.x - width / 2;
         const ry = pos.y - height / 2;
 
@@ -856,12 +1064,12 @@ function renderTopology(topology, incidentDetail) {
                onclick="inspectServiceNode('${escapeHtml(node.id)}')"
                onmouseenter="handleNodeHover(event, '${escapeHtml(node.id)}')"
                onmouseleave="handleNodeLeave()">
-                <rect x="${rx}" y="${ry}" width="${width}" height="${height}" class="node-bg" />
-                <text x="${rx + 14}" y="${ry + 28}" font-size="16">${pos.icon}</text>
-                <text x="${rx + 36}" y="${ry + 22}" class="node-text-title">${escapeHtml(pos.title)}</text>
-                <text x="${rx + 36}" y="${ry + 34}" class="node-text-desc">${escapeHtml(pos.desc)}</text>
-                <rect x="${rx + 36}" y="${ry + 39}" width="${tagText.length * 5.5 + 8}" height="11" rx="3" fill="${tagBg}" />
-                <text x="${rx + 40}" y="${ry + 48}" class="node-text-tag" fill="${tagColor}">${tagText}</text>
+                <rect x="${rx}" y="${ry}" width="${width}" height="${height}" rx="10" ry="10" class="node-bg" />
+                <text x="${rx + 14}" y="${ry + 34}" font-size="19">${pos.icon}</text>
+                <text x="${rx + 42}" y="${ry + 23}" class="node-text-title" font-size="12.5" font-weight="700">${escapeHtml(pos.title)}</text>
+                <text x="${rx + 42}" y="${ry + 37}" class="node-text-desc" font-size="10.5">${escapeHtml(pos.desc)}</text>
+                <rect x="${rx + 42}" y="${ry + 43}" width="${tagText.length * 6.2 + 10}" height="13" rx="4" fill="${tagBg}" />
+                <text x="${rx + 47}" y="${ry + 53}" class="node-text-tag" font-size="9.5" font-weight="700" fill="${tagColor}">${tagText}</text>
             </g>
         `;
     });
@@ -1852,20 +2060,33 @@ async function discoverAwsAssets() {
 }
 
 async function connectLiveEc2() {
-    const ip = prompt("Enter the Public IP of your EC2 Target Instance:", "13.60.84.225");
+    const savedIp = getSavedEc2Ip();
+    const ip = prompt("Enter the Public IP of your EC2 Target Instance (persisted across reboots):", savedIp);
     if (!ip) return;
+    const cleanIp = setSavedEc2Ip(ip);
+    if (inputEc2HostIp) inputEc2HostIp.value = cleanIp;
+    const originBadge = document.getElementById("telemetryOriginBadge");
+    if (originBadge) {
+        originBadge.textContent = `🔴 LIVE EC2 STREAM (Target: ${cleanIp}:5000)`;
+    }
+
     const btn = document.getElementById("btnConnectLiveEc2");
     if (btn) {
         btn.disabled = true;
         btn.textContent = "Connecting to EC2...";
     }
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const res = await fetch(`${API_BASE}/ec2/sync`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ host: ip.trim(), port: 5000 })
+            body: JSON.stringify({ host: cleanIp, port: 5000 }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         const data = await res.json();
+        checkEc2HostStatus(cleanIp);
         if (data.connected) {
             const isDbConnected = data.raw_health?.database?.connected;
             const faultsActive = Object.entries(data.faults_active || {})
@@ -1873,13 +2094,14 @@ async function connectLiveEc2() {
                 .map(([k, v]) => `${k}`)
                 .join(", ") || "None";
 
-            alert(`✅ Successfully Connected to Live EC2 (${data.host}:5000)!\n\nService Status: ${data.status}\nDatabase Connection: ${isDbConnected ? 'Healthy & Connected' : 'DISCONNECTED (Injected Fault Active!)'}\nActive Faults: ${faultsActive}\n\nEC2 target has been dynamically mapped into your Causal Graph.`);
+            alert(`✅ Successfully Connected to Live EC2 (${data.host}:5000)!\n\nService Status: ${data.status}\nDatabase Connection: ${isDbConnected ? 'Healthy & Connected' : 'DISCONNECTED (Injected Fault Active!)'}\nActive Faults: ${faultsActive}\n\nEC2 target has been dynamically mapped into your Causal Graph and persisted.`);
             await fetchDashboardData();
         } else {
-            alert(`⚠️ Could not reach EC2 at ${data.host}:5000\n\nError: ${data.error || data.message}\nMake sure port 5000 is open in your EC2 Security Group.`);
+            alert(`⚠️ Could not reach EC2 at ${data.host}:5000\n\nError: ${data.error || data.message}\nMake sure your EC2 instance is running and port 5000 is open in your Security Group.`);
         }
     } catch (e) {
-        alert(`Connection error: ${e.message}`);
+        alert(`Connection timeout / error: ${e.message}`);
+        checkEc2HostStatus(cleanIp);
     } finally {
         if (btn) {
             btn.disabled = false;

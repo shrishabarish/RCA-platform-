@@ -55,6 +55,10 @@ class IncidentService:
         self._seen_event_ids: Set[str] = set()
         self._last_analyzed_time: Dict[str, float] = {}
         self._cached_analysis: Dict[str, Dict[str, Any]] = {}
+        self._last_incidents_cache: List[Incident] = []
+        self._last_incidents_cache_time: float = 0.0
+        self._last_events_cache: List[CloudEvent] = []
+        self._last_events_cache_time: float = 0.0
         if config.auto_simulate_on_startup:
             self._load_default_scenario_safely()
 
@@ -208,8 +212,13 @@ class IncidentService:
             metadata=db_ev.metadata_json or {}
         )
 
-    def _convert_to_pydantic_incident(self, db_inc: DBIncident) -> Incident:
-        events = [self._convert_to_pydantic_event(e) for e in (db_inc.events or [])]
+    def _convert_to_pydantic_incident(self, db_inc: DBIncident, include_events: bool = False) -> Incident:
+        events = []
+        if include_events:
+            try:
+                events = [self._convert_to_pydantic_event(e) for e in (db_inc.events or [])]
+            except Exception:
+                events = []
         return Incident(
             incident_id=db_inc.incident_id,
             events=events,
@@ -563,7 +572,27 @@ class IncidentService:
         service: Optional[str] = None,
         severity: Optional[str] = None
     ) -> List[CloudEvent]:
-        """Returns paginated and filtered events, falling back cleanly to in-memory buffer."""
+        """Returns paginated and filtered events with fast sub-millisecond in-memory caching."""
+        # 1. Fast Path: In-memory live active events (0ms response)
+        if self._active_events:
+            events = list(reversed(self._active_events))
+            if service:
+                events = [e for e in events if e.service == service]
+            if severity:
+                events = [e for e in events if e.severity == severity]
+            return events[offset:offset + limit]
+
+        # 2. Cache Hit: Return cached events if fresh within 10 seconds
+        now = time.time()
+        if self._last_events_cache and (now - self._last_events_cache_time < 10.0):
+            events = list(self._last_events_cache)
+            if service:
+                events = [e for e in events if e.service == service]
+            if severity:
+                events = [e for e in events if e.severity == severity]
+            return events[offset:offset + limit]
+
+        # 3. DB Query
         try:
             db = SessionLocal()
             try:
@@ -572,15 +601,17 @@ class IncidentService:
                     query = query.filter(DBCloudEvent.service == service)
                 if severity:
                     query = query.filter(DBCloudEvent.severity == severity)
-                db_events = query.order_by(DBCloudEvent.timestamp.desc()).offset(offset).limit(limit).all()
+                db_events = query.order_by(DBCloudEvent.timestamp.desc()).offset(offset).limit(min(limit, 50)).all()
                 if db_events:
-                    return [self._convert_to_pydantic_event(e) for e in db_events]
+                    converted = [self._convert_to_pydantic_event(e) for e in db_events]
+                    self._last_events_cache = converted
+                    self._last_events_cache_time = now
+                    return converted
             finally:
                 db.close()
         except Exception as e:
             logger.debug(f"DB read fallback to in-memory events: {e}")
 
-        # In-memory fallback with filtering and pagination
         events = list(reversed(self._active_events))
         if service:
             events = [e for e in events if e.service == service]
@@ -609,11 +640,31 @@ class IncidentService:
         status: Optional[str] = None,
         severity: Optional[str] = None
     ) -> List[Incident]:
-        """Returns paginated and filtered incidents, falling back cleanly to in-memory state."""
+        """Returns paginated and filtered incidents with fast sub-millisecond in-memory caching."""
+        # 1. Fast Path: In-memory live active incidents (0ms response)
+        if self._active_incidents:
+            incs = list(self._active_incidents)
+            if status:
+                incs = [i for i in incs if self._get_val(i.status) == status]
+            if severity:
+                incs = [i for i in incs if self._get_val(i.severity) == severity]
+            return incs[offset:offset + limit]
+
+        # 2. Cache Hit: Return cached incidents if fresh within 10 seconds
+        now = time.time()
+        if self._last_incidents_cache and (now - self._last_incidents_cache_time < 10.0):
+            incs = list(self._last_incidents_cache)
+            if status:
+                incs = [i for i in incs if self._get_val(i.status) == status]
+            if severity:
+                incs = [i for i in incs if self._get_val(i.severity) == severity]
+            return incs[offset:offset + limit]
+
+        # 3. DB Query (Lightweight query without heavy selectinload)
         try:
             db = SessionLocal()
             try:
-                query = db.query(DBIncident).options(selectinload(DBIncident.events))
+                query = db.query(DBIncident)
                 if status:
                     query = query.filter(DBIncident.status == status)
                 if severity:
@@ -621,11 +672,14 @@ class IncidentService:
                 db_incs = (
                     query.order_by(DBIncident.updated_at.desc())
                     .offset(offset)
-                    .limit(limit)
+                    .limit(min(limit, 20))
                     .all()
                 )
                 if db_incs:
-                    return [self._convert_to_pydantic_incident(inc) for inc in db_incs]
+                    converted = [self._convert_to_pydantic_incident(inc) for inc in db_incs]
+                    self._last_incidents_cache = converted
+                    self._last_incidents_cache_time = now
+                    return converted
             finally:
                 db.close()
         except Exception as e:
@@ -648,7 +702,7 @@ class IncidentService:
             try:
                 db_inc = db.query(DBIncident).options(joinedload(DBIncident.events)).filter(DBIncident.incident_id == incident_id).first()
                 if db_inc:
-                    return self._convert_to_pydantic_incident(db_inc)
+                    return self._convert_to_pydantic_incident(db_inc, include_events=True)
             finally:
                 db.close()
         except Exception:
