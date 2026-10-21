@@ -889,99 +889,116 @@ async function fetchIncidentDetails(incidentId) {
 // 11. Dynamic Multi-Tier Topology Layout & SVG Rendering (6 & 12+ Nodes)
 // ---------------------------------------------------------------------------
 function computeDynamicLayout(nodes, edges) {
-    if (!nodes || nodes.length === 0) return { width: 620, height: 380, nodeMap: {} };
-
-    // Standard default 6-node case
-    const allKnown = nodes.length <= 6 && nodes.every(n => NODE_POSITIONS[n.id]);
-    if (allKnown) {
-        const nodeMap = {};
-        nodes.forEach(n => {
-            nodeMap[n.id] = {
-                x: n.x || NODE_POSITIONS[n.id].x,
-                y: n.y || NODE_POSITIONS[n.id].y,
-                icon: n.icon || NODE_POSITIONS[n.id].icon,
-                title: n.label || NODE_POSITIONS[n.id].title,
-                desc: n.desc || NODE_POSITIONS[n.id].desc
-            };
-        });
-        return { width: 620, height: 380, nodeMap };
+    if (!nodes || nodes.length === 0) {
+        return { viewBox: "0 0 680 320", width: 680, height: 320, nodeMap: {} };
     }
 
-    // Dynamic tiered layout for arbitrary topologies (e.g. 12-node cases)
-    const nodeIds = nodes.map(n => n.id);
-    const inDegree = {};
-    const adj = {};
-    nodeIds.forEach(id => { inDegree[id] = 0; adj[id] = []; });
-    (edges || []).forEach(e => {
-        if (inDegree[e.target] !== undefined && adj[e.source]) {
-            inDegree[e.target]++;
-            adj[e.source].push(e.target);
-        }
-    });
+    const friendlyPresets = {
+        "DynamoDB": { icon: "🗄️", title: "PostgreSQL / DB", desc: "Database Tier", col: 0, row: 1 },
+        "database": { icon: "🗄️", title: "PostgreSQL / DB", desc: "Database Tier", col: 0, row: 1 },
+        "postgres": { icon: "🗄️", title: "PostgreSQL / DB", desc: "Database Tier", col: 0, row: 1 },
+        "EC2": { icon: "🖥️", title: "EC2 Host", desc: "Compute Tier", col: 1, row: 0 },
+        "ec2": { icon: "🖥️", title: "EC2 Host", desc: "Compute Tier", col: 1, row: 0 },
+        "Auth": { icon: "🔐", title: "OAuth2 / Auth", desc: "Auth Tier", col: 1, row: 1 },
+        "auth": { icon: "🔐", title: "OAuth2 / Auth", desc: "Auth Tier", col: 1, row: 1 },
+        "Worker": { icon: "⚙️", title: "Worker Pods", desc: "Worker Tier", col: 1, row: 2 },
+        "worker": { icon: "⚙️", title: "Worker Pods", desc: "Worker Tier", col: 1, row: 2 },
+        "API": { icon: "🌐", title: "API Gateway", desc: "Service Tier", col: 2, row: 1 },
+        "api": { icon: "🌐", title: "API Gateway", desc: "Service Tier", col: 2, row: 1 },
+        "Application": { icon: "💻", title: "Web Frontend", desc: "Client Tier", col: 3, row: 1 },
+        "application": { icon: "💻", title: "Web Frontend", desc: "Client Tier", col: 3, row: 1 }
+    };
 
-    const tiers = [];
-    const visited = new Set();
+    const isPresetCase = nodes.length <= 6 && nodes.every(n => friendlyPresets[n.id]);
+    const nodeMap = {};
 
-    let currentTier = nodeIds.filter(id => inDegree[id] === 0);
-    if (currentTier.length === 0) currentTier = [nodeIds[0]];
+    if (isPresetCase) {
+        const colX = [85, 255, 425, 595];
+        const rowY = [85, 175, 265];
 
-    while (currentTier.length > 0 && visited.size < nodeIds.length) {
-        tiers.push(currentTier);
-        currentTier.forEach(id => visited.add(id));
-        const nextTierSet = new Set();
-        currentTier.forEach(id => {
-            (adj[id] || []).forEach(t => {
-                if (!visited.has(t)) nextTierSet.add(t);
+        nodes.forEach(n => {
+            const preset = friendlyPresets[n.id];
+            nodeMap[n.id] = {
+                x: colX[preset.col],
+                y: rowY[preset.row],
+                icon: preset.icon,
+                title: preset.title,
+                desc: preset.desc
+            };
+        });
+    } else {
+        const tiers = { 0: [], 1: [], 2: [], 3: [] };
+        nodes.forEach(n => {
+            const type = (n.type || "").toLowerCase();
+            const idLower = n.id.toLowerCase();
+            if (type.includes("database") || type.includes("db") || idLower.includes("dynamo") || idLower.includes("postgres") || type.includes("storage") || idLower.includes("s3")) {
+                tiers[0].push(n);
+            } else if (type.includes("compute") || idLower.includes("ec2") || type.includes("worker") || type.includes("auth") || type.includes("lambda")) {
+                tiers[1].push(n);
+            } else if (type.includes("gateway") || type.includes("service") || idLower.includes("api") || type.includes("queue") || idLower.includes("sqs")) {
+                tiers[2].push(n);
+            } else {
+                tiers[3].push(n);
+            }
+        });
+
+        const placed = new Set();
+        [0, 1, 2, 3].forEach(t => tiers[t].forEach(n => placed.add(n.id)));
+        nodes.forEach(n => {
+            if (!placed.has(n.id)) tiers[1].push(n);
+        });
+
+        const colX = [85, 255, 425, 595];
+        const maxPerCol = Math.max(1, ...Object.values(tiers).map(t => t.length));
+        const rowSpacing = Math.max(75, Math.min(100, 260 / Math.max(maxPerCol, 1)));
+
+        [0, 1, 2, 3].forEach(colIdx => {
+            const list = tiers[colIdx];
+            const startY = 175 - ((list.length - 1) * rowSpacing) / 2;
+            list.forEach((n, rowIdx) => {
+                const type = (n.type || "").toLowerCase();
+                const idLower = n.id.toLowerCase();
+                let icon = "📦";
+                if (type.includes("gateway") || idLower.includes("api")) icon = "🌐";
+                else if (type.includes("auth")) icon = "🔐";
+                else if (type.includes("db") || idLower.includes("dynamo") || idLower.includes("postgres")) icon = "🗄️";
+                else if (type.includes("queue") || idLower.includes("sqs")) icon = "📬";
+                else if (type.includes("compute") || idLower.includes("ec2")) icon = "🖥️";
+                else if (type.includes("worker")) icon = "⚙️";
+                else if (type.includes("client") || type.includes("frontend")) icon = "💻";
+
+                nodeMap[n.id] = {
+                    x: colX[colIdx],
+                    y: Math.round(startY + rowIdx * rowSpacing),
+                    icon: n.icon || icon,
+                    title: n.label && n.label.length <= 18 ? n.label : (friendlyPresets[n.id]?.title || n.id),
+                    desc: n.desc || `${(n.type || 'service').toUpperCase()} TIER`
+                };
             });
         });
-        currentTier = Array.from(nextTierSet);
     }
 
-    const unvisited = nodeIds.filter(id => !visited.has(id));
-    if (unvisited.length > 0) tiers.push(unvisited);
-
-    const numCols = Math.max(tiers.length, 3);
-    const maxRows = Math.max(...tiers.map(t => t.length), 3);
-
-    const colWidth = 240;
-    const rowHeight = 96;
-    const paddingX = 110;
-    const paddingY = 65;
-
-    const width = Math.max(860, numCols * colWidth + paddingX);
-    const height = Math.max(480, maxRows * rowHeight + paddingY * 2);
-
-    const nodeMap = {};
-    tiers.forEach((tier, colIdx) => {
-        const x = paddingX + colIdx * colWidth;
-        const totalHeight = (tier.length - 1) * rowHeight;
-        const startY = (height - totalHeight) / 2;
-
-        tier.forEach((id, rowIdx) => {
-            const y = startY + rowIdx * rowHeight;
-            const nodeObj = nodes.find(n => n.id === id) || {};
-            const type = (nodeObj.type || "").toLowerCase();
-            const lowerId = id.toLowerCase();
-            let icon = "📦";
-            if (type.includes("gateway") || lowerId.includes("gateway") || lowerId.includes("api")) icon = "🌐";
-            else if (type.includes("auth") || lowerId.includes("auth") || lowerId.includes("token")) icon = "🔐";
-            else if (type.includes("database") || lowerId.includes("db") || lowerId.includes("postgres") || lowerId.includes("dynamo") || lowerId.includes("table")) icon = "🗄️";
-            else if (type.includes("queue") || lowerId.includes("queue") || lowerId.includes("sqs")) icon = "📬";
-            else if (type.includes("cache") || lowerId.includes("cache") || lowerId.includes("redis")) icon = "⚡";
-            else if (type.includes("worker") || lowerId.includes("worker") || lowerId.includes("task")) icon = "⚙️";
-            else if (type.includes("vendor") || lowerId.includes("vendor") || lowerId.includes("external")) icon = "☁️";
-
-            nodeMap[id] = {
-                x,
-                y,
-                icon,
-                title: nodeObj.label || id,
-                desc: nodeObj.type || "Service Tier"
-            };
-        });
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    Object.values(nodeMap).forEach(pos => {
+        if (pos.x < minX) minX = pos.x;
+        if (pos.x > maxX) maxX = pos.x;
+        if (pos.y < minY) minY = pos.y;
+        if (pos.y > maxY) maxY = pos.y;
     });
 
-    return { width, height, nodeMap };
+    const padX = 85;
+    const padY = 40;
+    const boxMinX = Math.round(minX - padX);
+    const boxMinY = Math.round(minY - padY);
+    const boxWidth = Math.round((maxX - minX) + padX * 2);
+    const boxHeight = Math.round((maxY - minY) + padY * 2);
+
+    return {
+        viewBox: `${boxMinX} ${boxMinY} ${boxWidth} ${boxHeight}`,
+        width: boxWidth,
+        height: boxHeight,
+        nodeMap
+    };
 }
 
 function renderTopology(topology, incidentDetail) {
@@ -992,26 +1009,26 @@ function renderTopology(topology, incidentDetail) {
         || null;
     const affected = incidentDetail?.affected_services || [];
 
-    // 1. Dynamic layout supporting both 6-node and 12-node topologies with scaled viewBox
     const layout = computeDynamicLayout(topology.nodes, topology.edges);
     const nodeMap = layout.nodeMap;
-    topologySvg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+    topologySvg.setAttribute("viewBox", layout.viewBox);
+    topologySvg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
     let svgHtml = `
         <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                 <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94A3B8" />
             </marker>
-            <marker id="arrow-root" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <marker id="arrow-root" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 1 L 9 5 L 0 9 z" fill="#EF4444" />
             </marker>
-            <marker id="arrow-blast" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <marker id="arrow-blast" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 1 L 9 5 L 0 9 z" fill="#F59E0B" />
             </marker>
         </defs>
     `;
 
-    // 2. Draw Edges
+    // Draw Edges
     (topology.edges || []).forEach(edge => {
         const src = nodeMap[edge.source];
         const tgt = nodeMap[edge.target];
@@ -1023,19 +1040,20 @@ function renderTopology(topology, incidentDetail) {
 
         const dx = tgt.x - src.x;
         const dy = tgt.y - src.y;
-        const cx1 = src.x + dx * 0.4;
+        const cx1 = src.x + dx * 0.45;
         const cy1 = src.y;
-        const cx2 = src.x + dx * 0.6;
+        const cx2 = src.x + dx * 0.55;
         const cy2 = tgt.y;
 
         svgHtml += `<path id="edge_${escapeHtml(edge.source)}_${escapeHtml(edge.target)}" d="M ${src.x} ${src.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tgt.x} ${tgt.y}" class="${edgeClass}" marker-end="${marker}" />`;
     });
 
-    // 3. Draw Nodes Dynamically (Enlarged Cards with Crisp Typography)
+    // Draw Nodes with Generous Hitbox & Clean Compact Proportions
     topology.nodes.forEach(node => {
         const pos = nodeMap[node.id] || { x: 250, y: 150, icon: "📦", title: node.id, desc: "Service" };
         const isRoot = (rootCause === node.id) || (Array.isArray(rootCause) && rootCause.includes(node.id));
         const isAff = affected.includes(node.id);
+        const isSelected = (selectedNodeId === node.id);
 
         let nodeClass = "node-card node-healthy";
         let tagText = "HEALTHY";
@@ -1054,22 +1072,31 @@ function renderTopology(topology, incidentDetail) {
             tagBg = "#FEF3C7";
         }
 
-        const width = 165;
-        const height = 62;
+        if (isSelected) {
+            nodeClass += " node-selected";
+        }
+
+        const width = 138;
+        const height = 48;
         const rx = pos.x - width / 2;
         const ry = pos.y - height / 2;
+        const tagW = Math.round(tagText.length * 5.4 + 8);
 
         svgHtml += `
             <g id="nodeGroup_${escapeHtml(node.id)}" class="${nodeClass}" 
-               onclick="inspectServiceNode('${escapeHtml(node.id)}')"
-               onmouseenter="handleNodeHover(event, '${escapeHtml(node.id)}')"
-               onmouseleave="handleNodeLeave()">
-                <rect x="${rx}" y="${ry}" width="${width}" height="${height}" rx="10" ry="10" class="node-bg" />
-                <text x="${rx + 14}" y="${ry + 34}" font-size="19">${pos.icon}</text>
-                <text x="${rx + 42}" y="${ry + 23}" class="node-text-title" font-size="12.5" font-weight="700">${escapeHtml(pos.title)}</text>
-                <text x="${rx + 42}" y="${ry + 37}" class="node-text-desc" font-size="10.5">${escapeHtml(pos.desc)}</text>
-                <rect x="${rx + 42}" y="${ry + 43}" width="${tagText.length * 6.2 + 10}" height="13" rx="4" fill="${tagBg}" />
-                <text x="${rx + 47}" y="${ry + 53}" class="node-text-tag" font-size="9.5" font-weight="700" fill="${tagColor}">${tagText}</text>
+               data-node-id="${escapeHtml(node.id)}"
+               tabindex="0"
+               role="button"
+               aria-label="Inspect ${escapeHtml(pos.title)}"
+               onclick="inspectServiceNode(event, '${escapeHtml(node.id)}')"
+               style="cursor: pointer; touch-action: manipulation;">
+                <rect x="${rx - 8}" y="${ry - 8}" width="${width + 16}" height="${height + 16}" fill="transparent" class="node-hitbox" />
+                <rect x="${rx}" y="${ry}" width="${width}" height="${height}" rx="8" ry="8" class="node-bg" />
+                <text x="${rx + 11}" y="${ry + 30}" font-size="16" class="node-icon">${pos.icon}</text>
+                <text x="${rx + 36}" y="${ry + 19}" class="node-text-title">${escapeHtml(pos.title)}</text>
+                <text x="${rx + 36}" y="${ry + 31}" class="node-text-desc">${escapeHtml(pos.desc)}</text>
+                <rect x="${rx + 36}" y="${ry + 35}" width="${tagW}" height="10" rx="3" fill="${tagBg}" class="node-tag-bg" />
+                <text x="${rx + 40}" y="${ry + 43}" class="node-text-tag" fill="${tagColor}">${tagText}</text>
             </g>
         `;
     });
@@ -1078,9 +1105,24 @@ function renderTopology(topology, incidentDetail) {
 }
 
 // ---------------------------------------------------------------------------
-// 12. Visual Blast Radius Highlighting on Node Click
+// 12. Visual Blast Radius Highlighting on Node Click & Touch
 // ---------------------------------------------------------------------------
-window.inspectServiceNode = async function(serviceId) {
+let lastInspectTimestamp = 0;
+window.inspectServiceNode = async function(evt, serviceId) {
+    if (evt && evt.stopPropagation) evt.stopPropagation();
+    
+    // Support calling without event: inspectServiceNode(serviceId)
+    if (typeof evt === "string" && !serviceId) {
+        serviceId = evt;
+    }
+
+    const now = Date.now();
+    if (now - lastInspectTimestamp < 350 && selectedNodeId === serviceId) {
+        return; // debounce rapid double-taps
+    }
+    lastInspectTimestamp = now;
+
+    // Toggle off only if already selected and user explicitly re-taps after 350ms
     if (selectedNodeId === serviceId) {
         clearGraphBlastHighlight();
         return;
@@ -1099,10 +1141,8 @@ window.inspectServiceNode = async function(serviceId) {
         const crit = data.criticality_level || "MEDIUM";
         const rec = data.remediation_recommendation || "";
 
-        // Highlight directly on SVG topology
         applyVisualBlastHighlight(serviceId, direct, transitive);
 
-        // Update Inspector Card
         let riskColor = "#059669";
         let riskBg = "#ECFDF5";
         let riskBorder = "#A7F3D0";
@@ -1116,27 +1156,39 @@ window.inspectServiceNode = async function(serviceId) {
             riskBorder = "#FDE68A";
         }
 
-        inspectorRiskTag.textContent = `Risk Score: ${risk}/100`;
-        inspectorRiskTag.style.color = riskColor;
-        inspectorRiskTag.style.background = riskBg;
-        inspectorRiskTag.style.borderColor = riskBorder;
+        if (inspectorRiskTag) {
+            inspectorRiskTag.textContent = `Risk: ${risk}/100 (${crit})`;
+            inspectorRiskTag.style.color = riskColor;
+            inspectorRiskTag.style.background = riskBg;
+            inspectorRiskTag.style.borderColor = riskBorder;
+        }
 
-        inspectorContent.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
-                <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-heading);">Inspected: ${escapeHtml(serviceId)}</span>
-                <span style="font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; background: ${crit === 'HIGH' ? '#FEE2E2' : '#FEF3C7'}; color: ${crit === 'HIGH' ? '#DC2626' : '#D97706'};">
-                    CRITICALITY: ${escapeHtml(crit)}
-                </span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.78rem; line-height: 1.45;">
-                <div>• <strong>Direct Callers (${direct.length}):</strong> ${direct.length ? escapeHtml(direct.join(", ")) : '<span style="color:var(--text-muted); font-style:italic;">None (Edge Service)</span>'}</div>
-                <div>• <strong>Blast Radius (${transitive.length}):</strong> <span style="color:#DC2626; font-weight:600;">${transitive.length ? escapeHtml(transitive.join(" ➔ ")) : '<span style="color:var(--emerald); font-style:italic;">Isolated to this node</span>'}</span></div>
-                ${rec ? `<div style="margin-top:0.25rem; padding-top:0.35rem; border-top: 1px dashed var(--border); color: var(--text-muted);">• <strong>Architectural Guidance:</strong> ${escapeHtml(rec)}</div>` : ''}
-            </div>
-            <div style="margin-top: 0.5rem; text-align: right;">
-                <button class="btn btn-ghost btn-sm" onclick="clearGraphBlastHighlight()" style="font-size:0.7rem; padding:0.15rem 0.5rem;">Clear Highlight</button>
-            </div>
-        `;
+        if (inspectorContent) {
+            const callersChips = direct.length 
+                ? direct.map(s => `<button type="button" class="chip-btn chip-caller" onclick="inspectServiceNode(event, '${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join(" ")
+                : '<span style="color:var(--text-muted); font-style:italic;">None (Edge Service)</span>';
+
+            const blastChips = transitive.length
+                ? transitive.map(s => `<button type="button" class="chip-btn chip-blast" onclick="inspectServiceNode(event, '${escapeHtml(s)}')">${escapeHtml(s)}</button>`).join(" <span style='color:#DC2626; font-weight:700;'>➔</span> ")
+                : '<span style="color:var(--emerald); font-style:italic;">Isolated to this node</span>';
+
+            inspectorContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">Inspected: ${escapeHtml(serviceId)}</span>
+                        <span style="font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; background: ${crit === 'HIGH' ? '#FEE2E2' : '#FEF3C7'}; color: ${crit === 'HIGH' ? '#DC2626' : '#D97706'};">
+                            ${escapeHtml(crit)}
+                        </span>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="clearGraphBlastHighlight()" style="font-size:0.68rem; padding:0.15rem 0.5rem; font-weight:600;">✕ Clear</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.74rem; line-height: 1.4;">
+                    <div><span style="color:var(--text-muted); font-weight:600;">Direct Callers:</span> ${callersChips}</div>
+                    <div><span style="color:var(--text-muted); font-weight:600;">Blast Radius:</span> ${blastChips}</div>
+                    ${rec ? `<div style="margin-top:0.2rem; padding-top:0.3rem; border-top: 1px dashed var(--border); color: var(--text-muted);"><span style="font-weight:600; color:var(--text-body);">Guidance:</span> ${escapeHtml(rec)}</div>` : ''}
+                </div>
+            `;
+        }
     } catch (e) {
         console.error("Inspector error:", e);
     }
@@ -1150,7 +1202,6 @@ function applyVisualBlastHighlight(targetId, directNodes, transitiveNodes) {
         const el = document.getElementById(`nodeGroup_${nodeId}`);
         if (!el) return;
 
-        // Reset blast classes
         el.classList.remove("node-selected", "node-blast-direct", "node-blast-transitive", "node-dimmed");
 
         if (nodeId === targetId) {
@@ -1164,7 +1215,6 @@ function applyVisualBlastHighlight(targetId, directNodes, transitiveNodes) {
         }
     });
 
-    // Highlight connecting blast edges
     if (currentTopology?.edges) {
         currentTopology.edges.forEach(edge => {
             const edgeEl = document.getElementById(`edge_${edge.source}_${edge.target}`);
@@ -1199,13 +1249,21 @@ window.clearGraphBlastHighlight = function() {
             const edgeEl = document.getElementById(`edge_${edge.source}_${edge.target}`);
             if (edgeEl) {
                 edgeEl.classList.remove("edge-path-blast");
+                const isCausal = (currentIncidentDetail?.probable_root_cause === edge.source || currentIncidentDetail?.probable_root_cause === edge.target);
+                edgeEl.setAttribute("marker-end", isCausal ? "url(#arrow-root)" : "url(#arrow)");
             }
         });
     }
 
-    if (inspectorRiskTag) inspectorRiskTag.textContent = "Click a node to inspect";
+    if (inspectorRiskTag) {
+        inspectorRiskTag.textContent = "Tap node to inspect";
+        inspectorRiskTag.style.color = "var(--text-muted)";
+        inspectorRiskTag.style.background = "var(--bg-subtle)";
+        inspectorRiskTag.style.borderColor = "var(--border)";
+    }
+
     if (inspectorContent) {
-        inspectorContent.innerHTML = "Click any service node in the topology above to simulate hypothetical outages, evaluate transitive blast radius, and view upstream callers.";
+        inspectorContent.innerHTML = `<span style="color:var(--text-muted);">💡 Tap any service node in the graph above to simulate what-if outages, evaluate transitive blast radius, and view upstream callers.</span>`;
     }
 };
 
@@ -1523,6 +1581,15 @@ function renderDiagnosisFromDiagnose(data) {
     };
 
     renderRemediationPlan(plan, playbook.action, `target-${cause.toLowerCase()}`);
+
+    // Auto-inspect root cause node so Service Inspector is immediately populated without requiring a manual tap
+    if (cause && typeof window.inspectServiceNode === "function") {
+        setTimeout(() => {
+            if (!selectedNodeId) {
+                window.inspectServiceNode(cause);
+            }
+        }, 150);
+    }
 }
 
 function renderCausalPaths(paths, rootCause) {
@@ -1551,11 +1618,11 @@ function renderScoringBars(breakdown) {
     const bd = breakdown || {};
 
     const dimensions = [
-        { key: "temporal_correlation", name: "Temporal Origin (Failed First)", max: 25 },
-        { key: "dependency_relationship", name: "Graph Topological Influence", max: 30 },
-        { key: "downstream_symptoms", name: "Downstream Symptom Correlation", max: 20 },
-        { key: "metric_anomaly_magnitude", name: "Metric Telemetry Anomaly", max: 15 },
-        { key: "severity", name: "Alarm Severity Weight", max: 10 }
+        { key: "temporal_correlation", name: "Temporal Origin", desc: "Failed First", max: 25 },
+        { key: "dependency_relationship", name: "Graph Topology", desc: "Path Ancestry", max: 30 },
+        { key: "downstream_symptoms", name: "Symptom Correlation", desc: "Downstream", max: 20 },
+        { key: "metric_anomaly_magnitude", name: "Telemetry Anomaly", desc: "Z-Score", max: 15 },
+        { key: "severity", name: "Alarm Severity", desc: "Weight Factor", max: 10 }
     ];
 
     scoringBars.innerHTML = dimensions.map(dim => {
@@ -1563,13 +1630,13 @@ function renderScoringBars(breakdown) {
         const pct = Math.min(100, Math.round((score / dim.max) * 100));
 
         return `
-            <div class="evidence-bar-row">
-                <div class="evidence-label-row">
-                    <span>${dim.name}</span>
-                    <strong>${score} / ${dim.max} pts</strong>
+            <div class="evidence-tile">
+                <div class="evidence-tile-header">
+                    <span class="evidence-tile-title">${dim.name}</span>
+                    <span class="evidence-tile-score">${score} / ${dim.max} pts</span>
                 </div>
                 <div class="evidence-track">
-                    <div class="evidence-fill" style="width: ${pct}%"></div>
+                    <div class="evidence-fill" style="width: ${pct}%;"></div>
                 </div>
             </div>
         `;

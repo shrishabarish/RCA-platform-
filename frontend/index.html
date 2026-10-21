@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incident Analysis | RCA Platform</title>
+    <link rel="stylesheet" href="styles.css">
     <script>window.addEventListener('load', () => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap'; document.head.appendChild(l); });</script>
     
     <style>
@@ -861,40 +862,69 @@
         .graph-canvas-wrap {
             background: #FAFAFA;
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 0.65rem;
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            overflow: hidden;
+            position: relative;
+            touch-action: manipulation;
         }
 
         .topology-svg {
+            min-width: 0 !important;
             width: 100%;
             height: auto;
+            max-height: 340px;
             display: block;
+            touch-action: manipulation;
         }
 
+        /* SVG Node Cards - Highly Touchable & Clickable */
         .node-card {
             cursor: pointer;
-            transition: all 0.2s ease;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            outline: none;
+            transition: transform 0.12s ease, filter 0.12s ease;
+        }
+
+        .node-card:active {
+            transform: scale(0.96);
         }
 
         .node-card:hover {
-            transform: translateY(-1px);
+            transform: translateY(-1.5px);
+        }
+
+        .node-card text,
+        .node-card .node-tag-bg {
+            pointer-events: none !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        .node-hitbox {
+            pointer-events: all !important;
+            cursor: pointer;
         }
 
         .node-bg {
+            pointer-events: all !important;
             fill: #FFFFFF;
             stroke: var(--border-strong);
             stroke-width: 1.5;
             rx: 8;
             ry: 8;
             filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.05));
-            transition: all 0.2s ease;
+            transition: stroke 0.15s ease, fill 0.15s ease, filter 0.15s ease;
         }
 
         .node-root-cause .node-bg {
             stroke: var(--red-bright) !important;
             stroke-width: 2.2 !important;
             fill: var(--red-tint) !important;
-            filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.55)) !important;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.45)) !important;
         }
 
         .node-degraded .node-bg {
@@ -909,30 +939,58 @@
             fill: #FFFFFF;
         }
 
+        /* Inspected & Blast Radius Visual States */
+        .node-selected .node-bg {
+            stroke: #4F46E5 !important;
+            stroke-width: 2.5px !important;
+            fill: #EEF2FF !important;
+            filter: drop-shadow(0 0 12px rgba(79, 70, 229, 0.5)) !important;
+        }
+
+        .node-blast-direct .node-bg {
+            stroke: #F59E0B !important;
+            stroke-width: 2px !important;
+            fill: #FFFBEB !important;
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)) !important;
+        }
+
+        .node-blast-transitive .node-bg {
+            stroke: #EF4444 !important;
+            stroke-width: 2px !important;
+            fill: #FEF2F2 !important;
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4)) !important;
+        }
+
+        .node-dimmed {
+            opacity: 0.32 !important;
+            filter: grayscale(0.7) !important;
+            transition: opacity 0.2s ease, filter 0.2s ease;
+        }
+
         .node-text-title {
             font-family: var(--font-sans);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             fill: var(--text-heading);
         }
 
         .node-text-desc {
             font-family: var(--font-sans);
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 500;
             fill: var(--text-muted);
         }
 
         .node-text-tag {
             font-family: var(--font-sans);
-            font-size: 8.5px;
+            font-size: 8px;
             font-weight: 800;
             text-transform: uppercase;
         }
 
         .edge-path {
             stroke: var(--border-strong);
-            stroke-width: 1.8;
+            stroke-width: 1.6;
             fill: none;
         }
 
@@ -948,40 +1006,76 @@
 
         .edge-path-root {
             stroke: var(--red-bright) !important;
-            stroke-width: 2.5 !important;
+            stroke-width: 2.4 !important;
             stroke-dasharray: 6, 4 !important;
             animation: dashLoop 8s linear infinite !important;
+        }
+
+        .edge-path-blast {
+            stroke: #F59E0B !important;
+            stroke-width: 2.2 !important;
+            stroke-dasharray: 4, 3 !important;
+            animation: dashLoop 6s linear infinite !important;
+        }
+
+        /* Interactive Chips in Inspector */
+        .chip-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: all 0.15s ease;
+        }
+        .chip-btn:hover {
+            border-color: var(--indigo);
+            color: var(--indigo);
+        }
+        .chip-caller {
+            background: #FEF3C7;
+            color: #D97706;
+            border-color: #FDE68A;
+        }
+        .chip-blast {
+            background: #FEE2E2;
+            color: #DC2626;
+            border-color: #FECACA;
         }
 
         .selected-service-card {
             background: var(--bg-subtle);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 0.95rem 1.15rem;
-            font-size: 0.8rem;
+            border-radius: var(--radius-md);
+            padding: 0.75rem 0.85rem;
+            font-size: 0.76rem;
         }
 
         .selected-service-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.35rem;
         }
 
         .inspector-label {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             letter-spacing: 0.06em;
             color: var(--text-muted);
         }
 
         .risk-tag {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
             background: var(--amber-tint);
             color: var(--amber);
             border: 1px solid var(--amber-border);
-            padding: 0.12rem 0.45rem;
+            padding: 0.1rem 0.4rem;
             border-radius: 4px;
         }
 
@@ -994,17 +1088,17 @@
         .right-column-stack {
             display: flex;
             flex-direction: column;
-            gap: 1.35rem;
+            gap: 1.15rem;
         }
 
         .diagnosis-hero-box {
             background: linear-gradient(135deg, var(--red-tint) 0%, #FFFFFF 100%);
             border: 1.5px solid var(--red-border);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.35rem;
         }
 
         .diagnosis-top-line {
@@ -1014,59 +1108,60 @@
         }
 
         .eyebrow-tag {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             letter-spacing: 0.06em;
             color: var(--red);
         }
 
         .confidence-tag {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
             font-weight: 800;
             background: #FEE2E2;
             color: var(--red);
-            padding: 0.15rem 0.55rem;
+            padding: 0.15rem 0.5rem;
             border-radius: 9999px;
         }
 
         .badge-severity {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             letter-spacing: 0.05em;
             background: var(--red-tint);
             color: var(--red);
             border: 1px solid var(--red-border);
-            padding: 0.15rem 0.5rem;
+            padding: 0.15rem 0.45rem;
             border-radius: 4px;
         }
 
         .diagnosis-title {
-            font-size: 1.45rem;
+            font-size: 1.15rem;
             font-weight: 800;
             color: var(--text-heading);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
 
         .diagnosis-resource-tag {
             font-family: var(--font-mono);
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
         }
 
         .diagnosis-desc {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-body);
-            line-height: 1.5;
+            line-height: 1.45;
         }
 
+        /* Evidence Section */
         .evidence-section {
             display: flex;
             flex-direction: column;
-            gap: 0.55rem;
+            gap: 0.45rem;
         }
 
         .evidence-heading {
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -1074,37 +1169,61 @@
         }
 
         .evidence-bars {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.45rem 0.65rem;
         }
 
-        .evidence-bar-row {
+        .evidence-tile {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.6rem;
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .evidence-tile:hover {
+            border-color: var(--border-strong);
+            background: #FFFFFF;
         }
 
-        .evidence-label-row {
+        .evidence-tile-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.76rem;
+            align-items: center;
+            font-size: 0.72rem;
+        }
+
+        .evidence-tile-title {
             font-weight: 600;
-            color: var(--text-body);
+            color: var(--text-heading);
+            font-size: 0.72rem;
+        }
+
+        .evidence-tile-score {
+            font-weight: 700;
+            color: var(--indigo);
+            font-size: 0.68rem;
+            background: rgba(99, 102, 241, 0.08);
+            padding: 0.08rem 0.35rem;
+            border-radius: 4px;
         }
 
         .evidence-track {
             width: 100%;
-            height: 7px;
-            background: var(--bg-subtle);
+            height: 4px;
+            background: #E2E8F0;
             border-radius: 9999px;
             overflow: hidden;
         }
 
         .evidence-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--indigo) 0%, #6366F1 100%);
+            background: linear-gradient(90deg, #4F46E5 0%, #6366F1 100%);
             border-radius: 9999px;
+            transition: width 0.35s ease;
         }
 
         .reasoning-list {
@@ -2638,7 +2757,7 @@
                     </div>
                 </div>
 
-                <div class="graph-canvas-wrap">
+                <div class="graph-canvas-wrap" onclick="clearGraphBlastHighlight()">
                     <svg id="topologySvg" class="topology-svg" viewBox="0 0 620 380">
                         <!-- Rendered by app.js -->
                     </svg>
@@ -2648,7 +2767,7 @@
                 <div class="selected-service-card" id="selectedServiceCard">
                     <div class="selected-service-header">
                         <span class="inspector-label">SERVICE INSPECTOR & WHAT-IF BLAST SIMULATION</span>
-                        <span id="inspectorRiskTag" class="risk-tag">Click a node to inspect</span>
+                        <span id="inspectorRiskTag" class="risk-tag">Tap node to inspect</span>
                     </div>
                     <div id="inspectorContent" class="inspector-body">
                         Click any service node in the topology above to simulate hypothetical outages, evaluate transitive blast radius, and view upstream callers.
@@ -2692,13 +2811,13 @@
                             <h4 class="evidence-heading" style="margin-bottom: 0;">Evidence & Scoring Breakdown (5 Dimensions)</h4>
                         </div>
                         <!-- Backend Exact Evidence States Legend -->
-                        <div class="evidence-legend" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; font-size: 0.7rem; color: var(--text-muted); background: var(--bg-subtle); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                            <span style="font-weight: 600; color: var(--text-heading);">Backend Evidence States:</span>
-                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#EF4444;"></span> PRESENT (Active anomaly)</span>
-                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#F59E0B;"></span> STALE (Delayed heartbeat)</span>
-                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#8B5CF6;"></span> MISSING (Expected signal absent)</span>
-                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#10B981;"></span> QUIET (Verified nominal)</span>
-                            <span class="legend-pill" style="font-size: 0.68rem;"><span class="dot" style="background:#64748B;"></span> UNOBSERVED (Source down/uncollected)</span>
+                        <div class="evidence-legend" style="display: flex; gap: 0.35rem 0.65rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.55rem; font-size: 0.68rem; color: var(--text-muted); background: var(--bg-subtle); padding: 0.3rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                            <span style="font-weight: 700; color: var(--text-heading); font-size: 0.68rem;">Evidence:</span>
+                            <span class="legend-pill" style="font-size: 0.66rem;"><span class="dot" style="background:#EF4444;"></span> Active Anomaly</span>
+                            <span class="legend-pill" style="font-size: 0.66rem;"><span class="dot" style="background:#F59E0B;"></span> Stale Heartbeat</span>
+                            <span class="legend-pill" style="font-size: 0.66rem;"><span class="dot" style="background:#8B5CF6;"></span> Missing Signal</span>
+                            <span class="legend-pill" style="font-size: 0.66rem;"><span class="dot" style="background:#10B981;"></span> Verified Quiet</span>
+                            <span class="legend-pill" style="font-size: 0.66rem;"><span class="dot" style="background:#64748B;"></span> Unobserved</span>
                         </div>
                         <div class="evidence-bars" id="scoringBars">
                             <!-- Injected by app.js -->
